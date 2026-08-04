@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, initial-scale=1">
+<title>Roteiro — ALRS</title>
+<link rel="stylesheet" href="style.css">
+<script>
+/* Aplica o tema ANTES do primeiro paint, evitando flash de tema claro.
+   Espelha a lógica de initTheme() em script.js (chave 'ui_theme'). */
+(function(){try{var t=localStorage.getItem('ui_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     IMPORT SCREEN
+══════════════════════════════════════════════════════════════ -->
+<div id="import-screen">
+  <button id="import-theme" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema">🌙</button>
+  <div class="import-box">
+    <h1>Roteiro de Reunião</h1>
+    <p>Assembleia Legislativa do Rio Grande do Sul</p>
+    <button class="import-btn" onclick="document.getElementById('file-input').click()">
+      📂 Carregar Pauta (JSON)
+    </button>
+    <input id="file-input" type="file" accept=".json" style="display:none">
+    <div class="import-resume" id="import-resume-box">
+      <strong>📋 Sessão em andamento encontrada</strong>
+      <span id="import-resume-info"></span>
+      <div class="import-resume-btns">
+        <button class="btn btn-primary btn-sm" onclick="retomar()">Retomar sessão</button>
+        <button class="btn btn-ghost btn-sm" onclick="descartarRetomar()">Carregar nova pauta</button>
+      </div>
+    </div>
+    <div id="cad-fonte" class="cad-fonte"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- HEADER FIXO -->
+  <header id="app-hdr">
+    <span id="hdr-sigla">—</span>
+    <span id="hdr-sep"></span>
+    <span id="hdr-data"></span>
+    <span id="hdr-status">Aguardando abertura</span>
+    <span id="hdr-cronometro" title="Duração da reunião (limite regimental: 2h)"></span>
+    <button id="hdr-limpar" onclick="limparSessao()" title="Limpar sessão" aria-label="Limpar sessão">🗑</button>
+    <button id="hdr-theme" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema">🌙</button>
+  </header>
+
+  <!-- LAYOUT: SIDEBAR + CONTENT -->
+  <div id="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="expanded">
+      <button id="sb-toggle" onclick="toggleSidebar()" title="Recolher/expandir">◀</button>
+      <div id="sb-quorum">
+        <div id="sb-q-dot"></div>
+        <div id="sb-q-text">Sem quórum (0)</div>
+      </div>
+      <div id="sb-body">
+        <div class="sb-condutor">
+          <div class="sb-lbl">Condução</div>
+          <select id="condutor-sel" onchange="setCondutor(parseInt(this.value))"></select>
+        </div>
+        <div class="sb-lbl" id="lbl-titulares">Titulares</div>
+        <div id="grid-titulares" class="dep-grid"></div>
+        <div class="sb-lbl" id="lbl-suplentes">Suplentes</div>
+        <div id="grid-suplentes" class="dep-grid"></div>
+      </div>
+      <div class="sb-outros" id="sb-outros">
+        <div class="sb-lbl">Outros Presentes</div>
+        <div id="outros-list" class="sb-outros-list"></div>
+        <div class="sb-outros-add">
+          <input id="outros-input" type="text" placeholder="Nome ou deputado...">
+          <button onclick="addOutro()">+</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+
+      <!-- 1. ABERTURA -->
+      <div class="sec" id="sec-abertura">
+        <div class="sec-hdr open" onclick="toggleSec('abertura')">
+          <span>1. Abertura</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-abertura"></div>
+      </div>
+
+      <!-- 2. ATAS -->
+      <div class="sec" id="sec-atas">
+        <div class="sec-hdr open" onclick="toggleSec('atas')">
+          <span>2. Aprovação de Atas</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-atas"></div>
+      </div>
+
+      <!-- 3. EXPEDIENTE -->
+      <div class="sec" id="sec-exp">
+        <div class="sec-hdr open" onclick="toggleSec('exp')">
+          <span>3. Expediente</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-exp"></div>
+      </div>
+
+      <!-- 4. CONHECIMENTO DE MATÉRIAS -->
+      <div class="sec" id="sec-cm">
+        <div class="sec-hdr open" onclick="toggleSec('cm')">
+          <span>4. Conhecimento de Matérias da Alçada da Comissão</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-cm"></div>
+      </div>
+
+      <!-- 5. ORDEM DO DIA -->
+      <div class="sec" id="sec-od">
+        <div class="sec-hdr open" onclick="toggleSec('od')">
+          <span>5. Ordem do Dia</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-od"></div>
+      </div>
+
+      <!-- 6. ASSUNTOS GERAIS -->
+      <div class="sec" id="sec-ag">
+        <div class="sec-hdr open" onclick="toggleSec('ag')">
+          <span>6. Assuntos Gerais</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-ag"></div>
+      </div>
+
+      <!-- 7. ENCERRAMENTO -->
+      <div class="sec" id="sec-enc">
+        <div class="sec-hdr open" onclick="toggleSec('enc')">
+          <span>7. Encerramento</span><span class="sec-toggle">▼</span>
+        </div>
+        <div class="sec-body open" id="body-enc"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- FAB -->
+  <button id="fab-btn" onclick="abrirFAB()">💬</button>
+
+  <!-- FAB PANEL -->
+  <div id="fab-panel">
+    <div class="row-between mb8">
+      <strong>Registrar Fala</strong>
+      <button class="btn btn-ghost btn-sm" onclick="fecharFAB()">✕ Fechar</button>
+    </div>
+    <div class="fab-fields">
+      <div>
+        <label class="fld-lbl">Falante</label>
+        <input id="fab-falante" type="text" placeholder="Nome ou deputado..." style="width:100%" oninput="fabAutocomplete(this.value)">
+        <div id="fab-sugest" style="display:none;position:absolute;background:white;border:1px solid var(--gray-200);border-radius:4px;z-index:999;max-height:150px;overflow-y:auto;min-width:200px"></div>
+      </div>
+      <div>
+        <label class="fld-lbl">Contexto</label>
+        <input id="fab-contexto" type="text" style="width:100%" placeholder="Seção atual">
+      </div>
+    </div>
+    <button class="fab-nota-toggle" onclick="toggleFabNota()">+ Adicionar nota</button>
+    <div id="fab-nota-area" class="mb8">
+      <textarea id="fab-nota" rows="2" placeholder="Nota opcional..." style="width:100%;resize:none"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="registrarFala()">Registrar</button>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+  <!-- MODAL CUSTOMIZADO -->
+  <div id="custom-modal">
+    <div class="modal-box">
+      <div class="modal-titulo" id="modal-titulo"></div>
+      <div class="modal-msg" id="modal-msg"></div>
+      <div class="modal-btns" id="modal-btns"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="cadastros.js"></script>
+<script src="documentos.js"></script>
+<script src="roteiro.js"></script>
+</body>
+</html>

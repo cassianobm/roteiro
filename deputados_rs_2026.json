@@ -1,0 +1,557 @@
+{
+  "versao": "2026-05",
+  "fonte": "Assembleia Legislativa do RS — listarDestaqueDeputados",
+  "total": 55,
+  "deputados": [
+    {
+      "id_assembleia": 13,
+      "nome": "Adolfo Brito",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "ajbrito@al.rs.gov.br",
+      "telefone": "(51) 32102110",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360299_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2145,
+      "nome": "Adriana Lara",
+      "partido": "PL",
+      "partido_nome": "Partido Liberal",
+      "email": "adriana.lara@al.rs.gov.br",
+      "telefone": "(51) 32101725",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360293_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2144,
+      "nome": "Adão Pretto Filho",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "adao.prettofilho@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360297_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 134,
+      "nome": "Aloísio Classmann",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "aloisio.classmann@al.rs.gov.br",
+      "telefone": "(51) 32102610",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2015/3/10/178994_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2139,
+      "nome": "Beto Fantinel",
+      "partido": "MDB",
+      "partido_nome": "Movimento Democrático Brasileiro",
+      "email": "beto.fantinel@al.rs.gov.br",
+      "telefone": "(51) 32102304",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2021/1/12/292433_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2146,
+      "nome": "Bruna Rodrigues",
+      "partido": "PSB",
+      "partido_nome": "Partido Socialista Brasileiro",
+      "email": "bruna.rodrigues@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/8/356623_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2159,
+      "nome": "Capitão Martim",
+      "partido": "REPUBLICANOS",
+      "partido_nome": "Republicanos",
+      "email": "capitao.martim@al.rs.gov.br",
+      "telefone": "(51) 32102182",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2024/2/20/384002_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2148,
+      "nome": "Cláudio Tatsch",
+      "partido": "PL",
+      "partido_nome": "Partido Liberal",
+      "email": "claudio.tatsch@al.rs.gov.br",
+      "telefone": "(51) 32102310",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/1/357918_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2162,
+      "nome": "Delegada Nadine",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "delegada.nadine@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/1/31/355869_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2164,
+      "nome": "Delegado Zucco",
+      "partido": "REPUBLICANOS",
+      "partido_nome": "Republicanos",
+      "email": "delegado.zucco@al.rs.gov.br",
+      "telefone": "(51) 32101843",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/15/356992_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2110,
+      "nome": "Dirceu Franciscon",
+      "partido": "UNIÃO",
+      "partido_nome": "União Brasil",
+      "email": "dirceu.franciscon@al.rs.gov.br",
+      "telefone": "(51) 32101411",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238604_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2123,
+      "nome": "Dr. Thiago Duarte",
+      "partido": "PDT",
+      "partido_nome": "Partido Democrático Trabalhista",
+      "email": "dr.thiago@al.rs.gov.br",
+      "telefone": "(51) 32101651",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238605_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2150,
+      "nome": "Edivilson Brum",
+      "partido": "MDB",
+      "partido_nome": "Movimento Democrático Brasileiro",
+      "email": "edivilson.brum@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360296_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2085,
+      "nome": "Eduardo Loureiro",
+      "partido": "PDT",
+      "partido_nome": "Partido Democrático Trabalhista",
+      "email": "eduardo.loureiro@al.rs.gov.br",
+      "telefone": "(51) 32102560",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/17/357222_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2151,
+      "nome": "Eliana Bayer",
+      "partido": "REPUBLICANOS",
+      "partido_nome": "Republicanos",
+      "email": "eliana.bayer@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2026/3/19/450773_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2112,
+      "nome": "Elizandro Sabino",
+      "partido": "REPUBLICANOS",
+      "partido_nome": "Republicanos",
+      "email": "elizandro.sabino@al.rs.gov.br",
+      "telefone": "(51) 32101421",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2022/12/19/354399_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2086,
+      "nome": "Elton Weber",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "elton.weber@al.rs.gov.br",
+      "telefone": "(51) 32102440",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/7/356392_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2045,
+      "nome": "Ernani Polo",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "ernani.polo@al.rs.gov.br",
+      "telefone": "(51) 32101711",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/21/239082_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2152,
+      "nome": "Felipe Camozzato",
+      "partido": "NOVO",
+      "partido_nome": "Partido Novo",
+      "email": "felipe.camozzato@al.rs.gov.br",
+      "telefone": "(51) 32102305",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360294_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 65,
+      "nome": "Frederico Antunes",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "frederico.antunes@al.rs.gov.br",
+      "telefone": "(51) 32101122",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238662_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2128,
+      "nome": "Gaúcho da Geral",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "gaucho.dageral@al.rs.gov.br",
+      "telefone": "(51) 32101851",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2021/6/1/304061_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 28,
+      "nome": "Gerson Burmann",
+      "partido": "PDT",
+      "partido_nome": "Partido Democrático Trabalhista",
+      "email": "gerson.burmann@al.rs.gov.br",
+      "telefone": "(51) 5132102690",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360298_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 1505,
+      "nome": "Gilmar Sossella",
+      "partido": "PDT",
+      "partido_nome": "Partido Democrático Trabalhista",
+      "email": "gilmar.sossella@al.rs.gov.br",
+      "telefone": "(51) 32101290",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2015/3/10/178987_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2153,
+      "nome": "Guilherme Pasin",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "guilherme.pasin@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2025/1/7/413285_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2154,
+      "nome": "Gustavo Victorino",
+      "partido": "REPUBLICANOS",
+      "partido_nome": "Republicanos",
+      "email": "gustavo.victorino@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/1/356345_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2168,
+      "nome": "Halley Lino",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "halley.lino@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2025/1/16/413312_G.png",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2036,
+      "nome": "Jeferson Fernandes",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "jeferson.fernandes@al.rs.gov.br",
+      "telefone": "(51) 32102470",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238674_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2155,
+      "nome": "Joel Wilhelm",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "joel.wilhelm@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/21/359659_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2103,
+      "nome": "Juvir Costella",
+      "partido": "MDB",
+      "partido_nome": "Movimento Democrático Brasileiro",
+      "email": "juvir.costella@al.rs.gov.br",
+      "telefone": "(51) 32101783",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2016/8/8/203496_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2147,
+      "nome": "Kaká D´Ávila",
+      "partido": "PODE",
+      "partido_nome": "Podemos",
+      "email": "kaka.davila@al.rs.gov.br",
+      "telefone": "(51) 32101580",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/8/356616_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 1511,
+      "nome": "Kelly Moraes",
+      "partido": "PL",
+      "partido_nome": "Partido Liberal",
+      "email": "kelly.moraes@al.rs.gov.br",
+      "telefone": "(51) 32101431",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/18/238763_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2156,
+      "nome": "Laura Sito",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "laura.sito@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2025/6/4/425060_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2157,
+      "nome": "Leonel Radde",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "leonel.radde@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/27/357369_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 93,
+      "nome": "Luciana Genro",
+      "partido": "PSOL",
+      "partido_nome": "Partido Socialismo e Liberdade",
+      "email": "luciana.genro@al.rs.gov.br",
+      "telefone": "(51) 32102479",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238676_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2158,
+      "nome": "Luciano Silveira",
+      "partido": "MDB",
+      "partido_nome": "Movimento Democrático Brasileiro",
+      "email": "luciano.silveira@al.rs.gov.br",
+      "telefone": "(51) 32102350",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/24/360295_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2130,
+      "nome": "Luiz Marenco",
+      "partido": "PDT",
+      "partido_nome": "Partido Democrático Trabalhista",
+      "email": "luiz.marenco@al.rs.gov.br",
+      "telefone": "(51) 32101471",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238679_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2142,
+      "nome": "Marcus Vinícius",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "marcus.vinicius@al.rs.gov.br",
+      "telefone": "(51) 32102554",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2021/10/8/320018_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2160,
+      "nome": "Matheus Gomes",
+      "partido": "PSOL",
+      "partido_nome": "Partido Socialismo e Liberdade",
+      "email": "matheus.gomes@al.rs.gov.br",
+      "telefone": "(51) 32101918",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/17/357230_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2161,
+      "nome": "Miguel Rossetto",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "miguel.rossetto@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/8/356501_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2125,
+      "nome": "Neri, o Carteiro",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "neri.ocarteiro@al.rs.gov.br",
+      "telefone": "(51) 32101871",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/3/356360_G.jpeg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2111,
+      "nome": "Paparico Bacchi",
+      "partido": "PL",
+      "partido_nome": "Partido Liberal",
+      "email": "paparico.bacchi@al.rs.gov.br",
+      "telefone": "(51) 32101531",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2020/5/14/274202_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2137,
+      "nome": "Patrícia Alba",
+      "partido": "MDB",
+      "partido_nome": "Movimento Democrático Brasileiro",
+      "email": "patricia.alba@al.rs.gov.br",
+      "telefone": "(51) 32101515",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/13/356798_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 1509,
+      "nome": "Pedro Pereira",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "pedro.pereira@al.rs.gov.br",
+      "telefone": "(51) 32101445",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/15/238687_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 194,
+      "nome": "Pepe Vargas",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "pepe.vargas@al.rs.gov.br",
+      "telefone": "(51) 32101380",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/15/238688_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2149,
+      "nome": "Prof. Claudio Branchieri",
+      "partido": "PL",
+      "partido_nome": "Partido Liberal",
+      "email": "prof.claudio@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/16/357181_G.png",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2163,
+      "nome": "Professor Bonatto",
+      "partido": "PSD",
+      "partido_nome": "Partido Social Democrático",
+      "email": "professor.bonatto@al.rs.gov.br",
+      "telefone": null,
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2024/2/19/383749_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2136,
+      "nome": "Rodrigo Lorenzoni",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "rodrigo.lorenzoni@al.rs.gov.br",
+      "telefone": "(51) 32101746",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/3/13/359004_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2034,
+      "nome": "Ronaldo Santini",
+      "partido": "PODE",
+      "partido_nome": "Podemos",
+      "email": "ronaldo.santini@al.rs.gov.br",
+      "telefone": "(51) 32102410",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2026/3/26/451362_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 58,
+      "nome": "Sergio Peres",
+      "partido": "REPUBLICANOS",
+      "partido_nome": "Republicanos",
+      "email": "sergio.peres@al.rs.gov.br",
+      "telefone": "(51) 32102040",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2026/2/13/448523_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 1504,
+      "nome": "Silvana Covatti",
+      "partido": "PP",
+      "partido_nome": "Progressistas",
+      "email": "silvana.covatti@al.rs.gov.br",
+      "telefone": "(51) 32102710",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2022/6/10/343293_G.png",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2122,
+      "nome": "Sofia Cavedon",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "sofia.cavedon@al.rs.gov.br",
+      "telefone": "(51) 32101397",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/15/238693_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 1500,
+      "nome": "Stela Farias",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "stela.farias@al.rs.gov.br",
+      "telefone": "(51) 32101736",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2024/10/16/404859_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2032,
+      "nome": "Valdeci Oliveira",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "valdeci.oliveira@al.rs.gov.br",
+      "telefone": "(51) 32102220",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/14/238603_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2100,
+      "nome": "Vilmar Zanchin",
+      "partido": "MDB",
+      "partido_nome": "Movimento Democrático Brasileiro",
+      "email": "zanchin@al.rs.gov.br",
+      "telefone": "(51) 32102489",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2019/2/15/238698_G.jpg",
+      "ativo": true
+    },
+    {
+      "id_assembleia": 2095,
+      "nome": "Zé Nunes",
+      "partido": "PT",
+      "partido_nome": "Partido dos Trabalhadores",
+      "email": "ze.nunes@al.rs.gov.br",
+      "telefone": "(51) 32101350",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2015/2/23/177876_G.jpg",
+      "ativo": true
+    }
+  ]
+}

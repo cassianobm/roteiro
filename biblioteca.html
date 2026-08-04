@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, initial-scale=1">
+<title>Biblioteca de Reuniões — ALRS/CEDST</title>
+<link rel="stylesheet" href="style.css">
+<script>
+/* Aplica o tema antes do 1º paint (mesma chave do sistema ao vivo). */
+(function(){try{var t=localStorage.getItem('ui_theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   Estilos específicos da biblioteca. Herda tokens e componentes do
+   style.css; aqui só o layout desktop e o que é próprio da página.
+   Sem arquivo CSS à parte (decisão de projeto, como o checkin).
+   ══════════════════════════════════════════════════════════════ */
+/* O style.css impõe `body{height:100vh;overflow:hidden}` para o sistema AO VIVO
+   (a reunião não deve rolar). A biblioteca é uma página de leitura longa: precisa
+   rolar normalmente. Revertemos aqui — height:auto e overflow visível. */
+html{height:auto;overflow:auto}
+body{height:auto;min-height:100vh;overflow-y:auto;overflow-x:hidden;
+  background:var(--bg,var(--surface-2))}
+
+/* Cabeçalho */
+#bl-hdr{height:48px;background:var(--brand);color:var(--on-brand);
+  display:flex;align-items:center;gap:12px;padding:0 16px;
+  position:fixed;top:0;left:0;right:0;z-index:20}
+#bl-hdr .bl-title{font-weight:800;font-size:15px}
+#bl-hdr .bl-sub{font-size:12px;opacity:.75}
+#bl-hdr .bl-sp{flex:1}
+#bl-hdr button{background:rgba(255,255,255,.12);color:var(--on-brand);border:none;
+  border-radius:var(--radius);padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:.15s}
+#bl-hdr button:hover{background:rgba(255,255,255,.22)}
+#bl-theme{width:34px;height:34px;border-radius:50%!important;justify-content:center;padding:0!important}
+
+/* Container */
+#bl-main{flex:1;max-width:1160px;width:100%;margin:0 auto;padding:68px 24px 20px;box-sizing:border-box}
+
+/* Área de carga */
+#bl-drop{border:2px dashed var(--border);border-radius:12px;padding:28px 32px;text-align:center;
+  transition:.15s;cursor:pointer;background:var(--surface)}
+#bl-drop:hover,#bl-drop.drag{border-color:var(--accent);background:var(--surface-2)}
+#bl-drop h2{font-size:16px;font-weight:800;color:var(--text);margin:0 0 6px}
+#bl-drop p{color:var(--text-muted);font-size:13px;margin:0}
+
+/* Índice de reuniões */
+.bl-sec-titulo{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--text-faint);margin:22px 0 10px}
+.bl-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  box-shadow:var(--shadow-sm);overflow:hidden}
+table.bl-idx{width:100%;border-collapse:collapse;font-size:13px}
+table.bl-idx th{background:var(--surface-2);color:var(--text-faint);font-weight:700;font-size:11px;
+  text-transform:uppercase;letter-spacing:.4px;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border)}
+table.bl-idx td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+table.bl-idx tr:last-child td{border-bottom:none}
+table.bl-idx .bl-com{font-weight:600}
+.bl-pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.bl-pill.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.bl-pill.no{background:var(--warn-bg);color:var(--warn-fg)}
+.bl-x{cursor:pointer;color:var(--text-faint);font-weight:700;padding:2px 6px;border-radius:4px}
+.bl-x:hover{background:var(--err-bg);color:var(--err-fg)}
+
+/* Aviso de comissões misturadas */
+.bl-aviso{background:var(--warn-bg);color:var(--warn-fg);border-left:3px solid var(--amber);
+  border-radius:8px;padding:10px 12px;margin:12px 0;font-size:12px;line-height:1.45}
+
+/* Matriz de presenças */
+.bl-matriz-wrap{overflow-x:auto}
+table.bl-matriz{border-collapse:collapse;font-size:13px;min-width:100%}
+table.bl-matriz th,table.bl-matriz td{border:1px solid var(--border);padding:7px 10px;text-align:center;white-space:nowrap}
+table.bl-matriz thead th{background:var(--surface-2);color:var(--text);font-weight:700}
+table.bl-matriz .bl-dep{text-align:left;font-weight:600;color:var(--text);position:sticky;left:0;background:var(--surface);z-index:1}
+table.bl-matriz thead th.bl-dep{background:var(--surface-2);z-index:2}
+table.bl-matriz .bl-part{text-align:left;color:var(--text-muted);font-size:12px}
+table.bl-matriz td.p{color:var(--ok-fg);font-weight:800}
+table.bl-matriz td.f{color:var(--err-fg);font-weight:800;background:var(--err-bg)}
+table.bl-matriz td.na{color:var(--text-faint)}
+table.bl-matriz tfoot td{background:var(--surface-2);font-weight:700;color:var(--text)}
+table.bl-matriz .bl-tot{font-variant-numeric:tabular-nums}
+
+/* Empty state / abas de visão */
+.bl-empty{text-align:center;color:var(--text-faint);padding:40px 0;font-size:14px}
+.bl-tabs{display:flex;gap:6px;margin:22px 0 4px}
+.bl-tab{padding:7px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);
+  color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer}
+.bl-tab.ativa{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.bl-tab:disabled{opacity:.5;cursor:not-allowed}
+.bl-hint{font-size:12px;color:var(--text-faint);margin:8px 0 0}
+
+/* Faixa de KPIs (gestão) */
+.bl-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+@media(max-width:820px){.bl-kpis{grid-template-columns:repeat(2,1fr)}}
+.bl-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  box-shadow:var(--shadow-sm);padding:14px 16px}
+.bl-kpi .bl-kpi-val{font-size:26px;font-weight:800;color:var(--text);line-height:1.1;font-variant-numeric:tabular-nums}
+.bl-kpi .bl-kpi-rot{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);margin-top:4px}
+.bl-kpi .bl-kpi-sub{font-size:12px;color:var(--text-muted);margin-top:3px}
+.bl-kpi.alerta .bl-kpi-val{color:var(--warn-fg)}
+
+/* Assiduidade: barras horizontais em CSS puro (sem lib) */
+table.bl-assi{width:100%;border-collapse:collapse;font-size:13px}
+table.bl-assi th{background:var(--surface-2);color:var(--text-faint);font-weight:700;font-size:11px;
+  text-transform:uppercase;letter-spacing:.4px;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border)}
+table.bl-assi td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+table.bl-assi tr:last-child td{border-bottom:none}
+table.bl-assi .bl-nome{font-weight:600}
+table.bl-assi .bl-part{color:var(--text-muted);font-size:12px}
+table.bl-assi .bl-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bl-bar{position:relative;background:var(--surface-2);border-radius:6px;height:16px;min-width:80px;overflow:hidden}
+.bl-bar>span{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:6px}
+.bl-bar.hi>span{background:var(--ok-fg)}
+.bl-bar.mid>span{background:var(--amber)}
+.bl-bar.lo>span{background:var(--red)}
+table.bl-assi tr.bl-grupo td{background:var(--surface-2);font-weight:700;font-size:11px;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);padding:8px 12px}
+table.bl-assi tr.bl-subtotal td{font-weight:700;color:var(--text);border-top:2px solid var(--border);background:var(--surface)}
+</style>
+</head>
+<body>
+
+<header id="bl-hdr">
+  <span class="bl-title">Biblioteca de Reuniões</span>
+  <span class="bl-sub">Análise pós-reunião</span>
+  <span class="bl-sp"></span>
+  <span id="bl-cad-fonte" class="bl-sub"></span>
+  <button id="bl-add">📂 Carregar JSON(s)</button>
+  <button id="bl-limpar" title="Remover todas as reuniões">🗑 Limpar</button>
+  <button id="bl-theme" title="Alternar tema">🌙</button>
+</header>
+
+<div id="bl-main">
+  <!-- Faixa de KPIs (gestão) — fixa no topo do conteúdo -->
+  <div id="bl-kpis" class="bl-kpis" style="display:none"></div>
+
+  <!-- Área de carga -->
+  <div id="bl-drop">
+    <h2>Carregar reuniões</h2>
+    <p>Solte aqui um ou mais arquivos JSON de reuniões consolidadas, ou clique para escolher. Tudo fica apenas na memória do navegador.</p>
+  </div>
+
+  <!-- Índice -->
+  <div id="bl-idx-sec" style="display:none">
+    <div class="bl-sec-titulo">Reuniões carregadas (<span id="bl-idx-n">0</span>)</div>
+    <div id="bl-aviso-com"></div>
+    <div class="bl-card">
+      <table class="bl-idx">
+        <thead><tr><th>Data</th><th>Comissão</th><th>Tipo</th><th>Quórum abertura</th><th>Quórum OD</th><th>Itens OD</th><th></th></tr></thead>
+        <tbody id="bl-idx-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Visões -->
+  <div id="bl-vis-sec" style="display:none">
+    <div class="bl-tabs">
+      <button class="bl-tab ativa" data-vis="presencas">Presenças</button>
+      <button class="bl-tab" data-vis="assiduidade">Assiduidade</button>
+      <button class="bl-tab" data-vis="fluxo">Fluxo de matérias</button>
+      <button class="bl-tab" data-vis="relatoria">Relatoria</button>
+      <!-- futuras visões entram aqui como abas -->
+    </div>
+    <div id="bl-vis-conteudo"></div>
+  </div>
+
+  <div id="bl-empty" class="bl-empty">Nenhuma reunião carregada ainda.</div>
+</div>
+
+<input type="file" id="bl-file" accept=".json,application/json" multiple style="display:none">
+
+<script src="cadastros.js"></script>
+<script src="biblioteca.js"></script>
+<script src="biblioteca-ui.js"></script>
+</body>
+</html>

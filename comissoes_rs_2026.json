@@ -1,0 +1,1349 @@
+{
+  "versao": "2026-05",
+  "fonte": "Montagem manual a partir do site da ALRS",
+  "nota": "",
+  "total": 11,
+  "comissoes": [
+    {
+      "id_assembleia": 7,
+      "sigla": "CEDST",
+      "nome": "Comissão de Economia, Trabalho, Desenvolvimento Sustentável e Turismo",
+      "presidente_id": 2154,
+      "vice_presidente_id": 2149,
+      "titulares": [
+        {
+          "id_assembleia": 2154,
+          "nome": "Gustavo Victorino",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2149,
+          "nome": "Prof. Claudio Branchieri",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2168,
+          "nome": "Halley Lino",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2095,
+          "nome": "Zé Nunes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 134,
+          "nome": "Aloísio Classmann",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 65,
+          "nome": "Frederico Antunes",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 1509,
+          "nome": "Pedro Pereira",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2142,
+          "nome": "Marcus Vinícius",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2085,
+          "nome": "Eduardo Loureiro",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2111,
+          "nome": "Paparico Bacchi",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2110,
+          "nome": "Dirceu Franciscon",
+          "partido": "UNIÃO"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2156,
+          "nome": "Laura Sito",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2161,
+          "nome": "Miguel Rossetto",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2045,
+          "nome": "Ernani Polo",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2125,
+          "nome": "Neri, o Carteiro",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2163,
+          "nome": "Professor Bonatto",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2136,
+          "nome": "Rodrigo Lorenzoni",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2159,
+          "nome": "Capitão Martim",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 1511,
+          "nome": "Kelly Moraes",
+          "partido": "PL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 3,
+      "sigla": "CAPPC",
+      "nome": "Comissão de Agricultura, Pecuária, Pesca e Cooperativismo",
+      "presidente_id": 2095,
+      "vice_presidente_id": 2158,
+      "titulares": [
+        {
+          "id_assembleia": 2095,
+          "nome": "Zé Nunes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2158,
+          "nome": "Luciano Silveira",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2144,
+          "nome": "Adão Pretto Filho",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 134,
+          "nome": "Aloísio Classmann",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2086,
+          "nome": "Elton Weber",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2045,
+          "nome": "Ernani Polo",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2125,
+          "nome": "Neri, o Carteiro",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 13,
+          "nome": "Adolfo Brito",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2100,
+          "nome": "Vilmar Zanchin",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2159,
+          "nome": "Capitão Martim",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 1511,
+          "nome": "Kelly Moraes",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2130,
+          "nome": "Luiz Marenco",
+          "partido": "PDT"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2161,
+          "nome": "Miguel Rossetto",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2032,
+          "nome": "Valdeci Oliveira",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2162,
+          "nome": "Delegada Nadine",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 65,
+          "nome": "Frederico Antunes",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 1509,
+          "nome": "Pedro Pereira",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2163,
+          "nome": "Professor Bonatto",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2128,
+          "nome": "Gaúcho da Geral",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2103,
+          "nome": "Juvir Costella",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2111,
+          "nome": "Paparico Bacchi",
+          "partido": "PL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 4,
+      "sigla": "CAM",
+      "nome": "Comissão de Assuntos Municipais",
+      "presidente_id": 2155,
+      "vice_presidente_id": 13,
+      "titulares": [
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 13,
+          "nome": "Adolfo Brito",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2168,
+          "nome": "Halley Lino",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 194,
+          "nome": "Pepe Vargas",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2032,
+          "nome": "Valdeci Oliveira",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2086,
+          "nome": "Elton Weber",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 1509,
+          "nome": "Pedro Pereira",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2123,
+          "nome": "Dr. Thiago Duarte",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2111,
+          "nome": "Paparico Bacchi",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2034,
+          "nome": "Ronaldo Santini",
+          "partido": "PODE"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2036,
+          "nome": "Jeferson Fernandes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 1500,
+          "nome": "Stela Farias",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 134,
+          "nome": "Aloísio Classmann",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2125,
+          "nome": "Neri, o Carteiro",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 1504,
+          "nome": "Silvana Covatti",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2158,
+          "nome": "Luciano Silveira",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2085,
+          "nome": "Eduardo Loureiro",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 1505,
+          "nome": "Gilmar Sossella",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 1511,
+          "nome": "Kelly Moraes",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2147,
+          "nome": "Kaká D'Ávila",
+          "partido": "PODE"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 46,
+      "sigla": "CCDH",
+      "nome": "Comissão de Cidadania e Direitos Humanos",
+      "presidente_id": 2144,
+      "vice_presidente_id": 2156,
+      "titulares": [
+        {
+          "id_assembleia": 2144,
+          "nome": "Adão Pretto Filho",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2156,
+          "nome": "Laura Sito",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 194,
+          "nome": "Pepe Vargas",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2122,
+          "nome": "Sofia Cavedon",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2045,
+          "nome": "Ernani Polo",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2128,
+          "nome": "Gaúcho da Geral",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2146,
+          "nome": "Bruna Rodrigues",
+          "partido": "PSB"
+        },
+        {
+          "id_assembleia": 2147,
+          "nome": "Kaká D'Ávila",
+          "partido": "PODE"
+        },
+        {
+          "id_assembleia": 93,
+          "nome": "Luciana Genro",
+          "partido": "PSOL"
+        },
+        {
+          "id_assembleia": 2034,
+          "nome": "Ronaldo Santini",
+          "partido": "PODE"
+        },
+        {
+          "id_assembleia": 2152,
+          "nome": "Felipe Camozzato",
+          "partido": "NOVO"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2036,
+          "nome": "Jeferson Fernandes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2157,
+          "nome": "Leonel Radde",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2095,
+          "nome": "Zé Nunes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2162,
+          "nome": "Delegada Nadine",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 13,
+          "nome": "Adolfo Brito",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2085,
+          "nome": "Eduardo Loureiro",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2160,
+          "nome": "Matheus Gomes",
+          "partido": "PSOL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 108,
+      "sigla": "CCJ",
+      "nome": "Comissão de Constituição e Justiça",
+      "presidente_id": 2153,
+      "vice_presidente_id": 2136,
+      "titulares": [
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2136,
+          "nome": "Rodrigo Lorenzoni",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2036,
+          "nome": "Jeferson Fernandes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2161,
+          "nome": "Miguel Rossetto",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2162,
+          "nome": "Delegada Nadine",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2163,
+          "nome": "Professor Bonatto",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2139,
+          "nome": "Beto Fantinel",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2158,
+          "nome": "Luciano Silveira",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2159,
+          "nome": "Capitão Martim",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2154,
+          "nome": "Gustavo Victorino",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 93,
+          "nome": "Luciana Genro",
+          "partido": "PSOL"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2168,
+          "nome": "Halley Lino",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2157,
+          "nome": "Leonel Radde",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2086,
+          "nome": "Elton Weber",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 1509,
+          "nome": "Pedro Pereira",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2142,
+          "nome": "Marcus Vinícius",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 1504,
+          "nome": "Silvana Covatti",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2103,
+          "nome": "Juvir Costella",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2137,
+          "nome": "Patrícia Alba",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2145,
+          "nome": "Adriana Lara",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2164,
+          "nome": "Delegado Zucco",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2160,
+          "nome": "Matheus Gomes",
+          "partido": "PSOL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 8,
+      "sigla": "CECDCT",
+      "nome": "Comissão de Educação, Cultura, Desporto, Ciência e Tecnologia",
+      "presidente_id": 2137,
+      "vice_presidente_id": null,
+      "titulares": [
+        {
+          "id_assembleia": 2137,
+          "nome": "Patrícia Alba",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2157,
+          "nome": "Leonel Radde",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2122,
+          "nome": "Sofia Cavedon",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 1504,
+          "nome": "Silvana Covatti",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2100,
+          "nome": "Vilmar Zanchin",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2145,
+          "nome": "Adriana Lara",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2164,
+          "nome": "Delegado Zucco",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2112,
+          "nome": "Elizandro Sabino",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2130,
+          "nome": "Luiz Marenco",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2149,
+          "nome": "Prof. Claudio Branchieri",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2147,
+          "nome": "Kaká D'Ávila",
+          "partido": "PODE"
+        },
+        {
+          "id_assembleia": 2152,
+          "nome": "Felipe Camozzato",
+          "partido": "NOVO"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2144,
+          "nome": "Adão Pretto Filho",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2156,
+          "nome": "Laura Sito",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2158,
+          "nome": "Luciano Silveira",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2159,
+          "nome": "Capitão Martim",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2111,
+          "nome": "Paparico Bacchi",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2034,
+          "nome": "Ronaldo Santini",
+          "partido": "PODE"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 110,
+      "sigla": "CFPFC",
+      "nome": "Comissão de Finanças, Planejamento, Fiscalização e Controle",
+      "presidente_id": 2150,
+      "vice_presidente_id": 2103,
+      "titulares": [
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2103,
+          "nome": "Juvir Costella",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2156,
+          "nome": "Laura Sito",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2161,
+          "nome": "Miguel Rossetto",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 65,
+          "nome": "Frederico Antunes",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2163,
+          "nome": "Professor Bonatto",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2136,
+          "nome": "Rodrigo Lorenzoni",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2145,
+          "nome": "Adriana Lara",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2085,
+          "nome": "Eduardo Loureiro",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2151,
+          "nome": "Eliana Bayer",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2146,
+          "nome": "Bruna Rodrigues",
+          "partido": "PSB"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 1500,
+          "nome": "Stela Farias",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2032,
+          "nome": "Valdeci Oliveira",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2095,
+          "nome": "Zé Nunes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2086,
+          "nome": "Elton Weber",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2045,
+          "nome": "Ernani Polo",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 1504,
+          "nome": "Silvana Covatti",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2139,
+          "nome": "Beto Fantinel",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2158,
+          "nome": "Luciano Silveira",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 1505,
+          "nome": "Gilmar Sossella",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2154,
+          "nome": "Gustavo Victorino",
+          "partido": "REPUBLICANOS"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 11,
+      "sigla": "CSMA",
+      "nome": "Comissão de Saúde e Meio Ambiente",
+      "presidente_id": 2125,
+      "vice_presidente_id": 1504,
+      "titulares": [
+        {
+          "id_assembleia": 2125,
+          "nome": "Neri, o Carteiro",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 1504,
+          "nome": "Silvana Covatti",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 1500,
+          "nome": "Stela Farias",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2032,
+          "nome": "Valdeci Oliveira",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2139,
+          "nome": "Beto Fantinel",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2103,
+          "nome": "Juvir Costella",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2123,
+          "nome": "Dr. Thiago Duarte",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2151,
+          "nome": "Eliana Bayer",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2112,
+          "nome": "Elizandro Sabino",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 1505,
+          "nome": "Gilmar Sossella",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 1511,
+          "nome": "Kelly Moraes",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2160,
+          "nome": "Matheus Gomes",
+          "partido": "PSOL"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2144,
+          "nome": "Adão Pretto Filho",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2122,
+          "nome": "Sofia Cavedon",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 65,
+          "nome": "Frederico Antunes",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2137,
+          "nome": "Patrícia Alba",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2085,
+          "nome": "Eduardo Loureiro",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 93,
+          "nome": "Luciana Genro",
+          "partido": "PSOL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 12,
+      "sigla": "CSSP",
+      "nome": "Comissão de Segurança, Serviços Públicos e Modernização do Estado",
+      "presidente_id": 2157,
+      "vice_presidente_id": null,
+      "titulares": [
+        {
+          "id_assembleia": 2157,
+          "nome": "Leonel Radde",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2036,
+          "nome": "Jeferson Fernandes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 1500,
+          "nome": "Stela Farias",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2162,
+          "nome": "Delegada Nadine",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2128,
+          "nome": "Gaúcho da Geral",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2142,
+          "nome": "Marcus Vinícius",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2137,
+          "nome": "Patrícia Alba",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2164,
+          "nome": "Delegado Zucco",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 1505,
+          "nome": "Gilmar Sossella",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2160,
+          "nome": "Matheus Gomes",
+          "partido": "PSOL"
+        },
+        {
+          "id_assembleia": 2110,
+          "nome": "Dirceu Franciscon",
+          "partido": "UNIÃO"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2168,
+          "nome": "Halley Lino",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2122,
+          "nome": "Sofia Cavedon",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 134,
+          "nome": "Aloísio Classmann",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2103,
+          "nome": "Juvir Costella",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2159,
+          "nome": "Capitão Martim",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 1511,
+          "nome": "Kelly Moraes",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2130,
+          "nome": "Luiz Marenco",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 93,
+          "nome": "Luciana Genro",
+          "partido": "PSOL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 53,
+      "sigla": "CMPDCCPLP",
+      "nome": "Comissão Mista Permanente de Defesa do Consumidor e do Contribuinte e Participação Legislativa Popular",
+      "presidente_id": 2123,
+      "vice_presidente_id": 2148,
+      "titulares": [
+        {
+          "id_assembleia": 2123,
+          "nome": "Dr. Thiago Duarte",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2148,
+          "nome": "Cláudio Tatsch",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2161,
+          "nome": "Miguel Rossetto",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2032,
+          "nome": "Valdeci Oliveira",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 1509,
+          "nome": "Pedro Pereira",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 13,
+          "nome": "Adolfo Brito",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2155,
+          "nome": "Joel Wilhelm",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2164,
+          "nome": "Delegado Zucco",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2146,
+          "nome": "Bruna Rodrigues",
+          "partido": "PSB"
+        },
+        {
+          "id_assembleia": 2160,
+          "nome": "Matheus Gomes",
+          "partido": "PSOL"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2144,
+          "nome": "Adão Pretto Filho",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2156,
+          "nome": "Laura Sito",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 1500,
+          "nome": "Stela Farias",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 134,
+          "nome": "Aloísio Classmann",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 1504,
+          "nome": "Silvana Covatti",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2139,
+          "nome": "Beto Fantinel",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2085,
+          "nome": "Eduardo Loureiro",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2154,
+          "nome": "Gustavo Victorino",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 1511,
+          "nome": "Kelly Moraes",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 93,
+          "nome": "Luciana Genro",
+          "partido": "PSOL"
+        }
+      ]
+    },
+    {
+      "id_assembleia": 10,
+      "sigla": "CMAI",
+      "nome": "Comissão Mista Permanente do Mercosul e Assuntos Internacionais",
+      "presidente_id": 2145,
+      "vice_presidente_id": 2151,
+      "titulares": [
+        {
+          "id_assembleia": 2145,
+          "nome": "Adriana Lara",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2151,
+          "nome": "Eliana Bayer",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2168,
+          "nome": "Halley Lino",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2036,
+          "nome": "Jeferson Fernandes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2156,
+          "nome": "Laura Sito",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 134,
+          "nome": "Aloísio Classmann",
+          "partido": "PSD"
+        },
+        {
+          "id_assembleia": 2153,
+          "nome": "Guilherme Pasin",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2142,
+          "nome": "Marcus Vinícius",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2137,
+          "nome": "Patrícia Alba",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 28,
+          "nome": "Gerson Burmann",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2034,
+          "nome": "Ronaldo Santini",
+          "partido": "PODE"
+        }
+      ],
+      "suplentes": [
+        {
+          "id_assembleia": 2157,
+          "nome": "Leonel Radde",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2161,
+          "nome": "Miguel Rossetto",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2095,
+          "nome": "Zé Nunes",
+          "partido": "PT"
+        },
+        {
+          "id_assembleia": 2128,
+          "nome": "Gaúcho da Geral",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2136,
+          "nome": "Rodrigo Lorenzoni",
+          "partido": "PP"
+        },
+        {
+          "id_assembleia": 2150,
+          "nome": "Edivilson Brum",
+          "partido": "MDB"
+        },
+        {
+          "id_assembleia": 2164,
+          "nome": "Delegado Zucco",
+          "partido": "REPUBLICANOS"
+        },
+        {
+          "id_assembleia": 2130,
+          "nome": "Luiz Marenco",
+          "partido": "PDT"
+        },
+        {
+          "id_assembleia": 2111,
+          "nome": "Paparico Bacchi",
+          "partido": "PL"
+        },
+        {
+          "id_assembleia": 2147,
+          "nome": "Kaká D'Ávila",
+          "partido": "PODE"
+        }
+      ]
+    }
+  ]
+}
