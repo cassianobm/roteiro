@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">CEDST - Apoio à Reunião</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; scroll-behavior: smooth; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .sidebar { display: none !important; }
+            main { margin-left: 0 !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; }
+            header, .section-card { display: none !important; }
+            button { display: none !important; }
+            .print-only { display: block !important; }
+        }
+
+        .print-only { display: none; }
+        .sidebar { transition: width 0.3s ease; width: 260px; }
+        .sidebar.collapsed { width: 60px; }
+        .sidebar.collapsed .nav-text { display: none; }
+        main { transition: margin-left 0.3s ease; }
+
+        .section-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); padding: 2rem; margin-bottom: 2rem; border-left: 6px solid #1e293b; }
+
+        .presence-btn { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; }
+        .presence-btn.present { background-color: #22c55e; color: white; border-color: #16a34a; }
+
+        .quorum-badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-weight: bold; font-size: 0.875rem; }
+        .quorum-ok { background-color: #22c55e; color: white; }
+        .quorum-nok { background-color: #ef4444; color: white; }
+
+        .vista-party-btn { padding: 4px 8px; font-size: 10px; font-weight: bold; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b; transition: all 0.2s; }
+        .vista-party-btn.active { background-color: #3b82f6; color: white; border-color: #2563eb; }
+        .vista-party-btn.blocked { background-color: #e2e8f0; color: #94a3b8; border-color: #cbd5e1; cursor: not-allowed; text-decoration: line-through; }
+
+        .vote-btn { display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 6px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.2s; }
+        .vote-f.active { background-color: #22c55e; color: white; border-color: #16a34a; }
+        .vote-c.active { background-color: #ef4444; color: white; border-color: #dc2626; }
+
+        .voting-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .voting-carousel::-webkit-scrollbar { display: none; }
+        .voting-pane { min-width: 100%; scroll-snap-align: start; }
+
+        .tab-btn.active { border-bottom: 3px solid #1e293b; color: #1e293b; }
+        
+        .gaveta { overflow: hidden; transition: max-height 0.3s ease-in-out; max-height: 0; }
+        .gaveta.open { max-height: 500px; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <nav id="sidebar" class="sidebar fixed h-screen bg-slate-900 text-white z-50 flex flex-col no-print">
+        <div class="p-4 flex items-center justify-between border-b border-slate-700">
+            <span id="sidebar-sigla" class="nav-text font-bold text-lg overflow-hidden whitespace-nowrap uppercase">CEDST</span>
+            <button onclick="App.toggleSidebar()" class="p-1 hover:bg-slate-700 rounded text-xl">≡</button>
+        </div>
+        <div id="sidebar-nav" class="flex-1 overflow-y-auto py-4"></div>
+        <div id="sidebar-footer" class="p-4 border-t border-slate-700 text-xs nav-text text-slate-400 uppercase"></div>
+    </nav>
+
+    <main id="main-content" class="flex-1 ml-[260px] p-8 max-w-6xl mx-auto">
+        <header class="mb-8 border-b-4 border-emerald-700 pb-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 id="header-title" class="text-3xl font-bold uppercase tracking-tight"></h1>
+                    <p class="text-slate-500 font-semibold italic">Assembleia Legislativa do Estado do Rio Grande do Sul</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm no-print">
+                    <span class="text-[10px] font-bold uppercase text-emerald-800">🗣️ Condução (Presidência):</span>
+                    <select id="sel-condutor" class="bg-white border rounded p-1 text-xs font-bold outline-none cursor-pointer" onchange="App.handleStateChange('condutor', this.value)"></select>
+                </div>
+            </div>
+            <div id="header-meta" class="mt-4 flex flex-wrap gap-4 justify-between items-center bg-slate-100 p-3 rounded-lg border border-slate-200"></div>
+        </header>
+
+        <div id="app-sections"></div>
+
+        <div id="print-layout" class="print-only text-slate-900 bg-white p-4"></div>
+
+        <footer class="no-print mt-12 mb-24 flex flex-col md:flex-row gap-4 justify-center">
+            <button onclick="App.exportJSON()" class="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">Exportar Dados (JSON)</button>
+			<button onclick="App.gerarAtaDOCX()" class="bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-800 transition">Gerar Ata (DOCX)</button>
+            <button onclick="App.printReport()" class="bg-slate-800 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:bg-slate-900 transition">Imprimir Pauta / Ata</button>
+            <button onclick="App.resetData()" class="bg-red-100 text-red-600 px-8 py-4 rounded-xl font-bold hover:bg-red-200 transition">Limpar Sessão</button>
+        </footer>
+    </main>
+
+    <script>
+    // =============================================================================
+    // ██████╗ ██╗      ██████╗  ██████╗ ██████╗      ██████╗ ███████╗
+    // ██╔══██╗██║     ██╔═══██╗██╔════╝██╔═══██╗    ██╔═══██╗██╔════╝
+    // ██████╔╝██║     ██║   ██║██║     ██║   ██║    ██║   ██║█████╗
+    // ██╔══██╗██║     ██║   ██║██║     ██║   ██║    ██║   ██║██╔══╝
+    // ██████╔╝███████╗╚██████╔╝╚██████╗╚██████╔╝    ╚██████╔╝███████╗
+    //                                               CONFIGURAÇÃO DA REUNIÃO
+    // =============================================================================
+
+    const MEETING_CONFIG = {
+    meta: {
+        comissao: "COMISSÃO DE ECONOMIA, TRABALHO, DESENVOLVIMENTO SUSTENTÁVEL E TURISMO",
+        sigla: "CEDST",
+        data: "05/08/2026",        
+        dataExtenso: "05 de agosto de 2026",
+        hora: "09:00",
+        local: "Sala Dr. Alberto Pasqualini",
+        tipo: "REUNIÃO ORDINÁRIA",
+        storageKey: "cedst_reuniao_05082026",
+        proximaReuniao: "12 de agosto (Quarta-feira)",
+        quorumAbertura: 3,
+        quorumDelib: 7
+    },
+    membros: {
+        titulares: [
+            { id: 'gvictorino', name: 'Gustavo Victorino', party: 'REPUB', role: 'Presidente' },
+            { id: 'aclassmann', name: 'Aloísio Classmann', party: 'PSD' },
+            { id: 'dfranciscon', name: 'Dirceu Franciscon', party: 'UNIÃO' },
+            { id: 'eloureiro', name: 'Eduardo Loureiro', party: 'PDT' },
+            { id: 'fantunes', name: 'Frederico Antunes', party: 'PSD' },
+            { id: 'gpasin', name: 'Guilherme Pasin', party: 'PP' },
+            { id: 'hlino', name: 'Halley Lino', party: 'PT' },
+            { id: 'mvinicius', name: 'Marcus Vinícius', party: 'PP' },
+            { id: 'pbacchi', name: 'Paparico Bacchi', party: 'PL' },
+            { id: 'ppereira', name: 'Pedro Pereira', party: 'PSD' },
+            { id: 'cbranchieri', name: 'Prof. Claudio Branchieri', party: 'PL', role: 'Vice-presidente' },
+            { id: 'znunes', name: 'Zé Nunes', party: 'PT' }
+        ],
+        suplentes: [
+            { id: 'cmartim', name: 'Capitão Martim', party: 'REPUB' },
+            { id: 'ctatsch', name: 'Cláudio Tatsch', party: 'PL' },
+            { id: 'epolo', name: 'Ernani Polo', party: 'PSD' },
+            { id: 'gburmann', name: 'Gerson Burmann', party: 'PDT' },
+            { id: 'jwilhelm', name: 'Joel Wilhelm', party: 'PP' },
+            { id: 'kmoraes', name: 'Kelly Moraes', party: 'PL' },
+            { id: 'lsito', name: 'Laura Sito', party: 'PT' },
+            { id: 'mrossetto', name: 'Miguel Rossetto', party: 'PT' },
+            { id: 'ncarteiro', name: 'Neri, o Carteiro', party: 'PSD' },
+            { id: 'pbonatto', name: 'Professor Bonatto', party: 'PSD' },
+            { id: 'rlorenzoni', name: 'Rodrigo Lorenzoni', party: 'PP' }
+        ]
+    },
+    atas: ["27/2026"],
+    expediente: {
+        correspondencias: [
+            { origem: "Câmara de Vereadores de Campo Bom", descricao: "Moção de Repúdio ao veto do PL n.° 599/2023, que extinguia a taxa de licenciamento anual de veículo no Rio Grande do Sul, visto que a manutenção da taxa representa mais um encargo ao cidadão gaúcho, e a modernização dos serviços públicos deve refletir também na redução dos custos para a população." }
+        ],
+        proposicoesRecebidas: [
+            { numero: "83/2022", tipo: "PL", proponente: "Deputado Ernani Polo", ementa: "Altera a Lei nº 15.551, de 12 de novembro de 2020, que ‘dispõe sobre a Cachaça Artesanal Gaúcha, estabelece requisitos e limites para sua produção e comercialização, define diretrizes para o registro e a fiscalização do produtor e cria o Programa Estadual de Incentivo à Cachaça da Agricultura Familiar do Estado do Rio Grande do Sul, o Selo da Cachaça da Agricultura Familiar e o Selo de Revenda da Cachaça Artesanal’.", prazoEmendas: 7 }
+        ],
+        proposicoesDistribuidas: []
+    },
+    distribuicao: [],
+    conhecimento: [],
+    audienciaPublica: [],
+    pauta: [
+        { 
+            id: 'plc311_2023', 
+            type: 'PLC', 
+            title: 'Projeto de Lei Complementar n.º 311/2023', 
+            tags: ['INFRAESTRUTURA E LOGÍSTICA', 'ECONOMIA'], 
+            ementa: 'Altera a redação do Inciso I do art. 3º da Lei Complementar nº 15.405, de 18 de dezembro de 2019, que cria o Programa de Incentivo ao Acesso Asfáltico do Estado do Rio Grande do Sul- PIAA/RS.', 
+            proponente: 'Deputado Edivilson Brum', 
+            relator: 'Deputado Prof. Claudio Branchieri', 
+            parecer: 'Favorável',
+            bancadasVista: []
+        },
+        { 
+            id: 'pl358_2024', 
+            type: 'PL', 
+            title: 'Projeto de Lei n.º 358/2024', 
+            tags: ['TURISMO E EVENTOS', 'ECONOMIA'], 
+            ementa: 'Institui a Rota do Surf no Estado do Rio Grande do Sul e dá outras providências.', 
+            proponente: 'Deputado Capitão Martim', 
+            relator: 'Deputado Guilherme Pasin', 
+            parecer: 'Favorável',
+            bancadasVista: []
+        }
+    ],
+    assuntosGerais: []
+};
+
+    // =============================================================================
+    // ENGINE (V17 - ARQUITETURA MVC / PERFORMANCE)
+    // =============================================================================
+
+    const App = (function(Config) {
+        
+        const C = Config;
+        const TITULARES = C.membros.titulares;
+        const SUPLENTES = C.membros.suplentes;
+        const PAUTA = C.pauta;
+        const STORAGE_KEY = C.meta.storageKey;
+
+        const TIPO_BADGES = {
+            'PL': 'bg-blue-100 text-blue-800 border-blue-200', 'PLC': 'bg-blue-200 text-blue-900 border-blue-300', 'PEC': 'bg-purple-100 text-purple-800 border-purple-200',
+            'RAP': 'bg-orange-100 text-orange-800 border-orange-200', 'REQ_AP': 'bg-orange-100 text-orange-800 border-orange-200', 'REQSUB': 'bg-amber-100 text-amber-800 border-amber-200',
+            'RELSUB': 'bg-yellow-100 text-yellow-800 border-yellow-200', 'REQ': 'bg-slate-200 text-slate-800 border-slate-300', 'VP': 'bg-red-100 text-red-800 border-red-200',
+            'VT': 'bg-red-200 text-red-900 border-red-300', 'PROP': 'bg-gray-100 text-gray-600 border-gray-200'
+        };
+
+        const STATUS_CORES = {
+            'PADRAO': { bg: 'bg-emerald-100', text: 'text-emerald-800', label: '▶ Em Votação' }, 'RETIRADA': { bg: 'bg-slate-200', text: 'text-slate-700', label: '↩️ Retirada de Pauta' },
+            'VISTA': { bg: 'bg-indigo-100', text: 'text-indigo-800', label: '👁️ Pedido de Vista' }, 'SOBRESTADO': { bg: 'bg-amber-100', text: 'text-amber-800', label: '⏳ Relator Ausente' },
+            'PREJUDICADO': { bg: 'bg-red-100', text: 'text-red-800', label: '🛑 Prejudicado' }, 'REEXAME': { bg: 'bg-teal-100', text: 'text-teal-800', label: '🔄 Reexame' }
+        };
+
+        const FASES_VOTACAO = {
+            'EM_VOTACAO': { label: 'Em Colheita de Votos...', class: 'text-slate-500' }, 'APROVADA': { label: 'APROVADA', class: 'text-emerald-600 font-black' },
+            'REJEITADA': { label: 'REJEITADA', class: 'text-red-600 font-black' }, 'INCONCLUSIVA': { label: 'INCONCLUSIVA', class: 'text-orange-600 font-black' }
+        };
+
+        const Utils = {
+            sanitizeHTML: (str) => str ? str.replace(/[<>]/g, '') : '',
+            debounce: (func, wait) => {
+                let timeout;
+                return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); };
+            },
+            getDep: id => [...TITULARES, ...SUPLENTES].find(d => d.id === id),
+            hasItems: arr => Array.isArray(arr) && arr.length > 0
+        };
+
+        // --- LAYER 1: STORE (Gerenciamento de Estado) ---
+        const Store = {
+            state: {
+                condutor: '', presenceAbertura: {}, presenceDelib: {}, presencaSuplementar: [],
+                votes: {}, discussions: {}, notes: {}, vistasAtuais: {}, 
+                statusMateria: {}, faseVotacao: {}, minerva: {}, novoRelator: {}, 
+                relatoresDistribuicao: {}, relatorioLidoAtual: {}, conhecimento: {}, 
+                times: { abertura: '', encerramento: '' }, atasAprovadas: false, timeTracking: {} 
+            },
+
+            load: function() {
+                try {
+                    const s = localStorage.getItem(STORAGE_KEY);
+                    if(s) this.state = { ...this.state, ...JSON.parse(s) };
+                } catch(e) {
+                    console.warn('⚠️ Falha ao carregar estado:', e);
+                    View.showToast('Erro ao ler dados salvos. Iniciando limpo.', 'error');
+                }
+            },
+
+            _saveToDisk: function() {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } 
+                catch(e) { console.error('Falha ao salvar:', e); View.showToast('⚠️ Erro ao salvar! Armazenamento cheio?', 'error'); }
+            },
+
+            startTracking: function(pid) {
+                if (!this.state.timeTracking) this.state.timeTracking = {};
+                if (!this.state.timeTracking[pid]) this.state.timeTracking[pid] = { start: Date.now(), end: null };
+            },
+            
+            endTracking: function(pid) {
+                if (!this.state.timeTracking) this.state.timeTracking = {};
+                if (!this.state.timeTracking[pid]) this.state.timeTracking[pid] = { start: Date.now(), end: null };
+                if (!this.state.timeTracking[pid].end) this.state.timeTracking[pid].end = Date.now();
+            },
+						
+            checkQuorums: function() {
+                const presAb = Object.values(this.state.presenceAbertura).filter(Boolean).length;
+                const presDel = Object.values(this.state.presenceDelib).filter(Boolean).length;
+                return {
+                    abertura: { count: presAb, isOk: presAb >= C.meta.quorumAbertura },
+                    delib:    { count: presDel, isOk: presDel >= C.meta.quorumDelib }
+                };
+            }
+        };
+        Store.save = Utils.debounce(Store._saveToDisk.bind(Store), 300);
+
+        // --- LAYER 2: VIEW (Manipulação DOM) ---
+        const View = {
+            showToast: function(msg, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-xl font-bold text-white z-50 transition-opacity duration-300 ${type === 'error' ? 'bg-red-600' : (type === 'warn' ? 'bg-yellow-500' : 'bg-slate-800')} no-print`;
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+            },
+
+            applyMeta: function() {
+                document.title = `${C.meta.sigla} - Apoio - ${C.meta.data}`;
+                document.getElementById('page-title').textContent = document.title;
+                document.getElementById('sidebar-sigla').textContent = C.meta.sigla;
+                document.getElementById('sidebar-footer').textContent = `${C.meta.data} — ${C.meta.hora}`;
+                document.getElementById('header-title').textContent = C.meta.comissao;
+                document.getElementById('header-meta').innerHTML = `<span><strong>Data:</strong> ${C.meta.dataExtenso}</span><span><strong>Tipo:</strong> ${C.meta.tipo}</span><span><strong>Local:</strong> ${C.meta.local}</span>`;
+            },
+
+            renderSections: function() {
+                const navItems = []; const sections = []; let n = 0;
+                const sec = label => `<span class="bg-slate-900 text-white p-1 rounded">${String(++n).padStart(2,'0')}</span> ${label}`;
+
+                navItems.push({ href:'abertura', icon:'🏠', label:'Abertura' }); sections.push(this.buildAbertura(sec));
+                if (Utils.hasItems(C.atas)) { navItems.push({ href:'atas', icon:'📄', label:'Atas' }); sections.push(this.buildAtas(sec)); }
+                
+                const e = C.expediente || {};
+                if (Utils.hasItems(e.correspondencias) || Utils.hasItems(e.proposicoesRecebidas) || Utils.hasItems(e.proposicoesDistribuidas)) {
+                    navItems.push({ href:'expediente', icon:'📨', label:'Expediente' }); sections.push(this.buildExpediente(sec, e));
+                }
+                
+                if (Utils.hasItems(C.distribuicao)) { navItems.push({ href:'distribuicao', icon:'🔄', label:'Distribuição' }); sections.push(this.buildDistribuicao(sec)); }
+                if (Utils.hasItems(C.conhecimento) || C.audienciaPublica) { navItems.push({ href:'conhecimento', icon:'🔍', label:'Conhecimento' }); sections.push(this.buildConhecimento(sec)); }
+                if (Utils.hasItems(PAUTA)) {
+                    navItems.push({ href:'quorum-deliberativo', icon:'🔢', label:'Quórum Votação' }); sections.push(this.buildQuorumDelib(sec));
+                    navItems.push({ href:'ordem', icon:'📋', label:'Ordem do Dia' }); sections.push(this.buildOrdemDia(sec));
+                }
+                navItems.push({ href:'gerais', icon:'💬', label:'Gerais' }); sections.push(this.buildGerais(sec));
+
+                document.getElementById('app-sections').innerHTML = sections.join('');
+                document.getElementById('sidebar-nav').innerHTML = navItems.map(item => `<a href="#${item.href}" class="flex items-center p-4 hover:bg-slate-800 transition"><span class="mr-4">${item.icon}</span><span class="nav-text">${item.label}</span></a>`).join('');
+            },
+
+            buildAbertura: function(sec) {
+                return `
+                <section id="abertura" class="section-card">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-2xl font-bold flex items-center gap-2">${sec('Abertura da Reunião')}</h2>
+                        <div class="bg-yellow-100 text-yellow-800 p-2 rounded text-xs font-bold no-print uppercase">⚠️ Avisar equipe da TV</div>
+                    </div>
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
+						<label class="block font-bold mb-2">Horário de Abertura:</label>
+						<div class="flex gap-2 items-center">
+							<input type="text" id="time-abertura" class="bg-white border rounded p-2 flex-1 w-full min-w-0 text-center font-bold text-lg" placeholder="09 h 15 min" onchange="App.handleTimeChange('abertura', this.value)">
+							
+							<div class="flex gap-1 shrink-0 no-print">
+								<button onclick="App.setFixedTime('time-abertura', '09 h 15 min')" class="bg-slate-200 text-slate-700 hover:bg-slate-300 px-3 py-2 rounded font-bold text-xs transition-colors">09:15</button>
+								<button onclick="App.captureTime('time-abertura')" class="bg-slate-900 text-white hover:bg-slate-800 px-3 py-2 rounded font-bold text-xs transition-colors">AGORA</button>
+							</div>
+						</div>
+					</div>
+                        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <label class="block font-bold mb-2 text-blue-800 uppercase text-xs">Quórum de Abertura (Mín. 3):</label>
+                            <div class="flex items-center justify-between">
+                                <div><span class="text-4xl font-bold text-blue-900" id="abertura-counter">0</span><span class="text-blue-700 font-semibold ml-2">Presentes</span></div>
+                                <span id="abertura-status" class="quorum-badge quorum-nok">SEM QUÓRUM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="font-bold mb-3 uppercase text-slate-600 border-b pb-1">Chamada Nominal</h3>
+                    <div id="titulares-list" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6"></div>
+					<div id="suplentes-list" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+                    <div class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg no-print">
+                        <h3 class="font-bold text-[10px] uppercase text-slate-500 mb-2">Registro Suplementar (Atrasos / Visitantes)</h3>
+                        <div class="flex gap-2 mb-2">
+                            <select id="sel-sup" class="chip-select p-2 border rounded text-xs flex-1 bg-white font-semibold" onchange="App.toggleOutro('sel-sup','inp-sup')"></select>
+                            <input type="text" id="inp-sup" class="p-2 border rounded text-xs flex-1 hidden" placeholder="Digite nome e cargo...">
+                            <button onclick="App.addChip('suplementar',null,'sel-sup','inp-sup')" class="bg-slate-800 text-white px-3 py-1 rounded font-bold text-xs">Registrar</button>
+                        </div>
+                        <div id="chips-suplementar" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </section>`;
+            },
+
+            buildAtas: function(sec) {
+                const lista = C.atas.map((a,i) => i < C.atas.length-1 ? `<strong>${a}</strong>` : (C.atas.length > 1 ? `e <strong>${a}</strong>` : `<strong>${a}</strong>`)).join(', ');
+                return `
+                <section id="atas" class="section-card">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">${sec('Aprovação de Atas')}</h2>
+                    <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 mb-4">
+                        <p class="text-lg italic leading-relaxed">"Declaro aprovadas as atas ${lista}, ressalvado aos parlamentares o direito de retificá-las, por escrito."</p>
+                    </div>
+                    <label class="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 w-fit">
+                        <input type="checkbox" id="atas-aprovadas" class="w-6 h-6" onchange="App.handleStateChange('atasAprovadas', this.checked)">
+                        <span class="font-bold">Marcar como Aprovadas</span>
+                    </label>
+                </section>`;
+            },
+
+            buildExpediente: function(sec, e) {
+                let html = `<section id="expediente" class="section-card"><h2 class="text-2xl font-bold mb-4 flex items-center gap-2">${sec('Leitura do Expediente')}</h2><div class="space-y-6">`;
+                
+                // 1. Correspondências
+                if (Utils.hasItems(e.correspondencias)) {
+                    html += `<div><h3 class="font-bold text-xs uppercase text-slate-500 mb-2">Correspondências Recebidas</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${e.correspondencias.map(c => `<div class="p-4 border rounded-lg bg-blue-50 border-blue-200"><h4 class="font-bold text-blue-900 text-xs uppercase mb-1">${c.origem}</h4><p class="text-xs italic text-slate-600">${c.descricao}</p></div>`).join('')}
+                        </div></div>`;
+                }
+
+                // 2. Proposições Recebidas
+                if (Utils.hasItems(e.proposicoesRecebidas)) {
+                    html += `<div><h3 class="font-bold text-xs uppercase text-slate-500 mb-2">Proposições Recebidas</h3><div class="space-y-3">
+                        ${e.proposicoesRecebidas.map(p => `<div class="p-4 border rounded-lg bg-white border-l-4 border-amber-500"><p class="font-bold">${p.tipo} ${p.numero} — ${p.proponente}</p><p class="text-xs text-slate-500 italic mb-1">${p.ementa}</p>${p.prazoEmendas ? `<p class="text-[10px] font-bold text-red-600">PRAZO DE ${p.prazoEmendas} DIAS PARA EMENDAS.</p>` : ''}</div>`).join('')}
+                        </div></div>`;
+                }
+
+                // 3. Proposições Distribuídas na Reunião Anterior (NOVO)
+                if (Utils.hasItems(e.proposicoesDistribuidas)) {
+                    html += `<div><h3 class="font-bold text-xs uppercase text-slate-500 mb-2">Proposições Distribuídas na Reunião Anterior</h3><div class="space-y-3">
+                        ${e.proposicoesDistribuidas.map(p => `<div class="p-4 border rounded-lg bg-emerald-50 border-l-4 border-emerald-500">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <p class="font-bold text-emerald-900">${p.tipo} ${p.numero} — ${p.proponente}</p>
+                                    <p class="text-xs text-emerald-700 italic mb-1">${p.ementa}</p>
+                                </div>
+                                <div class="bg-emerald-200 text-emerald-900 px-3 py-1 rounded text-[10px] font-bold uppercase ml-4">
+                                    Relator: ${p.relator}
+                                </div>
+                            </div>
+                        </div>`).join('')}
+                        </div></div>`;
+                }
+
+                return html + `</div></section>`;
+            },
+
+            buildDistribuicao: function(sec) {
+                let html = `<section id="distribuicao" class="section-card"><h2 class="text-2xl font-bold mb-4 flex items-center gap-2">${sec('Distribuição de Proposições')}</h2><div class="space-y-6">`;
+                C.distribuicao.forEach((p, i) => {
+                    html += `<div class="p-4 border rounded-lg bg-white shadow-sm border-l-4 border-indigo-500">
+                        <div class="flex justify-between items-start"><div class="flex-1"><h5 class="font-bold text-indigo-900 text-lg">${p.tipo} ${p.numero}</h5><p class="text-xs text-slate-500 mb-1">Proponente: ${p.proponente}</p><p class="text-xs italic mb-2">${p.ementa}</p>${Utils.hasItems(p.impedidos) ? `<p class="text-[10px] text-red-600 font-bold uppercase">Impedidos (${p.impedidosPartido}): ${p.impedidos.join(', ')}.</p>` : ''}</div><span class="bg-indigo-100 text-indigo-800 text-[10px] px-2 py-1 rounded font-bold ml-4 text-right">SUGESTÃO:<br>${p.sugestao}</span></div>
+                        <select id="dist-${i}" class="relator-dist-select w-full mt-3 p-2 border rounded font-semibold text-sm" onchange="App.handleRelatorDist('dist-${i}', this.value)"><option value="">-- Selecione o Relator --</option></select>
+                    </div>`;
+                });
+                return html + `</div></section>`;
+            },
+
+            buildConhecimento: function(sec) {
+                let html = `<section id="conhecimento" class="section-card"><h2 class="text-2xl font-bold mb-4 flex items-center gap-2">${sec('Conhecimento de Matérias')}</h2><div class="space-y-4">`;
+                if (Utils.hasItems(C.conhecimento)) {
+                    C.conhecimento.forEach(item => {
+                        html += `<div class="p-4 border rounded-lg bg-slate-50"><div class="flex justify-between items-start mb-2"><p class="font-bold text-indigo-900 flex-1">${item.titulo}</p><div class="flex items-center gap-2 ml-4"><input type="checkbox" id="conh-${item.id}" class="w-5 h-5" onchange="App.handleConhecimento('${item.id}', this.checked)"><label for="conh-${item.id}" class="text-xs font-bold">${item.labelCheckbox || 'Registrado?'}</label></div></div><p class="text-xs italic text-slate-600">${item.descricao}</p></div>`;
+                    });
+                }                
+				if (C.audienciaPublica) {
+					// Transforma em array caso o usuário tenha colocado apenas um objeto solto
+					const audiencias = Array.isArray(C.audienciaPublica) ? C.audienciaPublica : [C.audienciaPublica];
+					
+					audiencias.forEach(ap => {
+						html += `<div class="p-4 border rounded-lg bg-orange-50 border-orange-200 mt-3">
+							<div class="flex justify-between items-start mb-2">
+								<span class="text-xs font-bold text-orange-800 uppercase">Audiência Pública Agendada — ${ap.data} — ${ap.hora}</span>
+							</div>
+							<p class="font-bold">${ap.pauta}</p>
+							<p class="text-[10px] font-bold text-orange-700 mt-2">LOCAL: ${ap.local} | PROPONENTE: ${ap.proponente}</p>
+						</div>`;
+					});
+				}
+                return html + `</div></section>`;
+            },
+
+            buildQuorumDelib: function(sec) {
+                return `<section id="quorum-deliberativo" class="section-card"><h2 class="text-2xl font-bold mb-4 flex items-center gap-2">${sec('Quórum para Deliberação')}</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div class="p-6 bg-slate-900 text-white rounded-xl shadow-inner flex flex-col items-center justify-center"><span class="text-5xl font-bold" id="delib-counter">0</span><span class="text-slate-300 font-semibold uppercase text-xs mt-2">Membros Presentes</span></div><div class="flex items-center justify-center"><span id="delib-status" class="text-xl font-bold px-8 py-4 rounded-full border-4 border-red-500 text-red-500 uppercase">⚠️ Sem Quórum</span></div></div><h3 class="font-bold mb-3 uppercase text-slate-600 border-b pb-1">Verificação Nominal (Ordem do Dia)</h3><div id="delib-list-titulares" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4"></div><div id="delib-list-suplentes" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div></section>`;
+            },
+
+            buildOrdemDia: function(sec) {
+                return `<section id="ordem" class="section-card"><div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4"><h2 class="text-2xl font-bold flex items-center gap-2">${sec('Ordem do Dia')}</h2><div id="ordem-lock-warning" class="bg-red-100 text-red-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">🛑 BLOQUEADO: Mínimo 7 parlamentares necessários.</div></div><div id="voting-container" class="space-y-8"></div></section>`;
+            },
+
+            buildGerais: function(sec) {
+                let topicosHTML = '';
+                if (Utils.hasItems(C.assuntosGerais)) {
+                    topicosHTML = `
+                    <div class="mb-6 p-5 bg-white border border-slate-300 shadow-sm rounded-xl">
+                        <h3 class="font-bold text-xs uppercase text-slate-500 mb-3 border-b border-slate-200 pb-2">📌 Tópicos em Pauta para Discussão</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-sm text-slate-800 font-medium">
+                            ${C.assuntosGerais.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                }
+
+                return `<section id="gerais" class="section-card">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">${sec('Assuntos Gerais e Encerramento')}</h2>
+                    ${topicosHTML}
+                    <div class="mb-4 p-4 bg-slate-50 border rounded-lg no-print">
+                        <label class="block font-bold text-[10px] uppercase text-slate-500 mb-2">Registro de Oradores / Manifestações:</label>
+                        <div class="flex gap-2 mb-2">
+                            <select id="sel-ger" class="chip-select p-2 border rounded text-xs flex-1 bg-white font-semibold" onchange="App.toggleOutro('sel-ger','inp-ger')"></select>
+                            <input type="text" id="inp-ger" class="p-2 border rounded text-xs flex-1 hidden" placeholder="Digite nome e cargo...">
+                            <button onclick="App.addChip('orador','gerais','sel-ger','inp-ger')" class="bg-blue-600 text-white px-3 py-1 rounded font-bold text-xs">Adicionar</button>
+                        </div>
+                        <div id="chips-orador-gerais" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                    <div class="p-6 bg-slate-100 rounded-xl border-2 border-slate-300 mt-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                            <div><p class="font-bold text-xs uppercase text-slate-500 mb-1">CONVOCATÓRIA PRÓXIMA:</p><p class="text-lg font-bold">${C.meta.proximaReuniao}</p></div>
+                            <div>
+                                <label class="block font-bold text-xs uppercase text-slate-500 mb-1">Horário de Encerramento:</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="time-encerramento" class="bg-white border rounded p-2 flex-1 text-center font-bold" placeholder="XX h XX min" onchange="App.handleTimeChange('encerramento', this.value)">
+                                    <button onclick="App.captureTime('time-encerramento')" class="bg-slate-900 text-white px-4 py-2 rounded font-bold no-print">AGORA</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>`;
+            },
+
+            renderLists: function() {
+                [{ id: 'titulares-list', list: TITULARES, type: 'abertura' }, { id: 'suplentes-list', list: SUPLENTES, type: 'abertura' }, { id: 'delib-list-titulares', list: TITULARES, type: 'delib' }, { id: 'delib-list-suplentes', list: SUPLENTES, type: 'delib' }].forEach(t => {
+                    const el = document.getElementById(t.id);
+                    if(el) { el.innerHTML = ''; t.list.forEach(dep => el.appendChild(this.createBtn(dep, t.type))); }
+                });
+            },
+
+            createBtn: function(dep, type) {
+			const btn = document.createElement('button'); 
+			const map = type === 'abertura' ? Store.state.presenceAbertura : Store.state.presenceDelib;
+			const isPresent = map[dep.id];
+			const isSuplente = SUPLENTES.some(s => s.id === dep.id);
+
+			// Classes base (tamanho e estrutura flex)
+			let baseClasses = "p-2 rounded-lg text-left transition-all border-2 flex flex-col justify-center h-12 overflow-hidden w-full ";
+
+			// Lógica visual: Titular (Sólido) vs Suplente (Tracejado e mais discreto)
+			if (isSuplente) {
+				baseClasses += isPresent 
+					? "bg-emerald-50 border-emerald-400 text-emerald-900 border-dashed" 
+					: "bg-slate-50 border-slate-300 text-slate-500 border-dashed hover:bg-slate-100";
+			} else {
+				baseClasses += isPresent 
+					? "bg-emerald-500 border-emerald-600 text-white border-solid" 
+					: "bg-white border-slate-200 text-slate-800 border-solid hover:bg-slate-50";
+			}
+
+			btn.className = `presence-btn ${baseClasses}`;
+			
+			// Tipografia ajustada para não quebrar em 3 colunas
+			btn.innerHTML = `
+				<div class="text-[10px] font-bold uppercase truncate w-full leading-tight">${dep.name}</div>
+				<div class="text-[8px] mt-0.5 ${isPresent && !isSuplente ? 'text-emerald-100' : 'opacity-70'}">${dep.party}</div>
+			`;
+			
+			btn.onclick = () => App.handlePresence(dep.id, type, btn);
+			return btn;
+		},
+
+            populateSelects: function() {
+                const sel = document.getElementById('sel-condutor');
+                if(sel) {
+                    sel.innerHTML = '<option value="">-- Selecione --</option>';
+                    [...TITULARES, ...SUPLENTES].sort((a,b)=>a.name.localeCompare(b.name)).forEach(d => {
+                        sel.innerHTML += `<option value="${d.id}" ${Store.state.condutor === d.id || (d.role === 'Presidente' && !Store.state.condutor) ? 'selected' : ''}>${d.name} (${d.party})</option>`;
+                    });
+                    if(!Store.state.condutor) App.handleStateChange('condutor', sel.value);
+                }
+
+                const sorted = [...TITULARES].sort((a,b) => a.name.localeCompare(b.name));
+                document.querySelectorAll('.relator-dist-select').forEach(s => {
+                    sorted.forEach(d => { const opt = document.createElement('option'); opt.value = d.id; opt.textContent = `${d.name} (${d.party})`; s.appendChild(opt); });
+                });
+            },
+
+            updateQuorums: function() {
+                const q = Store.checkQuorums();
+                
+                if(document.getElementById('abertura-counter')) { 
+                    document.getElementById('abertura-counter').textContent = q.abertura.count; 
+                    document.getElementById('abertura-status').textContent = q.abertura.isOk ? 'COM QUÓRUM' : 'SEM QUÓRUM'; 
+                    document.getElementById('abertura-status').className = `quorum-badge ${q.abertura.isOk ? 'quorum-ok' : 'quorum-nok'}`; 
+                }
+                
+                if(document.getElementById('delib-counter')) {
+                    document.getElementById('delib-counter').textContent = q.delib.count;
+                    const status = document.getElementById('delib-status'); 
+                    const cont = document.getElementById('voting-container'); 
+                    const warn = document.getElementById('ordem-lock-warning');
+                    
+                    if (q.delib.isOk) { 
+                        status.textContent = '✅ COM QUÓRUM'; status.className = 'text-xl font-bold px-8 py-4 rounded-full border-4 border-green-500 text-green-600 uppercase'; 
+                        cont.classList.remove('opacity-40', 'pointer-events-none'); warn.classList.add('hidden'); 
+                    } else { 
+                        status.textContent = '⚠️ SEM QUÓRUM'; status.className = 'text-xl font-bold px-8 py-4 rounded-full border-4 border-red-500 text-red-500 uppercase'; 
+                        cont.classList.add('opacity-40', 'pointer-events-none'); warn.classList.remove('hidden'); 
+                    }
+                }
+            },
+
+            // RENDERIZAÇÃO INICIAL COM DOCUMENT FRAGMENT (Performance)
+            renderInitialVotingPanel: function() {
+                const cont = document.getElementById('voting-container'); if(!cont) return;
+                cont.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                PAUTA.forEach((item, idx) => {
+                    const adminStatus = Store.state.statusMateria[item.id] || 'PADRAO';
+                    const fase = Store.state.faseVotacao[item.id] || 'EM_VOTACAO';
+                    const typeBadge = TIPO_BADGES[item.type] || TIPO_BADGES['PROP'];
+                    const isBlockedByAdmin = adminStatus !== 'PADRAO';
+                    const isClosed = fase !== 'EM_VOTACAO';
+                    const lockVotes = isBlockedByAdmin || isClosed;
+                    const isLido = item.relatorioLido || Store.state.relatorioLidoAtual[item.id];
+                    const isReq = item.isReq || (item.type && (item.type.includes('REQ') || item.type === 'RAP'));
+
+                    const permiteVista = !isReq && !['RELSUB', 'REQSUB'].includes(item.type); // Regra do Dicionário
+
+			let btnLidoHTML = '';
+			if(!isReq) {
+				if (item.relatorioLido) btnLidoHTML = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase cursor-default">✓ Relatório Lido</span>`;
+				else if (Store.state.relatorioLidoAtual[item.id]) btnLidoHTML = `<button onclick="App.toggleRelatorioLido('${item.id}')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-colors no-print">✓ Lido (Desfazer)</button>`;
+				else btnLidoHTML = `<button onclick="App.toggleRelatorioLido('${item.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-colors no-print">📖 Marcar como Lido</button>`;
+			}
+
+			let tagsHTML = '';
+			if (item.tags && item.tags.length > 0) {
+				tagsHTML = `<div class="mt-2 flex flex-wrap gap-1">${item.tags.map(t => `<span class="text-[9px] uppercase border border-slate-200 text-slate-400 px-1.5 py-0.5 rounded">${t}</span>`).join('')}</div>`;
+			}
+
+			// NOVO: Lógica condicional para Proponentes/Relator x Local
+			let metaDetailsHTML = '';
+			if (!isReq) {
+				metaDetailsHTML = `
+					<div><span class="font-bold text-slate-500 uppercase">Proponente:</span> ${item.proponente || '---'}</div>
+					<div><span class="font-bold text-slate-500 uppercase">Relator:</span> ${item.relator || '---'} ${item.parecer?`<span class="text-emerald-700">(${item.parecer})</span>`:''}</div>
+				`;
+			} else {
+				metaDetailsHTML = `
+					<div><span class="font-bold text-slate-500 uppercase">Proponente:</span> ${item.proponente || '---'}</div>
+					${item.local ? `<div><span class="font-bold text-slate-500 uppercase">Local:</span> <span class="text-slate-800">${item.local}</span></div>` : ''}
+				`;
+			}
+
+			// NOVO: Lógica para Convidados (RAPs e afins) - Versão Colapsável
+			let convidadosHTML = '';
+			if (Utils.hasItems(item.convidados)) {
+				convidadosHTML = `
+					<div class="mt-3 mb-2 border border-slate-200 rounded-lg overflow-hidden bg-slate-50 no-print">
+						<button onclick="document.getElementById('convidados-${item.id}').classList.toggle('hidden'); document.getElementById('seta-conv-${item.id}').classList.toggle('rotate-180')" class="w-full flex justify-between items-center p-3 text-[10px] font-bold uppercase text-slate-600 hover:bg-slate-200 transition focus:outline-none">
+							<span class="flex items-center gap-2 text-slate-700"><span>👥</span> Convidados / Painelistas (${item.convidados.length})</span>
+							<span id="seta-conv-${item.id}" class="transform transition-transform duration-200">▼</span>
+						</button>
+						<div id="convidados-${item.id}" class="hidden px-4 pb-4">
+							<ul class="list-disc pl-5 text-slate-700 space-y-1 text-xs border-t border-slate-200 pt-3">
+								${item.convidados.map(c => `<li>${c}</li>`).join('')}
+							</ul>
+						</div>
+					</div>
+				`;
+			}
+
+			const block = document.createElement('div'); block.className = "border rounded-xl p-6 bg-white border-slate-300 shadow-sm relative";
+			block.innerHTML = `
+				<div class="flex flex-col md:flex-row justify-between items-start mb-4 border-b pb-4 gap-4">
+					<div class="flex-1">
+						<div class="flex items-center gap-3 mb-2">
+							<span class="border px-2 py-0.5 rounded text-[10px] font-bold uppercase ${typeBadge}">${item.type}</span>
+							<h3 class="text-xl font-bold text-slate-800">${idx+1}) ${item.title}</h3>
+							${btnLidoHTML}
+						</div>
+						
+						<!-- Injeção dos Metadados (Relator ou Local) -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 text-[11px] mb-2">
+							${metaDetailsHTML}
+						</div>
+						
+						<p class="text-sm italic text-slate-500">"${item.ementa}"</p>
+						${tagsHTML}
+						
+						<!-- Injeção dos Convidados -->
+						${convidadosHTML}
+					</div>
+					<div class="relative no-print">
+						<span id="badge-status-${item.id}" class="${isBlockedByAdmin ? STATUS_CORES[adminStatus].bg + ' ' + STATUS_CORES[adminStatus].text : 'hidden'} px-4 py-2 rounded-full text-[10px] font-bold uppercase border">${isBlockedByAdmin ? STATUS_CORES[adminStatus].label : ''}</span>
+						<button onclick="App.toggleGaveta('${item.id}')" class="ml-2 text-xs font-bold text-slate-600 bg-slate-50 border border-slate-300 hover:bg-slate-200 px-3 py-2 rounded-lg transition-colors">⚙️ Outras Ações ▾</button>
+					</div>
+				</div>
+				
+				<div id="gaveta-${item.id}" class="gaveta no-print bg-slate-100 rounded-lg mb-4">
+					<div class="p-4 grid grid-cols-2 md:grid-cols-3 gap-2">
+						<!-- Trava de Vista -->
+						${permiteVista ? `<button onclick="App.acaoAdmin('${item.id}', 'VISTA', this)" class="w-full text-left px-4 py-3 rounded font-bold text-xs bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition-colors">👁️ Pedido de Vista</button>` : ''}
+						
+						<button onclick="App.acaoAdmin('${item.id}', 'SOBRESTADO', this)" class="w-full text-left px-4 py-3 rounded font-bold text-xs bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors">⏳ Relator Ausente</button>
+						<button onclick="App.acaoAdmin('${item.id}', 'RETIRADA', this)" class="w-full text-left px-4 py-3 rounded font-bold text-xs bg-slate-200 text-slate-700 border border-slate-300 hover:bg-slate-300 transition-colors">↩️ Retirada de Pauta</button>
+						<button onclick="App.acaoAdmin('${item.id}', 'REEXAME', this)" class="w-full text-left px-4 py-3 rounded font-bold text-xs bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 transition-colors">🔄 Reexame (Relator)</button>
+						<button onclick="App.acaoAdmin('${item.id}', 'PREJUDICADO', this)" class="w-full text-left px-4 py-3 rounded font-bold text-xs bg-red-50 text-red-800 border border-red-200 hover:bg-red-100 transition-colors">🛑 Prejudicado</button>
+						${(isBlockedByAdmin || isClosed) ? `<button onclick="App.reabrirVotacao('${item.id}')" class="w-full text-left px-4 py-3 rounded font-bold text-xs bg-white text-slate-900 border border-slate-400 hover:bg-slate-200 transition-colors shadow-sm col-span-2 md:col-span-1">🔄 Desfazer e Reabrir</button>` : ''}
+					</div>
+				</div>
+                        
+                        <div id="container-vista-${item.id}" class="${(Utils.hasItems(item.bancadasVista) || adminStatus === 'VISTA') ? '' : 'hidden'} mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg no-print">
+                            <div class="flex flex-col md:flex-row gap-4 items-center">
+                                <div id="input-vista-${item.id}" class="flex-1 ${adminStatus === 'VISTA' ? '' : 'hidden'}">
+                                    <label class="block text-[10px] font-bold uppercase text-indigo-900 mb-2">Pedido de Vista Regimental:</label>
+                                    <select id="vista-dep-${item.id}" onchange="App.recordVista('${item.id}', this.value)" class="w-full p-2 border rounded text-xs bg-white font-semibold outline-none">
+                                        <option value="">-- Selecionar Parlamentar --</option>
+                                        ${[...TITULARES, ...SUPLENTES].sort((a,b)=>a.name.localeCompare(b.name)).map(d => `<option value="${d.id}" ${Store.state.vistasAtuais[item.id]?.depId === d.id ? 'selected' : ''}>${d.name} (${d.party})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div id="historico-vista-${item.id}" class="flex-1 text-xs text-indigo-800 italic ${adminStatus === 'VISTA' ? 'hidden' : ''}">Vistas anteriores registradas.</div>
+                                <div class="w-full md:w-auto">
+                                    <label class="block text-[10px] font-bold uppercase text-indigo-900 mb-2">Histórico de Bancadas:</label>
+                                    <div class="flex flex-wrap gap-1" id="parties-${item.id}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4"><label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Notas da Deliberação:</label><textarea id="notes-${item.id}" onchange="App.updateNotes('${item.id}', this.value)" class="w-full p-2 border rounded text-xs h-16 bg-slate-50 no-print" placeholder="Destaques ou encaminhamentos..."></textarea></div>
+                        <div class="mb-6 bg-slate-50 p-3 rounded-lg border no-print"><label class="block text-[10px] font-bold uppercase text-slate-500 mb-2">Oradores Inscritos:</label><div class="flex gap-2 mb-2"><select id="sel-${item.id}" class="chip-select p-2 border rounded text-[10px] flex-1 bg-white font-semibold" onchange="App.toggleOutro('sel-${item.id}', 'inp-${item.id}')"></select><input type="text" id="inp-${item.id}" class="p-2 border rounded text-[10px] flex-1 hidden" placeholder="Digite nome..."><button onclick="App.addChip('orador', '${item.id}', 'sel-${item.id}', 'inp-${item.id}')" class="bg-blue-600 text-white px-2 py-1 rounded font-bold text-[10px]">Adicionar</button></div><div id="chips-orador-${item.id}" class="flex flex-wrap gap-2 mt-2"></div></div>
+
+                        <div id="vote-controls-${item.id}" class="${lockVotes ? 'opacity-20 pointer-events-none' : ''}"><div class="flex border-b mb-4 no-print"><button onclick="App.switchPane('${item.id}', 0)" class="tab-btn active flex-1 py-1 font-bold text-xs uppercase" id="tab-0-${item.id}">Titulares</button><button onclick="App.switchPane('${item.id}', 1)" class="tab-btn flex-1 py-1 font-bold text-xs uppercase" id="tab-1-${item.id}">Suplentes</button></div><div id="carousel-${item.id}" class="voting-carousel no-print"><div class="voting-pane pr-4"><div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="votes-t-${item.id}"></div></div><div class="voting-pane pl-4"><div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="votes-s-${item.id}"></div></div></div></div>
+                        
+                        <div class="mt-6 pt-4 border-t flex flex-col sm:flex-row justify-between items-center font-bold gap-4">
+                            <div id="result-${item.id}" class="text-md flex-1">Aguardando colheita de votos...</div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex gap-6 bg-slate-50 px-4 py-2 rounded-lg border no-print"><span class="text-green-600">FAV: <span id="f-${item.id}">0</span></span><span class="text-red-600">CON: <span id="c-${item.id}">0</span></span></div>
+                                ${(!lockVotes) ? `<button id="btn-encerrar-${item.id}" onclick="App.iniciarEncerramento('${item.id}')" class="bg-slate-900 text-white px-6 py-2 rounded-lg shadow font-bold hover:bg-slate-800 no-print transition-colors">🛑 Encerrar Votação</button>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div id="painel-encerramento-${item.id}" class="hidden no-print mt-4"></div>
+                        <div id="painel-novo-relator-${item.id}"></div>`;
+
+                    fragment.appendChild(block);
+                                        
+                    // Adia a injeção do innerHTML das linhas para depois de anexar (já que o fragment.getElementById não é padrão, precisa ser feito via querySelector no fragmento)
+                    setTimeout(() => {
+                        TITULARES.forEach(d => {
+							const container = document.getElementById(`votes-t-${item.id}`);
+							if(container) {
+								const v = Store.state.votes[item.id]?.[d.id];
+								container.insertAdjacentHTML('beforeend', `
+								<div class="flex items-center justify-between p-1.5 border-2 border-slate-200 bg-white rounded-lg overflow-hidden gap-1">
+									<div class="flex flex-col min-w-0 flex-1">
+										<span class="truncate text-[10px] font-bold text-slate-800 leading-tight">${d.name}</span>
+										<span class="text-[8px] text-slate-500">${d.party}</span>
+									</div>
+									<div class="flex gap-1 shrink-0">
+										<button onclick="App.handleVote('${item.id}', '${d.id}', 'f')" id="btn-${item.id}-${d.id}-f" class="vote-btn h-7 w-7 text-[10px] vote-f ${v === 'f' ? 'active' : ''}">F</button>
+										<button onclick="App.handleVote('${item.id}', '${d.id}', 'c')" id="btn-${item.id}-${d.id}-c" class="vote-btn h-7 w-7 text-[10px] vote-c ${v === 'c' ? 'active' : ''}">C</button>
+									</div>
+								</div>`);
+							}
+						});
+
+SUPLENTES.forEach(d => {
+    const container = document.getElementById(`votes-s-${item.id}`);
+    if(container) {
+        const v = Store.state.votes[item.id]?.[d.id];
+        // Borda tracejada (border-dashed border-slate-300) e fundo sutil (bg-slate-50) para diferenciar
+        container.insertAdjacentHTML('beforeend', `
+        <div class="flex items-center justify-between p-1.5 border-2 border-dashed border-slate-300 bg-slate-50 rounded-lg overflow-hidden gap-1">
+            <div class="flex flex-col min-w-0 flex-1">
+                <span class="truncate text-[10px] font-bold text-slate-600 leading-tight">${d.name}</span>
+                <span class="text-[8px] text-slate-400">${d.party}</span>
+            </div>
+            <div class="flex gap-1 shrink-0">
+                <button onclick="App.handleVote('${item.id}', '${d.id}', 'f')" id="btn-${item.id}-${d.id}-f" class="vote-btn h-7 w-7 text-[10px] vote-f ${v === 'f' ? 'active' : ''}">F</button>
+                <button onclick="App.handleVote('${item.id}', '${d.id}', 'c')" id="btn-${item.id}-${d.id}-c" class="vote-btn h-7 w-7 text-[10px] vote-c ${v === 'c' ? 'active' : ''}">C</button>
+            </div>
+        </div>`);
+    }
+});
+                        this.updateResText(item.id);
+                        this.renderParties(item);
+                        this.renderNovoRelatorPanel(item.id);
+                    }, 0);
+                });
+
+                cont.appendChild(fragment);                
+            },
+
+            // ATUALIZAÇÃO SELETIVA (Não recria a UI toda)
+            updateVoteUI: function(pid, depId, votesObj) {
+                const type = votesObj[depId];
+                document.getElementById(`btn-${pid}-${depId}-f`)?.classList.toggle('active', type === 'f');
+                document.getElementById(`btn-${pid}-${depId}-c`)?.classList.toggle('active', type === 'c');
+                
+                const f = Object.values(votesObj).filter(v => v === 'f').length;
+                const c = Object.values(votesObj).filter(v => v === 'c').length;
+                
+                if(document.getElementById(`f-${pid}`)) document.getElementById(`f-${pid}`).textContent = f;
+                if(document.getElementById(`c-${pid}`)) document.getElementById(`c-${pid}`).textContent = c;
+            },
+
+            updateResText: function(pid) {
+                const adminStatus = Store.state.statusMateria[pid] || 'PADRAO'; 
+                const fase = Store.state.faseVotacao[pid] || 'EM_VOTACAO'; 
+                const res = document.getElementById(`result-${pid}`); if(!res) return;
+                const vs = Store.state.votes[pid] || {}; 
+                const f = Object.values(vs).filter(v => v === 'f').length; 
+                const c = Object.values(vs).filter(v => v === 'c').length; 
+                const minerva = Store.state.minerva[pid];
+                
+                if(document.getElementById(`f-${pid}`)) document.getElementById(`f-${pid}`).textContent = f + (minerva==='f'?1:0);
+                if(document.getElementById(`c-${pid}`)) document.getElementById(`c-${pid}`).textContent = c + (minerva==='c'?1:0);
+
+                if (adminStatus !== 'PADRAO') { res.innerHTML = `<span class="${STATUS_CORES[adminStatus].text} uppercase font-black">${STATUS_CORES[adminStatus].label}</span>`; return; }
+                let textoMinerva = minerva ? ` <span class="text-[10px] text-slate-500 font-normal ml-2">(Desempate via Voto de Qualidade da Presidência)</span>` : '';
+
+                if (fase === 'EM_VOTACAO') res.innerHTML = `<span class="text-slate-500 italic">Em colheita de votos...</span>`;
+                else if (fase === 'APROVADA') res.innerHTML = `<span class="${FASES_VOTACAO[fase].class} uppercase">APROVADA</span> – Placar: ${f + (minerva==='f'?1:0)} a ${c + (minerva==='c'?1:0)}.${textoMinerva}`;
+                else {
+                    const item = PAUTA.find(p => p.id === pid); const isReq = item.isReq || (item.type && item.type.includes('REQ')); let relText = '';
+                    if (!isReq) { relText = Store.state.novoRelator[pid] ? `<br><span class="text-xs text-slate-600 font-normal">Relatoria redistribuída para o Dep. ${Utils.getDep(Store.state.novoRelator[pid]).name}.</span>` : `<br><span class="text-xs text-orange-500 font-normal">Aguardando designação de novo relator...</span>`; }
+                    res.innerHTML = `<span class="${FASES_VOTACAO[fase].class} uppercase">${fase}</span> – Placar: ${f + (minerva==='f'?1:0)} a ${c + (minerva==='c'?1:0)}.${textoMinerva}${relText}`;
+                }
+            },
+
+            renderParties: function(item) {
+                const partiesGrid = document.getElementById(`parties-${item.id}`);
+                if (partiesGrid) {
+                    partiesGrid.innerHTML = '';
+                    [...new Set([...(item.bancadasVista || []), ...(item.vistasAnteriores || [])])].sort().forEach(b => {
+                        const isAnt = item.vistasAnteriores?.includes(b); const isAct = Store.state.vistasAtuais[item.id]?.party === b;
+                        partiesGrid.innerHTML += `<div class="vista-party-btn ${isAct ? 'active' : ''} ${isAnt ? 'blocked' : ''}" ${isAnt ? 'title="Já solicitou"' : ''}>${b}</div>`;
+                    });
+                }
+            },
+
+            renderNovoRelatorPanel: function(pid) {
+                const item = PAUTA.find(p => p.id === pid);
+                const fase = Store.state.faseVotacao[pid] || 'EM_VOTACAO';
+                const adminStatus = Store.state.statusMateria[pid] || 'PADRAO';
+                const isReq = item.isReq || (item.type && (item.type.includes('REQ') || item.type === 'RAP'));
+                const panel = document.getElementById(`painel-novo-relator-${pid}`);
+                
+                if(!panel) return;
+
+                if ((fase === 'REJEITADA' || fase === 'INCONCLUSIVA') && adminStatus === 'PADRAO' && !isReq && !Store.state.novoRelator[pid]) {
+                    panel.innerHTML = `
+                    <div class="mt-4 p-4 bg-orange-50 border-2 border-orange-200 rounded-lg no-print">
+                        <h4 class="font-bold text-orange-900 uppercase text-xs mb-2">⚠️ Regimento: Designação de Novo Relator</h4>
+                        <p class="text-xs text-orange-800 mb-3">O sistema filtrou os deputados elegíveis baseados no bloco majoritário.</p>
+                        <div class="flex gap-2">
+                            <select id="sel-novo-relator-${pid}" class="w-full p-3 border rounded-lg font-bold text-sm bg-white outline-none">
+                                <option value="">-- Selecione o Novo Relator do Bloco Vencedor --</option>
+                                ${App.getEligibleRelators(pid, item.relator).map(d => `<option value="${d.id}" ${Store.state.novoRelator[pid] === d.id ? 'selected' : ''}>${d.name} (${d.party})</option>`).join('')}
+                            </select>
+                            <button onclick="App.confirmarNovoRelator('${pid}')" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm">Designar</button>
+                        </div>
+                    </div>`;
+                } else {
+                    panel.innerHTML = '';
+                }
+            },
+
+            updateAdminUI: function(pid, acao) {
+                const badge = document.getElementById(`badge-status-${pid}`);
+                const controls = document.getElementById(`vote-controls-${pid}`);
+                const btnEncerrar = document.getElementById(`btn-encerrar-${pid}`);
+                const contVista = document.getElementById(`container-vista-${pid}`);
+                const inputVista = document.getElementById(`input-vista-${pid}`);
+                const histVista = document.getElementById(`historico-vista-${pid}`);
+
+                if (acao !== 'PADRAO') {
+                    if(badge) { badge.className = `${STATUS_CORES[acao].bg} ${STATUS_CORES[acao].text} px-4 py-2 rounded-full text-[10px] font-bold uppercase border`; badge.textContent = STATUS_CORES[acao].label; badge.classList.remove('hidden'); }
+                    if(controls) controls.classList.add('opacity-20', 'pointer-events-none');
+                    if(btnEncerrar) btnEncerrar.classList.add('hidden');
+                } else {
+                    if(badge) badge.classList.add('hidden');
+                    if(controls) controls.classList.remove('opacity-20', 'pointer-events-none');
+                    if(btnEncerrar) btnEncerrar.classList.remove('hidden');
+                }
+
+                if (contVista) {
+                    const item = PAUTA.find(p => p.id === pid);
+                    if(Utils.hasItems(item.bancadasVista) || acao === 'VISTA') {
+                        contVista.classList.remove('hidden');
+                        if (acao === 'VISTA') { inputVista.classList.remove('hidden'); histVista.classList.add('hidden'); } 
+                        else { inputVista.classList.add('hidden'); histVista.classList.remove('hidden'); }
+                    } else {
+                        contVista.classList.add('hidden');
+                    }
+                }
+                
+                // Força re-render completo apenas do botão de reabrir se necessário (mais limpo regerar o bloco todo se mudou a estrutura, mas vamos evitar)
+                this.updateResText(pid);
+                this.renderNovoRelatorPanel(pid);
+            },
+
+            renderAllChips: function() {
+                const getHtml = (arr, type, id) => (arr||[]).map((v, i) => `<span class="inline-flex items-center gap-1 px-2 py-1 ${type==='suplementar'?'bg-slate-200 text-slate-800':'bg-blue-100 text-blue-800'} text-[10px] rounded font-bold">${v} <button onclick="App.removeChip('${type}', '${id}', ${i})" class="text-red-500 hover:text-red-700 ml-1">×</button></span>`).join('');
+                const cSup = document.getElementById('chips-suplementar'); if(cSup) cSup.innerHTML = getHtml(Store.state.presencaSuplementar, 'suplementar', null);
+                const cGer = document.getElementById('chips-orador-gerais'); if(cGer) cGer.innerHTML = getHtml(Store.state.discussions['gerais'], 'orador', 'gerais');
+                PAUTA.forEach(item => { const c = document.getElementById(`chips-orador-${item.id}`); if(c) c.innerHTML = getHtml(Store.state.discussions[item.id], 'orador', item.id); });
+                this.populateChipsSelects();
+            },
+
+            populateChipsSelects: function() {
+                document.querySelectorAll('.chip-select:not(.populated)').forEach(sel => {
+                    let opts = '<option value="">-- Selecione --</option>';
+                    [...TITULARES, ...SUPLENTES].sort((a,b)=>a.name.localeCompare(b.name)).forEach(d => opts += `<option value="${d.id}">${d.name} (${d.party})</option>`);
+                    sel.innerHTML = opts + '<option value="OUTRO">[ Outro / Visitante (Digitar) ]</option>'; sel.classList.add('populated'); sel.value = ""; 
+                });
+            },
+
+            syncUIInputs: function() {
+                if(document.getElementById('time-abertura')) document.getElementById('time-abertura').value = Store.state.times.abertura || '';
+                if(document.getElementById('time-encerramento')) document.getElementById('time-encerramento').value = Store.state.times.encerramento || '';
+                if(document.getElementById('atas-aprovadas')) document.getElementById('atas-aprovadas').checked = Store.state.atasAprovadas || false;
+                (C.conhecimento||[]).forEach(item => { if(document.getElementById(`conh-${item.id}`)) document.getElementById(`conh-${item.id}`).checked = Store.state.conhecimento[item.id] || false; });
+                document.querySelectorAll('.relator-dist-select').forEach(sel => { if(Store.state.relatoresDistribuicao[sel.id]) sel.value = Store.state.relatoresDistribuicao[sel.id]; });
+                PAUTA.forEach(p => { if(document.getElementById(`notes-${p.id}`)) document.getElementById(`notes-${p.id}`).value = Store.state.notes[p.id] || ''; });
+            }
+        };
+
+        // --- LAYER 3: CONTROLLER (Orquestração e Eventos) ---
+        return {
+            init: function() {
+                Store.load(); 
+                View.applyMeta(); 
+                View.renderSections(); 
+                View.renderLists(); 
+                View.populateSelects();
+                View.renderInitialVotingPanel(); 
+				View.renderAllChips();
+                View.updateQuorums(); 
+                View.syncUIInputs(); 
+            },
+
+            handlePresence: function(depId, type, btnElement) {
+				const map = type === 'abertura' ? Store.state.presenceAbertura : Store.state.presenceDelib;
+				map[depId] = !map[depId]; 
+				
+				// Em vez de dar toggle em classes fixas, mandamos re-renderizar a lista. 
+				// Em Vanilla JS local, isso custa 0 milissegundos e garante o estado perfeito.
+				View.renderLists();
+				View.updateQuorums(); 
+				Store.save();
+			},
+
+            handleVote: function(pid, depId, type) {
+                Store.startTracking(pid);
+                if(!Store.state.votes[pid]) Store.state.votes[pid] = {}; 
+                Store.state.votes[pid][depId] = Store.state.votes[pid][depId] === type ? null : type;
+                
+                Store.save();
+                View.updateVoteUI(pid, depId, Store.state.votes[pid]);
+                View.updateResText(pid);
+            },
+
+            handleStateChange: function(key, value) {
+                Store.state[key] = value; Store.save();
+            },
+
+            handleTimeChange: function(type, value) {
+                Store.state.times[type] = Utils.sanitizeHTML(value); Store.save();
+            },
+
+            handleConhecimento: function(id, isChecked) {
+                Store.state.conhecimento[id] = isChecked; Store.save();
+            },
+
+            handleRelatorDist: function(id, value) {
+                Store.state.relatoresDistribuicao[id] = value; Store.save();
+            },
+
+            captureTime: function(id) { 
+                const now = new Date(); const time = `${now.getHours()} h ${now.getMinutes().toString().padStart(2, '0')} min`; 
+                document.getElementById(id).value = time; 
+                Store.state.times[id.replace('time-', '')] = time; 
+                Store.save(); 
+            },
+			
+			setFixedTime: function(id, timeStr) {
+				document.getElementById(id).value = timeStr;
+				Store.state.times[id.replace('time-', '')] = timeStr;
+				Store.save();
+			},
+
+            acaoAdmin: function(pid, acao, btnElement) {
+                Store.startTracking(pid);
+                if(btnElement.dataset.confirm === 'true') {
+                    Store.endTracking(pid);
+                    Store.state.statusMateria[pid] = acao;
+                    if(acao === 'VISTA') { Store.state.votes[pid] = {}; } 
+                    else { delete Store.state.vistasAtuais[pid]; }
+                    Store.save(); 
+                    
+                    // Atualiza a UI para refletir o status
+                    View.updateAdminUI(pid, acao);
+                    
+                    // Como mudou status drasticamente, se for recriar, chamamos o initial
+                    // Mas a melhor forma é apenas forçar renderInitialVotingPanel
+                    // Para simplificar a Fase 1: recriamos o painel (baixo custo se ocorre raramente)
+                    View.renderInitialVotingPanel();
+                } else {
+                    const originalText = btnElement.innerHTML; const originalColor = btnElement.className;
+                    btnElement.dataset.confirm = 'true';
+                    btnElement.innerHTML = '⚠️ Confirmar ' + btnElement.innerText + '?';
+                    btnElement.className = 'w-full text-left px-4 py-3 rounded font-bold text-xs bg-red-600 text-white transition-colors';
+                    setTimeout(() => { btnElement.dataset.confirm = 'false'; btnElement.innerHTML = originalText; btnElement.className = originalColor; }, 3000);
+                }
+            },
+
+            recordVista: function(pid, depId) {
+                if(!depId) { delete Store.state.vistasAtuais[pid]; } 
+                else {
+                    const item = PAUTA.find(p => p.id === pid); const dep = Utils.getDep(depId);
+                    if(item.vistasAnteriores?.includes(dep.party)) { 
+                        View.showToast(`A bancada do ${dep.party} já solicitou vistas.`, 'error'); 
+                        document.getElementById(`vista-dep-${pid}`).value = ""; return; 
+                    }
+                    Store.state.vistasAtuais[pid] = { depId: depId, party: dep.party, name: dep.name };
+                }
+                Store.save(); 
+                View.renderParties(PAUTA.find(p => p.id === pid));
+            },
+
+            reabrirVotacao: function(pid) {
+                Store.state.statusMateria[pid] = 'PADRAO'; Store.state.faseVotacao[pid] = 'EM_VOTACAO';
+                delete Store.state.minerva[pid]; delete Store.state.novoRelator[pid]; 
+                if (Store.state.timeTracking && Store.state.timeTracking[pid]) Store.state.timeTracking[pid].end = null; 
+                Store.save(); View.renderInitialVotingPanel();
+            },
+
+            toggleGaveta: function(pid) { 
+                Store.startTracking(pid);
+                document.getElementById(`gaveta-${pid}`).classList.toggle('open'); 
+            },
+
+            toggleRelatorioLido: function(pid) { 
+                Store.state.relatorioLidoAtual[pid] = !Store.state.relatorioLidoAtual[pid]; 
+                Store.save(); View.renderInitialVotingPanel(); 
+            },
+
+            iniciarEncerramento: function(pid) {
+                const vs = Store.state.votes[pid] || {}; const f = Object.values(vs).filter(v => v === 'f').length; const c = Object.values(vs).filter(v => v === 'c').length;
+                const painel = document.getElementById(`painel-encerramento-${pid}`); painel.classList.remove('hidden');
+
+                if (f === c) {
+                    painel.innerHTML = `
+                        <div class="bg-amber-100 border-2 border-amber-300 p-5 rounded-xl shadow-inner text-center md:text-left">
+                            <p class="font-black text-amber-900 text-lg mb-1">⚠️ Empate Detectado (${f}x${c})</p>
+                            <p class="text-sm text-amber-800 mb-4 font-semibold">Registre o Voto de Qualidade (Minerva) da Presidência:</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button onclick="App.cravarResultado('${pid}', 'f')" class="flex-1 bg-green-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-700 transition">Minerva FAVORÁVEL</button>
+                                <button onclick="App.cravarResultado('${pid}', 'c')" class="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-red-700 transition">Minerva CONTRÁRIO</button>
+                                <button onclick="App.cancelarEncerramento('${pid}')" class="bg-white text-slate-700 border-2 border-slate-300 px-4 py-3 rounded-lg font-bold hover:bg-slate-100 transition">Cancelar</button>
+                            </div></div>`;
+                } else {
+                    painel.innerHTML = `
+                        <div class="bg-yellow-50 border-2 border-yellow-300 p-5 rounded-xl shadow-inner flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div><p class="font-black text-yellow-900 text-lg mb-1">Confirmar Encerramento</p><p class="text-sm text-yellow-800 font-semibold">Placar apurado: ${f} Favoráveis x ${c} Contrários.</p></div>
+                            <div class="flex gap-3 w-full md:w-auto">
+                                <button onclick="App.cravarResultado('${pid}')" class="flex-1 md:flex-none bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 transition">Confirmar</button>
+                                <button onclick="App.cancelarEncerramento('${pid}')" class="flex-1 md:flex-none bg-white text-slate-700 border-2 border-slate-300 px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition">Voltar</button>
+                            </div></div>`;
+                }
+            },
+
+            cancelarEncerramento: function(pid) { document.getElementById(`painel-encerramento-${pid}`).classList.add('hidden'); },
+
+            cravarResultado: function(pid, minervaVote = null) {
+                Store.endTracking(pid);
+                const item = PAUTA.find(p => p.id === pid);
+                const isReq = item.isReq || (item.type && (item.type.includes('REQ') || item.type === 'RAP'));
+                const vs = Store.state.votes[pid] || {}; 
+                let f = Object.values(vs).filter(v => v === 'f').length; let c = Object.values(vs).filter(v => v === 'c').length;
+                
+                if (minervaVote) { Store.state.minerva[pid] = minervaVote; if(minervaVote==='f') f++; if(minervaVote==='c') c++; } 
+                else { delete Store.state.minerva[pid]; }
+                
+                if (f >= C.meta.quorumDelib) { Store.state.faseVotacao[pid] = 'APROVADA'; } 
+                else {
+                    if (isReq) Store.state.faseVotacao[pid] = 'REJEITADA';
+                    else { if (c >= C.meta.quorumDelib) Store.state.faseVotacao[pid] = 'REJEITADA'; else Store.state.faseVotacao[pid] = 'INCONCLUSIVA'; }
+                }
+                Store.save(); 
+                View.updateResText(pid);
+                View.updateAdminUI(pid, 'PADRAO'); // tranca botões
+                document.getElementById(`painel-encerramento-${pid}`).classList.add('hidden');
+            },
+
+            getEligibleRelators: function(pid, currentRelatorName) {
+                const vs = Store.state.votes[pid] || {}; const fIds = Object.keys(vs).filter(k => vs[k] === 'f'); const cIds = Object.keys(vs).filter(k => vs[k] === 'c');
+                const minerva = Store.state.minerva[pid]; const wonBlock = minerva ? minerva : (fIds.length > cIds.length ? 'f' : 'c'); const majorityIds = wonBlock === 'f' ? fIds : cIds;
+                return [...TITULARES, ...SUPLENTES].filter(d => majorityIds.includes(d.id) && !(currentRelatorName && currentRelatorName.includes(d.name))).sort((a,b)=>a.name.localeCompare(b.name));
+            },
+            
+            confirmarNovoRelator: function(pid) {
+                const sel = document.getElementById(`sel-novo-relator-${pid}`);
+                if (sel && sel.value) {
+                    Store.state.novoRelator[pid] = sel.value;
+                    Store.save();
+                    View.updateResText(pid);
+                    View.renderNovoRelatorPanel(pid); // re-render panel to hide it
+                } else {
+                    View.showToast("Por favor, selecione um parlamentar na lista.", "warn");
+                }
+            },
+
+            switchPane: function(pid, pane) { 
+                const car = document.getElementById(`carousel-${pid}`); 
+                car.scrollTo({ left: pane * car.offsetWidth, behavior: 'smooth' }); 
+                document.getElementById(`tab-0-${pid}`).classList.toggle('active', pane === 0); 
+                document.getElementById(`tab-1-${pid}`).classList.toggle('active', pane === 1); 
+            },
+
+            toggleOutro: function(selId, inpId) { 
+                const inp = document.getElementById(inpId); 
+                if(document.getElementById(selId).value === 'OUTRO') { inp.classList.remove('hidden'); inp.focus(); } 
+                else { inp.classList.add('hidden'); } 
+            },
+
+            addChip: function(type, itemId, selId, inpId) {
+                const sel = document.getElementById(selId); const inp = document.getElementById(inpId); 
+                // XSS Sanitization Here
+                let val = sel.value === 'OUTRO' ? Utils.sanitizeHTML(inp.value.trim()) : (sel.value ? (() => { const d = Utils.getDep(sel.value); return `${d.name} (${d.party})`; })() : "");
+                
+                if(!val) return; if(!Store.state.presencaSuplementar) Store.state.presencaSuplementar = [];
+                if(type === 'suplementar') { if(!Store.state.presencaSuplementar.includes(val)) Store.state.presencaSuplementar.push(val); } 
+                else { if(!Store.state.discussions[itemId]) Store.state.discussions[itemId] = []; if(!Store.state.discussions[itemId].includes(val)) Store.state.discussions[itemId].push(val); if(!Store.state.presencaSuplementar.includes(val)) Store.state.presencaSuplementar.push(val); }
+                sel.value = ""; inp.value = ""; inp.classList.add('hidden'); 
+                Store.save(); View.renderAllChips();
+            },
+
+            removeChip: function(type, itemId, index) { 
+                if(type === 'suplementar') Store.state.presencaSuplementar.splice(index, 1); 
+                else Store.state.discussions[itemId].splice(index, 1); 
+                Store.save(); View.renderAllChips(); 
+            },
+
+            updateNotes: function(pid, val) { 
+                Store.state.notes[pid] = Utils.sanitizeHTML(val); 
+                Store.save(); 
+            },
+
+            toggleSidebar: function() { 
+                const s = document.getElementById('sidebar'); s.classList.toggle('collapsed'); 
+                document.getElementById('main-content').style.marginLeft = s.classList.contains('collapsed') ? '60px' : '260px'; 
+            },
+
+            resetData: function() { 
+                if(confirm("ATENÇÃO: Apagar todos os registros da reunião?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } 
+            },
+
+            // Funções de motor (Export / Print mantidas idênticas mas acessando Store.state)
+            exportJSON: function() {
+                // 1. DICIONÁRIO OFICIAL (Vindo do sistema externo)
+                const DEPUTADOS_RS = [
+                    { id: 13, nome: "Adolfo Brito", partido: "PP" }, { id: 2145, nome: "Adriana Lara", partido: "PL" },
+                    { id: 2144, nome: "Adão Pretto Filho", partido: "PT" }, { id: 134, nome: "Aloísio Classmann", partido: "PSD" },
+                    { id: 2139, nome: "Beto Fantinel", partido: "MDB" }, { id: 2146, nome: "Bruna Rodrigues", partido: "PSB" },
+                    { id: 2159, nome: "Capitão Martim", partido: "REPUBLICANOS" }, { id: 2148, nome: "Cláudio Tatsch", partido: "PL" },
+                    { id: 2162, nome: "Delegada Nadine", partido: "PSD" }, { id: 2164, nome: "Delegado Zucco", partido: "REPUBLICANOS" },
+                    { id: 2110, nome: "Dirceu Franciscon", partido: "UNIÃO" }, { id: 2123, nome: "Dr. Thiago Duarte", partido: "PDT" },
+                    { id: 2150, nome: "Edivilson Brum", partido: "MDB" }, { id: 2085, nome: "Eduardo Loureiro", partido: "PDT" },
+                    { id: 2151, nome: "Eliana Bayer", partido: "REPUBLICANOS" }, { id: 2112, nome: "Elizandro Sabino", partido: "REPUBLICANOS" },
+                    { id: 2086, nome: "Elton Weber", partido: "PSD" }, { id: 2045, nome: "Ernani Polo", partido: "PSD" },
+                    { id: 2152, nome: "Felipe Camozzato", partido: "NOVO" }, { id: 65, nome: "Frederico Antunes", partido: "PSD" },
+                    { id: 2128, nome: "Gaúcho da Geral", partido: "PP" }, { id: 28, nome: "Gerson Burmann", partido: "PDT" },
+                    { id: 1505, nome: "Gilmar Sossella", partido: "PDT" }, { id: 2153, nome: "Guilherme Pasin", partido: "PP" },
+                    { id: 2154, nome: "Gustavo Victorino", partido: "REPUBLICANOS" }, { id: 2168, nome: "Halley Lino", partido: "PT" },
+                    { id: 2036, nome: "Jeferson Fernandes", partido: "PT" }, { id: 2155, nome: "Joel Wilhelm", partido: "PP" },
+                    { id: 2103, nome: "Juvir Costella", partido: "MDB" }, { id: 2147, nome: "Kaká D'Ávila", partido: "PODE" },
+                    { id: 1511, nome: "Kelly Moraes", partido: "PL" }, { id: 2156, nome: "Laura Sito", partido: "PT" },
+                    { id: 2157, nome: "Leonel Radde", partido: "PT" }, { id: 93, nome: "Luciana Genro", partido: "PSOL" },
+                    { id: 2158, nome: "Luciano Silveira", partido: "MDB" }, { id: 2130, nome: "Luiz Marenco", partido: "PDT" },
+                    { id: 2142, nome: "Marcus Vinícius", partido: "PP" }, { id: 2160, nome: "Matheus Gomes", partido: "PSOL" },
+                    { id: 2161, nome: "Miguel Rossetto", partido: "PT" }, { id: 2125, nome: "Neri, o Carteiro", partido: "PSD" },
+                    { id: 2111, nome: "Paparico Bacchi", partido: "PL" }, { id: 2137, nome: "Patrícia Alba", partido: "MDB" },
+                    { id: 1509, nome: "Pedro Pereira", partido: "PSD" }, { id: 194, nome: "Pepe Vargas", partido: "PT" },
+                    { id: 2149, nome: "Prof Claudio Branchieri", partido: "PL" }, { id: 2163, nome: "Professor Bonatto", partido: "PSD" },
+                    { id: 2136, nome: "Rodrigo Lorenzoni", partido: "PP" }, { id: 2034, nome: "Ronaldo Santini", partido: "PODE" },
+                    { id: 58, nome: "Sergio Peres", partido: "REPUBLICANOS" }, { id: 1504, nome: "Silvana Covatti", partido: "PP" },
+                    { id: 2122, nome: "Sofia Cavedon", partido: "PT" }, { id: 1500, nome: "Stela Farias", partido: "PT" },
+                    { id: 2032, nome: "Valdeci Oliveira", partido: "PT" }, { id: 2100, nome: "Vilmar Zanchin", partido: "MDB" },
+                    { id: 2095, nome: "Zé Nunes", partido: "PT" }
+                ];
+
+                // HELPER: Busca o ID real do deputado. Se não achar (visitante), retorna null.
+                const getOfficialId = (nomeBusca) => {
+                    if (!nomeBusca) return null;
+                    const cleanName = nomeBusca.split('(')[0].trim().toLowerCase();
+                    const dep = DEPUTADOS_RS.find(d => d.nome.toLowerCase() === cleanName || cleanName.includes(d.nome.toLowerCase()));
+                    return dep ? dep.id : null;
+                };
+
+                const getProcessedPresences = () => {
+                    const presIds = [...new Set([...Object.keys(Store.state.presenceAbertura).filter(k=>Store.state.presenceAbertura[k]), ...Object.keys(Store.state.presenceDelib).filter(k=>Store.state.presenceDelib[k])])];
+                    const allTits = TITULARES.map(d => `${d.name} (${d.party})`); const allSups = SUPLENTES.map(d => `${d.name} (${d.party})`);
+                    const supStrings = Store.state.presencaSuplementar || [];
+                    
+                    // Agora montamos objetos enriquecidos com ID oficial
+                    const enrich = (nomePartidoStr) => {
+                        const nome = nomePartidoStr.split('(')[0].trim();
+                        return { nome: nomePartidoStr, id_assembleia: getOfficialId(nome) };
+                    };
+
+                    return {
+                        tits: [...new Set([...TITULARES.filter(d => presIds.includes(d.id)).map(d => `${d.name} (${d.party})`), ...supStrings.filter(s => allTits.includes(s))])].map(enrich),
+                        sups: [...new Set([...SUPLENTES.filter(d => presIds.includes(d.id)).map(d => `${d.name} (${d.party})`), ...supStrings.filter(s => allSups.includes(s))])].map(enrich),
+                        vis: supStrings.filter(s => !allTits.includes(s) && !allSups.includes(s)).map(v => ({ nome: v, id_assembleia: null }))
+                    };
+                };
+
+                const pres = getProcessedPresences();
+                const dist = (C.distribuicao||[]).map((p, i) => {
+                    const selVal = Store.state.relatoresDistribuicao[`dist-${i}`];
+                    if(!selVal) return null; const dep = Utils.getDep(selVal);
+                    return { proposicao_tipo: p.tipo, proposicao_numero: p.numero, proponente: p.proponente, relator_escolhido: { id_assembleia: getOfficialId(dep.name), nome: dep.name, partido: dep.party } };
+                }).filter(Boolean);
+
+                const presDel = Object.values(Store.state.presenceDelib).filter(Boolean).length;
+                const quorumOrdemDia = Store.checkQuorums().delib.isOk;
+
+                const ordemDoDia = PAUTA.map(item => {
+                    const adminStatus = Store.state.statusMateria[item.id] || 'PADRAO';
+                    const fase = Store.state.faseVotacao[item.id] || 'EM_VOTACAO';
+                    
+                    const vs = Store.state.votes[item.id] || {};
+                    const favs = Object.keys(vs).filter(k => vs[k] === 'f').map(k => { const d = Utils.getDep(k); return {id_assembleia: getOfficialId(d.name), nome: d.name, partido: d.party}; });
+                    const cons = Object.keys(vs).filter(k => vs[k] === 'c').map(k => { const d = Utils.getDep(k); return {id_assembleia: getOfficialId(d.name), nome: d.name, partido: d.party}; });
+                    const minerva = Store.state.minerva[item.id];
+                    const relatorNovo = Store.state.novoRelator[item.id] ? Utils.getDep(Store.state.novoRelator[item.id]) : null;
+
+                    let tempoStr = null;
+                    if (Store.state.timeTracking && Store.state.timeTracking[item.id] && Store.state.timeTracking[item.id].end && Store.state.timeTracking[item.id].start) {
+                        const diffMs = Store.state.timeTracking[item.id].end - Store.state.timeTracking[item.id].start;
+                        const diffSecs = Math.floor(diffMs / 1000); const mins = Math.floor(diffSecs / 60); const secs = diffSecs % 60;
+                        tempoStr = `${mins}m ${secs}s`;
+                    }
+
+                    return { 
+                        id: item.id, proposicao: item.title, tipo: item.type, ementa: item.ementa, tags_assunto: item.tags || [],
+                        relator_original: item.relator ? { nome: item.relator, id_assembleia: getOfficialId(item.relator) } : null,
+                        parecer: item.parecer || null,
+                        relatorio_lido: item.relatorioLido || Store.state.relatorioLidoAtual[item.id] || false,
+                        status_regimental: adminStatus, fase_votacao: fase === 'EM_VOTACAO' ? 'NAO_DELIBERADA' : fase,
+                        placar_votos: { favoraveis: favs, contrarios: cons },
+                        voto_de_qualidade_presidencia: minerva ? { desempate: true, direcao: minerva === 'f' ? 'favoravel' : 'contrario' } : { desempate: false },
+                        relator_designado: relatorNovo ? { id_assembleia: getOfficialId(relatorNovo.name), nome: relatorNovo.name, partido: relatorNovo.party } : null,
+                        autor_vista: adminStatus === 'VISTA' && Store.state.vistasAtuais[item.id] ? { id_assembleia: getOfficialId(Store.state.vistasAtuais[item.id].name), nome: Store.state.vistasAtuais[item.id].name, partido: Store.state.vistasAtuais[item.id].party } : null,
+                        notas_reuniao: Store.state.notes[item.id] || null,
+                        manifestacoes: (Store.state.discussions[item.id] || []).filter(s => s.trim() !== "").map(m => ({ nome: m, id_assembleia: getOfficialId(m) })),
+                        tempo_de_deliberacao: tempoStr
+                    };
+                });
+
+                const condutorObj = Store.state.condutor ? Utils.getDep(Store.state.condutor) : null;
+
+                const finalData = {
+                    meta: { 
+                        comissao: C.meta.comissao, data: C.meta.data, abertura: Store.state.times.abertura, encerramento: Store.state.times.encerramento,
+                        condutor_dos_trabalhos: condutorObj ? { id_assembleia: getOfficialId(condutorObj.name), nome: condutorObj.name, partido: condutorObj.party } : null
+                    },
+                    presencas_consolidadas: { titulares: pres.tits, suplentes: pres.sups, visitantes: pres.vis },
+                    aprovacao_atas: { declaradas_aprovadas: Store.state.atasAprovadas, lista_atas: C.atas || [] },
+                    distribuicao_relatorias: dist,
+                    conhecimento: (C.conhecimento||[]).reduce((acc, item) => { acc[item.titulo] = Store.state.conhecimento[item.id] || false; return acc; }, {}),
+                    quorum_ordem_dia: quorumOrdemDia, ordem_do_dia: ordemDoDia,
+                    assuntos_gerais: {
+                        itens: (C.assuntosGerais || []).map(txt => ({ assunto: txt, solicitante: null })),
+                        manifestacoes_gerais: (Store.state.discussions['gerais'] || []).filter(s => s.trim() !== "").map(m => ({ 
+                            deputado: m, 
+                            id_assembleia: getOfficialId(m),
+                            texto: null 
+                        }))
+                    }
+                };
+
+                const b = new Blob([JSON.stringify(finalData, null, 2)], {type: "application/json"});
+                const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `ata_${C.meta.sigla.toLowerCase()}_${C.meta.data.replace(/\//g,'')}_final.json`; a.click();
+            },
+			
+			gerarAtaDOCX: async function() {
+                View.showToast("⏳ Gerando Ata DOCX...", "info");
+
+                try {
+                    const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+
+                    // --- HELPERS DE TEXTO E FORMATAÇÃO ---
+                    const FONT = 'Times New Roman';
+                    const SIZE = 24; // 12pt
+                    const tr = (txt) => new TextRun({ text: String(txt ?? ''), font: FONT, size: SIZE });
+                    const trB = (txt) => new TextRun({ text: String(txt ?? ''), font: FONT, size: SIZE, bold: true });
+                    const trI = (txt) => new TextRun({ text: String(txt ?? ''), font: FONT, size: SIZE, italics: true });
+                    const pJust = (runs) => new Paragraph({ alignment: AlignmentType.JUSTIFIED, children: runs, spacing: { after: 200 } });
+                    const pCenter = (runs) => new Paragraph({ alignment: AlignmentType.CENTER, children: runs, spacing: { after: 200 } });
+
+                    // Converte números para extenso (0 a 59)
+                    function numWord(n) {
+                        if (n < 0 || n > 59) return String(n);
+                        const unidades = ['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove'];
+                        const especiais = ['dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+                        const dezenas = ['','','vinte','trinta','quarenta','cinquenta'];
+                        if (n < 10) return unidades[n];
+                        if (n < 20) return especiais[n - 10];
+                        const d = Math.floor(n / 10); const u = n % 10;
+                        return dezenas[d] + (u > 0 ? " e " + unidades[u] : "");
+                    }
+
+                    // Formata Data por Extenso
+                    function dataPorExtenso(dataTexto) {
+                        const match = dataTexto.match(/(\d{1,2})\s+de\s+([A-Za-zççoó]+)\s+de\s+(\d{4})/i);
+                        if (!match) return dataTexto;
+                        const dia = parseInt(match[1]);
+                        const mes = match[2].toLowerCase();
+                        const ano = match[3];
+                        const anosExt = {"2024": "dois mil e vinte e quatro", "2025": "dois mil e vinte e cinco", "2026": "dois mil e vinte e seis", "2027": "dois mil e vinte e sete"};
+                        return `${dia === 1 ? "primeiro dia" : numWord(dia) + " dias"} do mês de ${mes} do ano de ${anosExt[ano] || ano}`;
+                    }
+
+                    // Formata Hora por Extenso
+                    function horaPorExtenso(horaStr) {
+                        if (!horaStr) return "horário regimental";
+                        const match = horaStr.match(/(\d{1,2})\s*h\s*(\d{1,2})/i);
+                        if (!match) return horaStr;
+                        const h = parseInt(match[1]); const m = parseInt(match[2]);
+                        const hExt = h === 1 ? "uma hora" : (h === 2 ? "duas horas" : numWord(h) + " horas");
+                        return `${hExt}${m > 0 ? (m === 30 ? " e meia" : ` e ${numWord(m)} minutos`) : ""}`;
+                    }
+
+                    // Prefixo Orador
+                    function formatOrador(oradorText) {
+                        if (oradorText.toLowerCase().includes('deputad')) return oradorText;
+                        const nomeLimpo = oradorText.split('(')[0].trim();
+                        const isFem = /^(Stela|Delegada|Patrícia|Patric|Kelly|Sofia|Laura|Luciana|Janinha|Ana\b|Maria\b|Fernanda|Juliana|Alice|Claudia|Cláudia|Silvana|Franciane|Nadine)/i.test(nomeLimpo);
+                        return (isFem ? "a Deputada " : "o Deputado ") + oradorText;
+                    }
+
+                    // Tradutor de Tipos de Proposição
+                    function tipoPorExtenso(tipoAbv) {
+                        const mapa = {
+                            'PL': 'Projeto de Lei', 'PLC': 'Projeto de Lei Complementar', 'PEC': 'Proposta de Emenda à Constituição',
+                            'RAP': 'Requerimento de Audiência Pública', 'REQ': 'Requerimento', 'VP': 'Veto Parcial', 'PROP': 'Proposição'
+                        };
+                        return mapa[tipoAbv] || tipoAbv;
+                    }
+
+                    // Junta nomes com "e" no final
+                    function juntaNomes(arr) {
+                        if(arr.length === 0) return '';
+                        if(arr.length === 1) return arr[0];
+                        return arr.slice(0, -1).join(', ') + ' e ' + arr[arr.length - 1];
+                    }
+
+                    const filhos = [];
+
+                    // --- 1. CABEÇALHO ---
+                    filhos.push(pCenter([trB("ATA"), trB(`\n${C.meta.tipo} ${C.meta.data}`)]));
+
+                    // --- 2. ABERTURA E PRESENÇAS (Ordem Alfabética) ---
+                    const presIds = [...new Set([...Object.keys(Store.state.presenceAbertura).filter(k=>Store.state.presenceAbertura[k]), ...Object.keys(Store.state.presenceDelib).filter(k=>Store.state.presenceDelib[k])])];
+                    const condutorId = Store.state.condutor || TITULARES[0].id;
+                    const condutorDep = Utils.getDep(condutorId);
+                    const condutorNameStr = `${condutorDep.name} (${condutorDep.party})`;
+
+                    const listTits = TITULARES.filter(d => presIds.includes(d.id) && d.id !== condutorId).map(d => `${d.name} (${d.party})`).sort((a,b) => a.localeCompare(b));
+                    const listSups = SUPLENTES.filter(d => presIds.includes(d.id) && d.id !== condutorId).map(d => `${d.name} (${d.party})`).sort((a,b) => a.localeCompare(b));
+                    const listVis = (Store.state.presencaSuplementar || []).filter(v => !listTits.includes(v) && !listSups.includes(v) && v !== condutorNameStr).sort((a,b) => a.localeCompare(b));
+
+                    let txtPresencas = "";
+                    if (listTits.length > 0) txtPresencas += juntaNomes(listTits) + ", membros titulares";
+                    if (listSups.length > 0) txtPresencas += (txtPresencas ? ", e dos Deputados " : "") + juntaNomes(listSups) + ", membros suplentes";
+                    if (listVis.length > 0) txtPresencas += (txtPresencas ? ", além das presenças de " : "") + juntaNomes(listVis);
+                    if (txtPresencas) txtPresencas = " Registradas as presenças dos Deputados " + txtPresencas + ".";
+
+                    filhos.push(pJust([tr(`Aos ${dataPorExtenso(C.meta.dataExtenso)}, às ${horaPorExtenso(Store.state.times.abertura)}, na ${C.meta.local}, reuniu-se ordinariamente em formato híbrido a ${C.meta.comissao}, conduzida pelo presidente, Deputado ${condutorDep.name} (${condutorDep.party}).${txtPresencas}`)]));
+
+                    // --- 3. ATAS ---
+                    if (Store.state.atasAprovadas && C.atas && C.atas.length > 0) {
+                        const isPlural = C.atas.length > 1;
+                        filhos.push(pJust([tr(`O presidente declarou ${isPlural ? "aprovadas as atas" : "aprovada a ata"} ${C.atas.join(' e ')}, ressalvado aos parlamentares o direito de retificá-la${isPlural ? 's' : ''}, por escrito.`)]));
+                    }
+
+                    // --- 4. EXPEDIENTE (Inteligente e Flexível com Correspondências) ---
+                    const e = C.expediente || {};
+                    let corresp = e.correspondencias || [];
+                    let rec = e.proposicoesRecebidas || [];
+                    let dist = e.proposicoesDistribuidas || [];
+
+                    if (corresp.length > 0 || rec.length > 0 || dist.length > 0) {
+                        let expRuns = [tr("Na leitura do expediente, ")];
+                        let jaFalou = false; // Flag para criar transições corretas
+
+                        // 4.1 Correspondências
+                        if (corresp.length > 0) {
+                            if (corresp.length === 1) {
+                                expRuns.push(tr(`o presidente comunicou o recebimento de correspondência da ${corresp[0].origem}, com ${corresp[0].descricao} `));
+                            } else {
+                                expRuns.push(tr(`o presidente comunicou o recebimento das seguintes correspondências: `));
+                                corresp.forEach((c, i) => {
+                                    expRuns.push(tr(`da ${c.origem}, com ${c.descricao}`));
+                                    expRuns.push(tr(i === corresp.length - 1 ? ". " : "; "));
+                                });
+                            }
+                            jaFalou = true;
+                        }
+
+                        // 4.2 Proposições Recebidas
+                        if (rec.length > 0) {
+                            if (jaFalou) expRuns.push(tr(`Também comunicou o recebimento de ${rec.length > 1 ? "proposições" : "proposição"}: `));
+                            else expRuns.push(tr(`o presidente comunicou o recebimento de ${rec.length > 1 ? "proposições" : "proposição"}: `));
+                            
+                            rec.forEach(p => { expRuns.push(tr(`o ${tipoPorExtenso(p.tipo)} n.º ${p.numero}, proponente ${p.proponente}, com ementa "`), trI(p.ementa), tr(`"; `)); });
+                            expRuns.push(tr("Informou o prazo para recebimento de emendas, conforme Regimento Interno. "));
+                            jaFalou = true;
+                        }
+
+                        // 4.3 Proposições Distribuídas
+                        if (dist.length > 0) {
+                            if (jaFalou) expRuns.push(tr("Ainda informou as proposições distribuídas na reunião anterior: "));
+                            else expRuns.push(tr("o presidente informou as proposições distribuídas na reunião anterior: "));
+                            
+                            dist.forEach(p => { expRuns.push(tr(`o ${tipoPorExtenso(p.tipo)} n.º ${p.numero}, proponente ${p.proponente}, relator ${p.relator}; `)); });
+                        }
+                        
+                        filhos.push(pJust(expRuns));
+                    }
+
+                    // --- 5. DISTRIBUIÇÃO NOVA ---
+                    let distrRealizadas = C.distribuicao.filter((p, i) => Store.state.relatoresDistribuicao[`dist-${i}`]);
+                    if (distrRealizadas.length > 0) {
+                        let distRuns = [tr("Ainda mencionou matéria a ser distribuída para relatoria, nos termos regimentais. ")];
+                        distrRealizadas.forEach((p, i) => {
+                            let depRel = Utils.getDep(Store.state.relatoresDistribuicao[`dist-${i}`]);
+                            distRuns.push(tr(`O ${tipoPorExtenso(p.tipo)} n.º ${p.numero}, proponente ${p.proponente}, com ementa "`), trI(p.ementa), tr(`". A relatoria foi distribuída para o Deputado ${depRel.name}. `));
+                        });
+                        filhos.push(pJust(distRuns));
+                    }
+
+                    // --- 6. CONHECIMENTO E AUDIÊNCIAS ---
+                    if (Utils.hasItems(C.conhecimento) || Utils.hasItems(C.audienciaPublica)) {
+                        let conRuns = [tr("No período de conhecimento de matérias de alçada da Comissão, ")];
+                        
+                        if (Utils.hasItems(C.conhecimento)) {
+                            conRuns.push(tr(`o presidente informou que `));
+                            const stringsConhecimento = C.conhecimento.map(k => `${k.titulo} (${k.descricao})`);
+                            conRuns.push(tr(stringsConhecimento.join('; ') + '. '));
+                        } else {
+                            conRuns.push(tr(`não houve matérias informadas. `));
+                        }
+                        
+                        if (Utils.hasItems(C.audienciaPublica)) {
+                            conRuns.push(tr("Por fim, o presidente elencou a(s) audiência(s) pública(s) agendada(s)."));
+                        }
+                        filhos.push(pJust(conRuns));
+                    }
+
+                    // --- 7. ORDEM DO DIA ---
+                    const delibIds = Object.keys(Store.state.presenceDelib).filter(k => Store.state.presenceDelib[k]);
+                    const quorumOrdemDia = delibIds.length >= C.meta.quorumDelib;
+                    
+                    if (quorumOrdemDia && PAUTA.length > 0) {
+                        const delibNames = delibIds.map(id => Utils.getDep(id).name).sort((a,b) => a.localeCompare(b));
+                        
+                        filhos.push(pJust([tr(`Com o quórum regimental, presentes os deputados ${juntaNomes(delibNames)}, o presidente iniciou a Ordem do Dia.`)]));
+
+                        PAUTA.forEach((item, index) => {
+                            let transicao = index === 0 ? "Primeiro item da pauta, o " : (index === PAUTA.length - 1 ? "Último item da pauta, o " : "Próximo item da pauta, o ");
+
+                            const matchNum = item.title.match(/(\d+.*)/);
+                            const numeroLimpo = matchNum ? matchNum[0] : item.title;
+
+                            const pRuns = [
+                                tr(transicao), trB(`${tipoPorExtenso(item.type)} n.º ${numeroLimpo}`),
+                                tr(`, proponente ${item.proponente}, com ementa "`), trI(item.ementa), tr(`". `)
+                            ];
+
+                            const status = Store.state.statusMateria[item.id] || 'PADRAO';
+                            
+                            if (status === 'RETIRADA') { pRuns.push(tr("A matéria foi retirada de pauta por solicitação do proponente.")); } 
+                            else if (status === 'SOBRESTADO') { pRuns.push(tr(`Ausente o relator, ${item.relator}, a apreciação da matéria foi postergada para próxima reunião.`)); } 
+                            else if (status === 'REEXAME') { pRuns.push(tr(`Com a palavra, ${item.relator}, relator, solicitou o reexame da matéria.`)); } 
+                            else {
+                                
+                                const isReq = item.isReq || (item.type && (item.type.includes('REQ') || item.type === 'RAP')) || !item.relator;
+                                
+                                if (isReq) {
+                                    pRuns.push(tr(`O presidente anunciou a matéria e abriu a palavra para discussão. `));
+                                } else if (item.relatorioLido === true) {
+                                    pRuns.push(tr(`O relatório, com parecer ${item.parecer ? item.parecer.toLowerCase() : 'favorável'} do relator, ${item.relator}, foi lido em reunião anterior. O presidente abriu a palavra para discussão. `));
+                                } else {
+                                    pRuns.push(tr(`O presidente passou a palavra para o relator, ${item.relator}, para leitura do relatório, com parecer ${item.parecer ? item.parecer.toLowerCase() : 'favorável'}. Lido o relatório, o presidente abriu a palavra para discussão. `));
+                                }
+                                
+                                const oradores = (Store.state.discussions[item.id] || []).filter(s => s.trim() !== "");
+                                if (oradores.length > 0) {
+                                    oradores.forEach(orador => { pRuns.push(trB(`Com a palavra, ${formatOrador(orador)} [...] `)); });
+                                }
+
+                                if (status === 'VISTA') {
+                                    let autorVista = Store.state.vistasAtuais[item.id] ? Store.state.vistasAtuais[item.id].name : "parlamentar";
+                                    pRuns.push(trB(`Com a palavra, o Deputado ${autorVista} solicitou vista.`));
+                                } else {
+                                    const vs = Store.state.votes[item.id] || {};
+                                    const favs = Object.keys(vs).filter(k => vs[k] === 'f').map(k => Utils.getDep(k).name).sort((a,b) => a.localeCompare(b));
+                                    const cons = Object.keys(vs).filter(k => vs[k] === 'c').map(k => Utils.getDep(k).name).sort((a,b) => a.localeCompare(b));
+                                    const fase = Store.state.faseVotacao[item.id] || 'EM_VOTACAO';
+
+                                    if (fase === 'APROVADA') {
+                                        pRuns.push(tr(`Sem outras manifestações, o presidente colocou em votação a matéria, a qual foi aprovada com ${favs.length} votos favoráveis, dos deputados ${juntaNomes(favs)}, e ${cons.length === 0 ? 'nenhum voto contrário' : `${cons.length} votos contrários`}.`));
+                                    } else if (fase === 'REJEITADA') {
+                                        pRuns.push(tr(`Sem outras manifestações, o presidente colocou em votação a matéria, a qual foi rejeitada com ${cons.length} votos contrários, dos deputados ${juntaNomes(cons)}, e ${favs.length} votos favoráveis.`));
+                                        if(Store.state.novoRelator[item.id]) { pRuns.push(tr(` A relatoria foi redistribuída para o Deputado ${Utils.getDep(Store.state.novoRelator[item.id]).name}.`)); }
+                                    } else {
+                                        pRuns.push(tr(`A matéria não obteve deliberação conclusiva nesta sessão.`));
+                                    }
+                                }
+                            }
+                            filhos.push(pJust(pRuns));
+                        });
+                    }
+
+                    // --- 8. ASSUNTOS GERAIS E ENCERRAMENTO ---
+                    const agRuns = [tr("Não havendo mais matérias, o presidente encerrou a Ordem do Dia, passando a Assuntos Gerais. ")];
+                    const oradoresGerais = (Store.state.discussions['gerais'] || []).filter(s => s.trim() !== "");
+                    
+                    if(oradoresGerais.length > 0) {
+                        oradoresGerais.forEach(orador => { agRuns.push(trB(`Com a palavra, ${formatOrador(orador)} [...] `)); });
+                    }
+                    
+                    agRuns.push(tr(`Não havendo mais nada a tratar, o presidente convocou os parlamentares para a próxima reunião e encerrou os trabalhos às ${horaPorExtenso(Store.state.times.encerramento)}. O inteiro teor foi gravado, passando o arquivo de mídia a integrar o acervo documental desta reunião. E, para constar, eu lavrei a presente ata que, após lida e aprovada, será assinada pelo Presidente da Comissão, e por mim, Secretário da Comissão.`));
+                    filhos.push(pJust(agRuns));
+
+                    // --- 9. ASSINATURAS ---
+                    filhos.push(new Paragraph({ children: [tr("")], spacing: { before: 800 } })); // Quebra
+                    filhos.push(pCenter([tr("_________________________________________________")]));
+                    filhos.push(pCenter([trB(`Deputado ${condutorDep.name}`)]));
+                    filhos.push(pCenter([tr("Presidente da Comissão")]));
+                    
+                    filhos.push(new Paragraph({ children: [tr("")], spacing: { before: 800 } }));
+                    filhos.push(pCenter([tr("_________________________________________________")]));
+                    filhos.push(pCenter([tr("Secretário da Comissão")]));
+
+                    // --- MONTAGEM FINAL DO ARQUIVO ---
+                    const doc = new Document({ sections: [{ properties: {}, children: filhos }] });
+
+                    const blob = await Packer.toBlob(doc);
+                    saveAs(blob, `Rascunho_Ata_${C.meta.sigla}_${C.meta.data.replace(/\//g,'')}.docx`);
+                    View.showToast(`✅ Ata DOCX gerada com sucesso!`, "info");
+
+                } catch(err) {
+                    console.error("Erro ao gerar DOCX:", err);
+                    View.showToast("❌ Erro ao gerar documento Word.", "error");
+                }
+            },
+
+            printReport: function() {
+                View.showToast("Gerando relatório de impressão...", "info");
+                const layout = document.getElementById('print-layout'); if(!layout) return;
+
+                // Recriamos a função de presenças aqui para o print
+                const getProcessedPresences = () => {
+                    const presIds = [...new Set([...Object.keys(Store.state.presenceAbertura).filter(k=>Store.state.presenceAbertura[k]), ...Object.keys(Store.state.presenceDelib).filter(k=>Store.state.presenceDelib[k])])];
+                    const allTits = TITULARES.map(d => `${d.name} (${d.party})`); const allSups = SUPLENTES.map(d => `${d.name} (${d.party})`);
+                    const supStrings = Store.state.presencaSuplementar || [];
+                    return {
+                        tits: [...new Set([...TITULARES.filter(d => presIds.includes(d.id)).map(d => `${d.name} (${d.party})`), ...supStrings.filter(s => allTits.includes(s))])],
+                        sups: [...new Set([...SUPLENTES.filter(d => presIds.includes(d.id)).map(d => `${d.name} (${d.party})`), ...supStrings.filter(s => allSups.includes(s))])],
+                        vis: supStrings.filter(s => !allTits.includes(s) && !allSups.includes(s))
+                    };
+                };
+
+                const pres = getProcessedPresences();
+                let secNum = 1;
+
+                let html = `<div class="mb-6 border-b-2 border-black pb-4"><h1 class="text-2xl font-bold uppercase text-center mb-2">${C.meta.comissao}</h1><p class="text-center font-bold">Ata Resumida — ${C.meta.tipo} — ${C.meta.dataExtenso}</p><p class="text-center text-sm">Horário: ${Store.state.times.abertura || '---'} às ${Store.state.times.encerramento || '---'}</p></div>`;
+                
+                const condutorId = Store.state.condutor || ''; const condutorObj = condutorId ? Utils.getDep(condutorId) : null;
+                if(condutorObj) { html += `<div class="mb-4 text-sm"><strong>Presidência dos Trabalhos:</strong> Dep. ${condutorObj.name} (${condutorObj.party}).</div>`; }
+                
+                html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Registro de Presenças</h2><p class="text-sm text-justify mb-1"><strong>Membros Titulares:</strong> ${pres.tits.length > 0 ? pres.tits.join(', ') + '.' : 'Nenhum registro.'}</p>${pres.sups.length > 0 ? `<p class="text-sm text-justify"><strong>Membros Suplentes:</strong> ${pres.sups.join(', ')}.</p>` : ''}${pres.vis.length > 0 ? `<p class="text-sm text-justify"><strong>Outros / Visitantes:</strong> ${pres.vis.join(', ')}.</p>` : ''}</div>`;
+
+                if (Utils.hasItems(C.atas)) html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Aprovação de Atas</h2><p class="text-sm">${Store.state.atasAprovadas ? `As atas ${C.atas.join(', ')} foram declaradas aprovadas pela presidência.` : 'Atas não deliberadas.'}</p></div>`;
+
+                const e = C.expediente || {};
+				if (Utils.hasItems(e.correspondencias) || Utils.hasItems(e.proposicoesRecebidas) || Utils.hasItems(e.proposicoesDistribuidas)) {
+					html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Expediente</h2>`;
+					
+					if (Utils.hasItems(e.correspondencias)) {
+						html += `<h3 class="font-bold text-xs uppercase text-slate-600 mt-2 mb-1">Correspondências Recebidas</h3><ul class="list-disc pl-5 text-sm space-y-1 mb-3">`;
+						e.correspondencias.forEach(c => html += `<li><strong>${c.origem}:</strong> ${c.descricao}</li>`);
+						html += `</ul>`;
+					}
+					
+					if (Utils.hasItems(e.proposicoesRecebidas)) {
+						html += `<h3 class="font-bold text-xs uppercase text-slate-600 mt-2 mb-1">Proposições Recebidas</h3><ul class="list-disc pl-5 text-sm space-y-1 mb-3">`;
+						e.proposicoesRecebidas.forEach(p => html += `<li><strong>${p.tipo} ${p.numero} (${p.proponente}):</strong> ${p.ementa}</li>`);
+						html += `</ul>`;
+					}
+
+					if (Utils.hasItems(e.proposicoesDistribuidas)) {
+						html += `<h3 class="font-bold text-xs uppercase text-slate-600 mt-2 mb-1">Proposições Distribuídas na Reunião Anterior</h3><ul class="list-disc pl-5 text-sm space-y-1 mb-3">`;
+						e.proposicoesDistribuidas.forEach(p => html += `<li><strong>${p.tipo} ${p.numero} (${p.proponente}):</strong> Relatoria distribuída ao(à) ${p.relator}.</li>`);
+						html += `</ul>`;
+					}
+					
+					html += `</div>`;
+				}
+
+                if (Utils.hasItems(C.distribuicao)) {
+                    html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Distribuição de Proposições</h2><ul class="list-disc pl-5 text-sm space-y-2">`;
+                    let distCount = 0;
+                    C.distribuicao.forEach((p, i) => {
+                        const selVal = Store.state.relatoresDistribuicao[`dist-${i}`];
+                        if(selVal) { const dep = Utils.getDep(selVal); html += `<li><strong>${p.tipo} ${p.numero}:</strong> Relatoria distribuída ao Dep. ${dep.name} (${dep.party}).</li>`; distCount++; }
+                    });
+                    if(distCount === 0) html += `<li class="italic text-gray-500">Nenhuma relatoria distribuída.</li>`;
+                    html += `</ul></div>`;
+                }
+
+                if (Utils.hasItems(C.conhecimento) || C.audienciaPublica) {
+                    html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Conhecimento de Matérias</h2><ul class="list-disc pl-5 text-sm space-y-1">`;
+                    (C.conhecimento||[]).forEach(item => { html += `<li>${item.titulo}: ${Store.state.conhecimento[item.id] ? 'Aprovado pelos presentes.' : 'Não deliberado.'}</li>`; });
+                    
+                    if (C.audienciaPublica) {
+                        const audiencias = Array.isArray(C.audienciaPublica) ? C.audienciaPublica : [C.audienciaPublica];
+                        audiencias.forEach(ap => {
+                            html += `<li>Audiência Pública agendada para ${ap.data} às ${ap.hora} — ${ap.pauta}</li>`;
+                        });
+                    }
+                    html += `</ul></div>`;
+                }
+
+                if(Utils.hasItems(PAUTA)) {
+                    const presDel = Object.values(Store.state.presenceDelib).filter(Boolean).length;
+                    const quorumOrdemDia = presDel >= 7;
+
+                    html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Ordem do Dia</h2>`;
+                    
+                    if (!quorumOrdemDia) {
+                        html += `<p class="text-sm italic">Sem quórum regimental para a Ordem do Dia.</p></div>`;
+                    } else {
+                        html += `<ul class="space-y-4 text-sm list-none pl-0">`;
+                        PAUTA.forEach(item => {
+                            const adminStatus = Store.state.statusMateria[item.id] || 'PADRAO';
+                            const fase = Store.state.faseVotacao[item.id] || 'EM_VOTACAO';
+                            let li = `<li class="border-l-2 border-slate-300 pl-3"><strong>${item.title}:</strong> `;
+                            
+                            if (adminStatus !== 'PADRAO') {
+								li += `${STATUS_CORES[adminStatus].label}`;
+								
+							// Resgata o autor se for um pedido de vista
+							if (adminStatus === 'VISTA' && Store.state.vistasAtuais && Store.state.vistasAtuais[item.id]) {
+								const autor = Store.state.vistasAtuais[item.id];
+								li += ` concedido ao(à) Dep. ${autor.name} (${autor.party}).`;
+							} else {
+									li += `.`;
+								}
+								
+							} else if (fase === 'EM_VOTACAO') {
+								li += `<span class="italic text-gray-500">Não deliberado na sessão.</span>`;
+							} else {
+                                const vs = Store.state.votes[item.id] || {};
+                                let favs = Object.keys(vs).filter(k => vs[k] === 'f').map(k => Utils.getDep(k).name).sort((a, b) => a.localeCompare(b));
+                                let cons = Object.keys(vs).filter(k => vs[k] === 'c').map(k => Utils.getDep(k).name).sort((a, b) => a.localeCompare(b));
+                                
+                                const minerva = Store.state.minerva[item.id];
+                                let minervaText = '';
+                                if(minerva) {
+                                    minervaText = ` com voto de qualidade da Presidência`;
+                                    if(minerva === 'f') favs.push("Presidência (Voto de Qualidade)");
+                                    else cons.push("Presidência (Voto de Qualidade)");
+                                }
+
+                                if (fase === 'APROVADA') {
+                                    li += `Aprovado (${favs.length}x${cons.length})${minervaText}.`;
+                                } else if (fase === 'REJEITADA') {
+                                    li += `Rejeitado (${favs.length}x${cons.length})${minervaText}.`;
+                                    if(Store.state.novoRelator[item.id]) li += ` Relatoria redistribuída para o Dep. ${Utils.getDep(Store.state.novoRelator[item.id]).name}.`;
+                                } else if (fase === 'INCONCLUSIVA') {
+                                    li += `Matéria Inconclusiva (${favs.length}x${cons.length})${minervaText}.`;
+                                    if(Store.state.novoRelator[item.id]) li += ` Relatoria redistribuída para o Dep. ${Utils.getDep(Store.state.novoRelator[item.id]).name}.`;
+                                }
+
+                                li += `<br><span class="text-xs text-gray-700"><strong>Votos Favoráveis:</strong> ${favs.length > 0 ? favs.join(', ') : 'Nenhum'}.</span><br><span class="text-xs text-gray-700"><strong>Votos Contrários:</strong> ${cons.length > 0 ? cons.join(', ') : 'Nenhum'}.</span>`;
+                            }
+                            if(Store.state.notes[item.id]) li += `<br><span class="italic text-gray-600 text-xs">Observações: ${Store.state.notes[item.id]}</span>`;
+                            const manifestacoes = (Store.state.discussions[item.id] || []).filter(s => s.trim() !== "");
+                            if(manifestacoes.length > 0) li += `<br><span class="text-xs text-gray-700"><strong>Manifestações:</strong> ${manifestacoes.join(' ')}</span>`;
+                            html += li + `</li>`;
+                        });
+                        html += `</ul></div>`;
+                    }
+                }
+
+                // Atualização para o printReport lidar com tópicos pré-definidos e oradores
+                const manifGerais = (Store.state.discussions['gerais'] || []).filter(s => s.trim() !== "");
+                const topicosGerais = C.assuntosGerais || [];
+                
+                if (topicosGerais.length > 0 || manifGerais.length > 0) { 
+                    html += `<div class="mb-5"><h2 class="font-bold uppercase border-b border-gray-400 mb-2">${secNum++}. Assuntos Gerais</h2>`;
+                    
+                    if (topicosGerais.length > 0) {
+                        html += `<p class="text-sm font-bold mt-2 mb-1">Tópicos Predefinidos:</p><ul class="list-disc pl-5 text-sm space-y-1 mb-3">`;
+                        topicosGerais.forEach(t => html += `<li>${t}</li>`);
+                        html += `</ul>`;
+                    }
+                    
+                    if (manifGerais.length > 0) { 
+                        html += `<p class="text-sm"><strong>Manifestações / Oradores Registrados:</strong> ${manifGerais.join('; ')}</p>`;
+                    }
+                    
+                    html += `</div>`; 
+                }
+
+                layout.innerHTML = html; window.print();
+            }
+        };
+
+    })(MEETING_CONFIG);
+
+    window.onload = App.init;
+    </script>
+</body>
+</html>
