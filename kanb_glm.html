@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quadro de Tramitação de Proposições</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ Tokens ============ */
+:root{
+  --papel:#f4f0e4;
+  --card:#fcf9f0;
+  --tinta:#221d13;
+  --tinta-2:#55503e;
+  --tinta-3:#8a8168;
+  --linha:#d8d0b8;
+  --oliva:#57683a;
+  --vinho:#83303f;
+  --ambar:#96690f;
+  --foco:#41597e;
+  --serifada:'Spectral', Georgia, 'Times New Roman', serif;
+  --sans:'IBM Plex Sans', 'Segoe UI', Helvetica, sans-serif;
+}
+*{ box-sizing:border-box; }
+[hidden]{ display:none !important; }
+html,body{ height:100%; }
+body{
+  margin:0; background:var(--papel); color:var(--tinta);
+  font:400 13px/1.5 var(--sans);
+  display:flex; flex-direction:column;
+}
+button{ font-family:var(--sans); }
+:focus-visible{ outline:2px solid var(--foco); outline-offset:1px; }
+.escondido{ display:none !important; }
+
+/* ============ Cabeçalho ============ */
+.topbar{
+  display:flex; justify-content:space-between; align-items:flex-end; gap:18px;
+  padding:20px 26px 14px; border-bottom:3px double var(--tinta); flex-wrap:wrap;
+}
+.marca h1{ font:700 24px/1.1 var(--serifada); letter-spacing:-.01em; margin:0; }
+.marca .subtitulo{
+  font:600 9.5px var(--sans); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--tinta-3); margin:5px 0 0;
+}
+.acoes{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.acoes select{ width:auto; max-width:200px; }
+.busca{ position:relative; }
+.busca svg{ position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--tinta-3); pointer-events:none; }
+.busca input{ padding-left:30px; width:250px; }
+
+/* ============ Controles ============ */
+input,select,textarea{
+  font:400 13px/1.45 var(--sans); color:var(--tinta);
+  background:#fdfbf4; border:1px solid #b9b094; border-radius:2px;
+  padding:7px 9px; width:100%;
+}
+textarea{ resize:vertical; }
+input:focus,select:focus,textarea:focus{ border-color:var(--tinta); outline:2px solid var(--foco); outline-offset:0; }
+input:disabled,select:disabled,textarea:disabled{ color:var(--tinta-3); background:#efe9d9; }
+label{ display:block; font:600 10.5px/1.3 var(--sans); letter-spacing:.05em; text-transform:uppercase; color:var(--tinta-3); margin-bottom:5px; }
+.btn{
+  font:500 12.5px/1 var(--sans); padding:8px 13px; border:1px solid #8f8468;
+  background:transparent; color:var(--tinta); border-radius:2px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+}
+.btn:hover{ background:#eae3cf; border-color:var(--tinta-2); }
+.btn-primario{ background:var(--tinta); color:var(--papel); border-color:var(--tinta); }
+.btn-primario:hover{ background:#3a3324; }
+.btn-perigo{ background:var(--vinho); color:#fdf6f2; border-color:var(--vinho); }
+.btn-perigo:hover{ background:#6d2835; }
+.btn-icone{ padding:7px; }
+.btn-mini{ padding:4px; border-color:transparent; color:var(--tinta-3); }
+.btn-mini:hover{ border-color:var(--linha); color:var(--tinta); background:transparent; }
+.btn[aria-pressed="true"]{ background:var(--tinta); color:var(--papel); border-color:var(--tinta); }
+
+/* ============ Banner de memória ============ */
+.banner{
+  background:#f3e7cd; border-bottom:1px solid var(--ambar); color:#6d4d13;
+  font:500 12px/1.5 var(--sans); padding:9px 26px;
+}
+
+/* ============ Board ============ */
+main{ flex:1; min-height:0; display:flex; }
+#board{ flex:1; min-height:0; display:flex; align-items:stretch; overflow-x:auto; overflow-y:hidden; padding:18px 26px 0; }
+.coluna{
+  flex:1 0 225px; min-width:225px; display:flex; flex-direction:column;
+  border-top:2px solid var(--tinta); padding:12px 12px 10px 0;
+}
+.coluna + .coluna{ border-left:1px solid var(--linha); padding-left:14px; }
+.coluna.alvo{ background:#ece5d0; }
+.coluna.alvo .col-lista{ box-shadow:inset 0 0 0 1.5px #a89d7d; }
+.col-cabeca{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding-bottom:10px; border-bottom:1px solid var(--linha); margin-bottom:12px;
+}
+.col-titulo{ display:flex; align-items:baseline; gap:7px; min-width:0; }
+.col-num{ font:600 12px var(--serifada); color:var(--tinta-3); }
+.col-nome{
+  font:600 11px var(--serifada); letter-spacing:.06em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.col-tag{ font:italic 500 10px var(--serifada); color:var(--tinta-3); border:1px solid var(--linha); padding:0 5px; border-radius:2px; white-space:nowrap; }
+.col-acoes{ display:flex; align-items:center; gap:6px; }
+.col-count{ font:500 11px var(--sans); color:var(--tinta-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.col-aging{
+  display:inline-flex; align-items:center; gap:4px; font:500 10.5px var(--sans);
+  color:var(--ambar); font-variant-numeric:tabular-nums; cursor:help; white-space:nowrap;
+}
+.aging-dot{ width:5px; height:5px; border-radius:50%; background:var(--ambar); flex:none; }
+.col-lista{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:9px; padding-right:2px; padding-bottom:10px; }
+.col-vazia{ font:italic 11.5px var(--serifada); color:var(--tinta-3); text-align:center; padding:18px 0; }
+
+/* ============ Modo compacto ============ */
+.modo-compacto .coluna{ flex:1 0 170px; min-width:170px; }
+.modo-compacto .col-lista{ gap:4px; }
+.modo-compacto .col-acoes{ gap:3px; }
+.modo-compacto .btn-mini{ padding:3px; }
+
+/* ============ Card ============ */
+.card{
+  background:var(--card); border:1px solid var(--linha); border-radius:2px;
+  padding:10px 12px 9px; cursor:grab; transition:border-color .12s;
+}
+.card:hover{ border-color:var(--tinta-2); }
+.card.arrastando{ opacity:.4; }
+.card-topo{ display:flex; align-items:center; gap:8px; }
+.sigla{
+  font:600 9.5px var(--sans); letter-spacing:.09em; border:1px solid var(--tinta-2);
+  padding:1.5px 5px; border-radius:2px; color:var(--tinta); white-space:nowrap;
+}
+.card-num{ font:600 14.5px var(--serifada); white-space:nowrap; }
+.card-prop{ font:500 12px var(--sans); color:var(--tinta-2); margin:4px 0 0; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.coautores{ font:600 9.5px var(--sans); color:var(--tinta-3); border:1px solid var(--linha); border-radius:2px; padding:0 4px; }
+.card-ementa{
+  font:italic 400 12.3px/1.5 var(--serifada); color:var(--tinta-2); margin:5px 0 0;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.card-chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.chip{
+  font:500 10.5px var(--sans); border:1px solid; border-radius:2px; padding:1.5px 6px;
+  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.chip-k{ color:var(--tinta-3); font-weight:600; text-transform:uppercase; font-size:9px; letter-spacing:.05em; margin-right:3px; }
+.chip-rel{ border-color:#b7ad92; color:var(--tinta-2); }
+.chip-fav{ border-color:var(--oliva); color:var(--oliva); background:#eef0da; }
+.chip-con{ border-color:var(--vinho); color:var(--vinho); background:#f5e8e9; }
+.chip-resultado{ border-color:var(--tinta); background:var(--tinta); color:var(--papel); }
+.chip-local{ border-color:#c9bfa4; color:var(--tinta-2); border-style:dashed; }
+.chip.marco{ border-color:var(--linha); color:var(--tinta-2); font-variant-numeric:tabular-nums; }
+.chip.marco.ativo{ border-color:var(--ambar); color:var(--ambar); background:#f6ecd4; font-weight:600; }
+.chip.so-aging{ border-color:var(--ambar); color:var(--ambar); background:#f6ecd4; font-variant-numeric:tabular-nums; }
+.chip-lida{ border-color:#a89d7d; color:var(--tinta-2); background:#ece5d0; }
+.chip-vista{ border-color:#c9bfa4; color:var(--tinta-2); border-style:dashed; }
+.chip-pref{ border-color:#b7ad92; color:var(--tinta-2); }
+.chip.marco.conclusiva{ border-color:var(--tinta-2); background:#e6dfc3; color:var(--tinta); font-weight:600; }
+.chip.marco.conclusiva.ativo{ border-color:var(--ambar); color:var(--ambar); background:#f6ecd4; }
+
+.sep-lidas{
+  display:flex; align-items:center; gap:8px; margin:3px 0 2px;
+  color:var(--tinta-3); font:600 9px var(--sans); letter-spacing:.09em; text-transform:uppercase;
+}
+.sep-lidas::before,.sep-lidas::after{ content:''; flex:1; border-top:1px solid var(--linha); }
+
+.card.compacto{ display:flex; align-items:center; gap:7px; padding:5px 8px; }
+.card.compacto .card-num{ font-size:12.5px; }
+.comp-prop{
+  flex:1; min-width:0; font:500 11.5px var(--sans); color:var(--tinta-2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pdot{ width:7px; height:7px; border-radius:50%; flex:none; }
+.pdot-fav{ background:var(--oliva); }
+.pdot-con{ background:var(--vinho); }
+.comp-aging{ font:500 10px var(--sans); color:var(--tinta-3); font-variant-numeric:tabular-nums; flex:none; }
+.comp-aging.ativo{ color:var(--ambar); font-weight:600; }
+.comp-tag{ font:italic 500 9.5px var(--serifada); color:var(--tinta-3); white-space:nowrap; flex:none; }
+
+/* ============ Estado vazio ============ */
+.vazio{ margin:auto; text-align:center; max-width:440px; padding:40px 20px; }
+.vazio-titulo{ font:600 24px var(--serifada); margin:0; }
+.vazio-texto{ font:italic 14px/1.6 var(--serifada); color:var(--tinta-2); margin:10px 0 22px; }
+.vazio-acoes{ display:flex; gap:10px; justify-content:center; margin-bottom:18px; flex-wrap:wrap; }
+.vazio-exemplos{
+  background:none; border:none; font:italic 12px var(--serifada); color:var(--tinta-3);
+  text-decoration:underline; cursor:pointer; padding:4px;
+}
+.vazio-exemplos:hover{ color:var(--tinta); }
+
+/* ============ Rodapé ============ */
+footer{
+  border-top:1px solid var(--linha); padding:9px 26px; display:flex;
+  justify-content:space-between; gap:16px; flex-wrap:wrap;
+  font:400 11px var(--sans); color:var(--tinta-3);
+}
+
+/* ============ Drawer ============ */
+.drawer-scrim{
+  position:fixed; inset:0; z-index:69; background:rgba(30,25,15,.18);
+  opacity:0; pointer-events:none; transition:opacity .24s;
+}
+.drawer-scrim.visivel{ opacity:1; pointer-events:auto; }
+.drawer{
+  position:fixed; top:0; right:0; bottom:0; width:min(440px,94vw);
+  background:var(--papel); border-left:1px solid var(--tinta); z-index:70;
+  transform:translateX(102%); transition:transform .24s cubic-bezier(.2,.7,.3,1);
+  display:flex; flex-direction:column;
+}
+.drawer.aberta{ transform:none; }
+.drawer-cabeca{
+  padding:16px 18px 12px; border-bottom:3px double var(--tinta);
+  display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+}
+.drawer-id{ display:flex; gap:9px; align-items:center; }
+#dwTitulo{ font:600 20px/1.1 var(--serifada); }
+.drawer-tipo{ font:italic 12px var(--serifada); color:var(--tinta-3); margin:3px 0 0; }
+.drawer-corpo{ overflow-y:auto; padding:4px 18px 18px; flex:1; }
+.drawer-pe{ padding:12px 18px; border-top:1px solid var(--linha); display:flex; justify-content:flex-end; }
+.drawer-sec h3{
+  font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.08em;
+  color:var(--tinta-3); border-bottom:1px solid var(--linha);
+  padding-bottom:6px; margin:24px 0 12px;
+}
+.drawer-sec:first-child h3{ margin-top:14px; }
+.linha-etapa{ display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
+.rotulo-inline{ font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.05em; color:var(--tinta-3); }
+#dEtapaAtual{ font:600 15px var(--serifada); }
+.mover-linha{ display:flex; gap:8px; }
+.mover-linha select{ flex:1; }
+.dica-campo{ font:italic 11px var(--serifada); color:var(--tinta-3); margin:5px 0 0; }
+
+.check-inline{
+  display:flex; gap:8px; align-items:center; font:400 12.5px/1.4 var(--sans);
+  color:var(--tinta); cursor:pointer; margin:0 0 12px;
+}
+.check-inline input{ width:auto; margin:0; }
+.linha-lida{ display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+.linha-lida .check-inline{ margin:0; }
+.linha-lida input[type="date"]{ width:150px; flex:none; }
+.campo-btn{ display:flex; align-items:flex-end; }
+.vista-form{ display:flex; gap:8px; margin-bottom:10px; }
+.vista-form input[type="text"]{ flex:1; min-width:0; }
+.vista-form input[type="date"]{ width:140px; flex:none; }
+.vista-x{
+  background:none; border:none; cursor:pointer; color:inherit; opacity:.6;
+  margin:0 0 0 6px; padding:0 2px; font:600 12px var(--sans); line-height:1;
+}
+.vista-x:hover{ opacity:1; }
+
+/* ============ Grades de formulário ============ */
+.grade{ display:grid; gap:12px 14px; margin-bottom:14px; }
+.g2{ grid-template-columns:repeat(2,1fr); }
+.g3{ grid-template-columns:repeat(3,1fr); }
+.g4{ grid-template-columns:repeat(4,1fr); }
+.span2{ grid-column:span 2; }
+.span3{ grid-column:span 3; }
+.span4{ grid-column:span 4; }
+.form-sec-titulo{
+  font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.08em;
+  color:var(--tinta-3); border-bottom:1px solid var(--linha);
+  padding-bottom:5px; margin:6px 0 12px;
+}
+
+/* ============ Timeline ============ */
+.timeline{ border-left:2px solid var(--linha); padding-left:14px; display:flex; flex-direction:column; gap:11px; }
+.tl-item{ position:relative; }
+.tl-item::before{
+  content:''; position:absolute; left:-19px; top:4px; width:7px; height:7px;
+  background:var(--papel); border:1.5px solid var(--tinta-2); border-radius:50%;
+}
+.tl-mov{ font:500 12px var(--sans); }
+.tl-seta{ color:var(--tinta-3); }
+.tl-item time{ display:block; font:400 11px var(--sans); color:var(--tinta-3); font-variant-numeric:tabular-nums; }
+.tl-origem{ font-style:italic; color:var(--tinta-3); }
+.tl-vazia{ font:italic 12px var(--serifada); color:var(--tinta-3); }
+
+/* ============ Modais ============ */
+.modal-fundo{
+  position:fixed; inset:0; background:rgba(30,25,15,.42);
+  display:flex; align-items:center; justify-content:center; z-index:80; padding:20px;
+}
+.modal{
+  background:var(--papel); border:1px solid var(--tinta);
+  box-shadow:0 18px 50px rgba(25,20,10,.28); width:min(680px,94vw); max-height:90vh;
+  display:flex; flex-direction:column; animation:surgir .18s ease;
+}
+.modal-sm{ width:min(480px,94vw); }
+.modal-xl{ width:min(940px,96vw); }
+@keyframes surgir{ from{ opacity:0; transform:translateY(8px); } }
+.modal-cabeca{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:16px 20px 12px; border-bottom:3px double var(--tinta);
+}
+.modal-cabeca h2{ font:600 19px var(--serifada); margin:0; }
+.modal-corpo{ padding:18px 20px; overflow:auto; }
+.modal-pe{ padding:14px 20px; border-top:1px solid var(--linha); display:flex; justify-content:flex-end; gap:10px; }
+.caixa-parse{ background:#f0ead9; border:1px solid var(--linha); border-radius:2px; padding:14px; margin-bottom:20px; }
+.caixa-parse .dica{ font:italic 11.5px/1.5 var(--serifada); color:var(--tinta-3); margin:2px 0 8px; }
+.caixa-parse-acoes{ display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; }
+.parse-info{ font:italic 11.5px var(--serifada); color:var(--tinta-2); }
+.erro-form{ color:var(--vinho); font:500 12px var(--sans); margin:4px 0 0; }
+.op-import{
+  display:flex; gap:9px; align-items:flex-start; border:1px solid var(--linha);
+  border-radius:2px; padding:10px 12px; margin-bottom:8px; cursor:pointer;
+  font:400 12.5px/1.5 var(--sans);
+}
+.op-import:hover{ border-color:var(--tinta-2); }
+.op-import input{ width:auto; margin-top:2px; }
+.op-import strong{ font-weight:600; }
+.check{
+  display:flex; gap:9px; align-items:flex-start; text-transform:none; letter-spacing:0;
+  font:400 12.5px/1.5 var(--sans); color:var(--tinta); margin:0 0 14px; cursor:pointer;
+}
+.check input{ width:auto; margin-top:2px; }
+
+.zona-perigo{ margin-top:24px; border:1px solid #c98a95; border-radius:2px; padding:14px 16px; }
+.zona-perigo h3{
+  font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.08em;
+  color:var(--vinho); margin:0 0 4px; border-bottom:1px solid #eadfe2; padding-bottom:8px;
+}
+.zg-item{ display:flex; justify-content:space-between; align-items:center; gap:14px; padding:11px 0; }
+.zg-item + .zg-item{ border-top:1px solid #eadfe2; }
+.zg-texto{ display:flex; flex-direction:column; gap:2px; font:400 12px/1.45 var(--sans); color:var(--tinta-2); min-width:0; }
+.zg-texto strong{ color:var(--tinta); font-weight:600; }
+.zg-btn{ flex:none; }
+
+/* ============ Modal pauta (v1.3) ============ */
+.pauta-corpo{ display:grid; grid-template-columns:250px 1fr; gap:18px; }
+.pauta-opcoes .campo{ margin-bottom:12px; }
+.pauta-preview{ display:flex; flex-direction:column; min-width:0; }
+.pauta-preview textarea{
+  flex:1; min-height:430px; font:400 12.5px/1.6 var(--serifada);
+  white-space:pre; overflow:auto;
+}
+.pauta-aviso{
+  font:italic 11.5px/1.5 var(--serifada); color:#6d4d13; background:#f6ecd4;
+  border:1px solid #d8c48a; border-radius:2px; padding:8px 10px; margin:0 0 12px;
+}
+
+/* ============ Modal painéis (v1.3) ============ */
+.painel-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+.tb-painel{ width:100%; border-collapse:collapse; font:400 12px var(--sans); }
+.tb-painel th{
+  font:600 9.5px var(--sans); text-transform:uppercase; letter-spacing:.06em;
+  color:var(--tinta-3); border-bottom:2px solid var(--tinta); padding:6px 8px;
+  text-align:right; cursor:pointer; white-space:nowrap; user-select:none;
+}
+.tb-painel th:first-child{ text-align:left; }
+.tb-painel th:hover{ color:var(--tinta); }
+.tb-painel th.ordenado{ color:var(--tinta); }
+.tb-painel td{ padding:6px 8px; border-bottom:1px solid var(--linha); text-align:right; font-variant-numeric:tabular-nums; }
+.tb-painel td:first-child{ text-align:left; font-weight:500; color:var(--tinta); }
+.tb-painel tbody tr{ cursor:pointer; }
+.tb-painel tbody tr:hover{ background:#ece5d0; }
+.num-zero{ color:var(--tinta-3); }
+.pr-acao{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.pr-acao .btn{ padding:10px 14px; }
+
+/* ============ Toasts ============ */
+.toasts{
+  position:fixed; right:18px; bottom:18px; z-index:120; display:flex;
+  flex-direction:column; gap:8px; max-width:min(400px,90vw);
+}
+.toast{
+  background:var(--tinta); color:#f3eedd; font:500 12.5px/1.45 var(--sans);
+  padding:11px 14px; border-radius:2px; border-left:3px solid var(--oliva);
+  box-shadow:0 8px 22px rgba(20,15,5,.28); animation:toastIn .22s ease;
+}
+.toast-atencao{ border-left-color:var(--ambar); }
+.toast-erro{ border-left-color:#c96a7a; }
+.toast.saindo{ opacity:0; transform:translateY(6px); transition:.25s; }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(8px); } }
+
+/* ============ Scrollbars ============ */
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-thumb{ background:#cfc5a8; border-radius:4px; border:2px solid var(--papel); }
+::-webkit-scrollbar-track{ background:transparent; }
+
+/* ============ Área de impressão (v1.3) ============ */
+#printArea{ display:none; }
+@media print{
+  /* fluxo próprio: só a área de impressão sai no papel */
+  body.imprimindo #printArea{ display:block; }
+  body.imprimindo > *:not(#printArea){ display:none !important; }
+  body.imprimindo .tb-painel tbody tr{ cursor:default; }
+  /* Ctrl+P direto (sem passar pelo botão): página limpa de controles */
+  body:not(.imprimindo) .acoes, body:not(.imprimindo) .banner,
+  body:not(.imprimindo) .drawer, body:not(.imprimindo) .drawer-scrim,
+  body:not(.imprimindo) .modal-fundo, body:not(.imprimindo) .toasts,
+  body:not(.imprimindo) footer, body:not(.imprimindo) .col-acoes,
+  body:not(.imprimindo) #printArea{ display:none !important; }
+  body:not(.imprimindo){ height:auto; }
+  body:not(.imprimindo) #board{ display:grid; grid-template-columns:repeat(3,1fr); overflow:visible; padding:0; }
+  body:not(.imprimindo) .coluna{ break-inside:avoid; border-left:1px solid #ccc; border-top:2px solid #000; min-width:0; flex:none; }
+  body:not(.imprimindo) .col-lista{ overflow:visible; }
+  body:not(.imprimindo) .card{ break-inside:avoid; }
+}
+/* conteúdo da área de impressão (visível apenas no papel) */
+.pr-cabeca{ border-bottom:3px double var(--tinta); padding-bottom:8px; margin-bottom:16px; }
+.pr-titulo{ font:700 21px/1.15 var(--serifada); }
+.pr-sub{ font:italic 11.5px var(--serifada); color:var(--tinta-2); margin-top:2px; }
+.pr-cont{ font:500 10.5px var(--sans); color:var(--tinta-3); margin-top:5px; }
+.pr-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; align-items:start; }
+.pr-col{ border-top:2px solid var(--tinta); padding-top:6px; }
+.pr-col > header{ display:flex; gap:6px; align-items:baseline; border-bottom:1px solid var(--linha); padding-bottom:4px; margin-bottom:8px; }
+.pr-col .card{ margin-bottom:8px; }
+.pr-sec h2{ font:600 16px var(--serifada); border-bottom:2px solid var(--tinta); margin:20px 0 4px; padding-bottom:3px; }
+.pr-sec h2 .pr-n{ font:500 11px var(--sans); color:var(--tinta-3); }
+.pr-subgrupo{ font:600 10px var(--sans); text-transform:uppercase; letter-spacing:.07em; color:var(--tinta-3); margin:10px 0 6px; }
+.pr-item{ break-inside:avoid; margin:8px 0 12px; }
+.pr-item-t{ font:600 13.5px var(--serifada); }
+.pr-item-e{ font:italic 400 12px/1.5 var(--serifada); color:var(--tinta-2); margin:2px 0; }
+.pr-item-d{ font:400 10.5px/1.5 var(--sans); color:var(--tinta-3); }
+.pr-pauta{ font:400 12px/1.65 var(--serifada); white-space:pre-wrap; }
+.pr-tabela-t{ font:600 16px var(--serifada); margin:0 0 10px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="marca">
+    <h1 id="tituloQuadro">Quadro de Tramitação</h1>
+    <p class="subtitulo">Controle de proposições em comissão</p>
+  </div>
+  <div class="acoes">
+    <div class="busca">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input id="inputBusca" type="search" placeholder="Buscar n.º, ementa, proponente, relator…" aria-label="Buscar proposições">
+    </div>
+    <select id="selectTipoFiltro" aria-label="Filtrar por tipo"></select>
+    <button id="btnSemParecer" class="btn" aria-pressed="false" title="Mostrar apenas proposições ainda sem parecer">Sem parecer</button>
+    <button id="btnLimparFiltros" class="btn btn-mini" hidden>Limpar filtros</button>
+    <button id="btnEstilo" class="btn btn-icone" aria-pressed="false" title="Alternar para cards compactos" aria-label="Alternar estilo dos cards (padrão/compacto)">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    </button>
+    <button id="btnNova" class="btn btn-primario">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nova proposição
+    </button>
+    <button id="btnPrint" class="btn btn-icone" title="Imprimir (quadro ou relatório)" aria-label="Imprimir">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8V4h10v4"/><rect x="5" y="8" width="14" height="7" rx="1"/><path d="M8 13h8v7H8z"/></svg>
+    </button>
+    <button id="btnPainel" class="btn btn-icone" title="Painéis por proponente e relator" aria-label="Painéis por proponente e relator">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="1"/><path d="M4 10h16M4 15h16M10 10v10M15 10v10"/></svg>
+    </button>
+    <button id="btnExportar" class="btn btn-icone" title="Exportar backup (JSON)" aria-label="Exportar backup em JSON">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M4.5 19.5h15"/></svg>
+    </button>
+    <button id="btnImportar" class="btn btn-icone" title="Importar backup (JSON)" aria-label="Importar backup em JSON">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4.5 19.5h15"/></svg>
+    </button>
+    <button id="btnConfig" class="btn btn-icone" title="Configurações do quadro" aria-label="Configurações do quadro">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h4M13 7h6M5 12h8M17 12h2M5 17h2M11 17h8"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+    </button>
+  </div>
+</header>
+
+<div id="bannerMemoria" class="banner" hidden>
+  Não foi possível salvar no navegador (armazenamento indisponível ou cheio). As alterações valem apenas para esta sessão — exporte um backup em JSON antes de fechar a página.
+</div>
+
+<main><div id="board" aria-label="Quadro de tramitação"></div></main>
+
+<footer>
+  <span id="rodapeInfo"></span>
+  <span id="rodapeBackup"></span>
+</footer>
+
+<!-- ============ Drawer de edição ============ -->
+<div class="drawer-scrim" id="drawerScrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dwTitulo" aria-hidden="true">
+  <div class="drawer-cabeca">
+    <div>
+      <div class="drawer-id"><span class="sigla" id="dwSigla">PL</span><span id="dwTitulo">n.º —</span></div>
+      <p class="drawer-tipo" id="dwTipoNome"></p>
+    </div>
+    <button id="dwFechar" class="btn btn-icone" aria-label="Fechar painel">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-corpo">
+    <section class="drawer-sec">
+      <h3>Identificação</h3>
+      <div class="grade g4">
+        <div class="campo span2"><label for="dTipo">Tipo</label><select id="dTipo"></select></div>
+        <div class="campo"><label for="dNumero">Número</label><input id="dNumero" type="number" min="1" step="1"></div>
+        <div class="campo"><label for="dAno">Ano</label><input id="dAno" type="number" min="1900" max="2100" step="1"></div>
+        <div class="campo span3"><label for="dProponente">Proponente</label><input id="dProponente" type="text"></div>
+        <div class="campo"><label for="dCoautores">Coautores</label><input id="dCoautores" type="number" min="0" step="1"></div>
+        <div class="campo span4"><label for="dEmenta" id="dEmentaLabel">Ementa</label><textarea id="dEmenta" rows="4"></textarea></div>
+      </div>
+    </section>
+    <section class="drawer-sec">
+      <h3>Tramitação</h3>
+      <div class="linha-etapa"><span class="rotulo-inline">Etapa atual:</span><strong id="dEtapaAtual"></strong></div>
+      <div class="campo">
+        <label for="dwMoverPara">Mover para</label>
+        <div class="mover-linha">
+          <select id="dwMoverPara"></select>
+          <button type="button" id="btnMover" class="btn">Mover</button>
+        </div>
+      </div>
+      <div class="grade g2">
+        <div class="campo"><label for="dRelator">Relator</label><input id="dRelator" type="text"></div>
+        <div class="campo"><label for="dParecer">Parecer</label><select id="dParecer"></select></div>
+      </div>
+      <div class="linha-lida">
+        <label class="check-inline"><input type="checkbox" id="dRelatorioLido"><span>Relatório lido</span></label>
+        <input id="dRelatorioLidoEm" type="date" aria-label="Data da leitura do relatório">
+      </div>
+      <div class="campo"><label for="dPreferenciaPor">Indicada por (preferência)</label><input id="dPreferenciaPor" type="text" placeholder="Deputado(a) que indicou a preferência"></div>
+      <div>
+        <label class="check-inline"><input type="checkbox" id="dTramitacaoConclusiva"><span>Tramitação conclusiva</span></label>
+        <div class="grade g2" id="camposConclusiva">
+          <div class="campo"><label for="dDataVotacaoConclusiva">Votação conclusiva desde</label><input id="dDataVotacaoConclusiva" type="date"></div>
+          <div class="campo campo-btn">
+            <button type="button" id="btnMarcarConclusiva" class="btn" title="Registra que o parecer foi aprovado — a proposição passa a aguardar a votação conclusiva (data = hoje, editável)">Marcar votação conclusiva</button>
+          </div>
+        </div>
+        <p class="dica-campo" id="dicaConclusiva" hidden>Parecer aprovado — a proposição aguarda a votação conclusiva (2ª votação) nesta comissão.</p>
+      </div>
+      <div class="campo" style="margin-top:12px">
+        <label for="dResultado">Resultado da apreciação</label>
+        <select id="dResultado"></select>
+        <p class="dica-campo" id="dicaResultado" hidden>Disponível quando a proposição estiver em “Apreciadas”.</p>
+      </div>
+      <div class="campo"><label for="dResultadoObs">Observação do resultado</label><input id="dResultadoObs" type="text" placeholder="Complemento do resultado, uso livre"></div>
+    </section>
+    <section class="drawer-sec">
+      <h3>Pedidos de vista</h3>
+      <div class="vista-form">
+        <input id="dVistaPartido" type="text" placeholder="Partido / bancada">
+        <input id="dVistaData" type="date" aria-label="Data do pedido de vista">
+        <button type="button" id="btnVistaAdd" class="btn">Adicionar</button>
+      </div>
+      <div id="dwVistaChips" class="card-chips" style="margin-top:0"></div>
+      <p class="dica-campo">Cada partido/bancada pode pedir vista uma vez na tramitação; após reexame do relator, remova os registros manualmente.</p>
+    </section>
+    <section class="drawer-sec" id="grupoRAPDrawer">
+      <h3>Audiência pública</h3>
+      <div class="campo"><label for="dConvidados">Convidados</label><textarea id="dConvidados" rows="3"></textarea></div>
+      <div class="campo"><label for="dLocal">Local</label><input id="dLocal" type="text"></div>
+    </section>
+    <section class="drawer-sec">
+      <h3>Datas</h3>
+      <div class="grade g2">
+        <div class="campo"><label for="dDataRecebimento">Recebimento</label><input id="dDataRecebimento" type="date"></div>
+        <div class="campo"><label for="dDataDistribuicao">Distribuição</label><input id="dDataDistribuicao" type="date"></div>
+        <div class="campo"><label for="dDataOrdemDia">Em pauta desde</label><input id="dDataOrdemDia" type="date"></div>
+        <div class="campo"><label for="dDataApreciacao">Apreciação</label><input id="dDataApreciacao" type="date"></div>
+      </div>
+      <p class="dica-campo">Marcos preenchidos automaticamente na primeira entrada em cada etapa; nunca sobrescritos — ajuste manualmente se necessário.</p>
+    </section>
+    <section class="drawer-sec">
+      <h3>Notas</h3>
+      <div class="campo"><label for="dNotas">Notas internas</label><textarea id="dNotas" rows="3"></textarea></div>
+    </section>
+    <section class="drawer-sec">
+      <h3>Histórico de tramitação</h3>
+      <div id="dwTimeline" class="timeline"></div>
+    </section>
+  </div>
+  <div class="drawer-pe">
+    <button type="button" id="dwExcluir" class="btn btn-perigo">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/></svg>
+      Excluir proposição
+    </button>
+  </div>
+</aside>
+
+<!-- ============ Modal: nova proposição ============ -->
+<div class="modal-fundo" id="modalNova" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mnTitulo">
+    <div class="modal-cabeca">
+      <h2 id="mnTitulo">Nova proposição</h2>
+      <button class="btn btn-icone" data-fechar="modalNova" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo">
+      <section class="caixa-parse">
+        <label for="parseTexto">Interpretar texto publicado</label>
+        <p class="dica">Cole o texto da proposição (cabeçalho, proponente, ementa…) ou até a agenda/ordem do dia completa — os campos abaixo são preenchidos automaticamente para revisão.</p>
+        <textarea id="parseTexto" rows="5" placeholder="Projeto de Lei n.º 308/2024&#10;Proponente: Deputado(a) …&#10;Ementa: …"></textarea>
+        <div class="caixa-parse-acoes">
+          <button type="button" id="btnInterpretar" class="btn">Interpretar</button>
+          <button type="button" id="btnLote" class="btn" hidden></button>
+          <span id="parseInfo" class="parse-info" aria-live="polite"></span>
+        </div>
+      </section>
+      <form id="formNova" novalidate>
+        <div class="grade g4">
+          <div class="campo span4"><label for="fEtapa">Etapa</label><select id="fEtapa"></select></div>
+          <div class="campo span2"><label for="fTipo">Tipo</label><select id="fTipo"></select></div>
+          <div class="campo"><label for="fNumero">Número</label><input id="fNumero" type="number" min="1" step="1"></div>
+          <div class="campo"><label for="fAno">Ano</label><input id="fAno" type="number" min="1900" max="2100" step="1"></div>
+          <div class="campo span3"><label for="fProponente">Proponente</label><input id="fProponente" type="text"></div>
+          <div class="campo"><label for="fCoautores">Coautores (qtd.)</label><input id="fCoautores" type="number" min="0" step="1"></div>
+          <div class="campo span4"><label for="fEmenta" id="fEmentaLabel">Ementa</label><textarea id="fEmenta" rows="3"></textarea></div>
+        </div>
+        <label class="check" style="margin:0 0 14px"><input type="checkbox" id="fTramitacaoConclusiva"><span>Proposição em <strong>tramitação conclusiva</strong> (votação em comissão, sem ir ao Plenário)</span></label>
+        <div class="grade g4" id="grupoRelParecer">
+          <div class="campo span2"><label for="fRelator">Relator</label><input id="fRelator" type="text"></div>
+          <div class="campo span2"><label for="fParecer">Parecer</label><select id="fParecer"></select></div>
+        </div>
+        <div class="grade g4" id="grupoLido">
+          <div class="campo span2" id="campoFLido"><label for="fRelatorioLidoEm">Relatório lido em</label><input id="fRelatorioLidoEm" type="date"></div>
+          <div class="campo span2" id="campoFPref"><label for="fPreferenciaPor">Indicada por (preferência)</label><input id="fPreferenciaPor" type="text" placeholder="Deputado(a) que indicou"></div>
+        </div>
+        <div class="grade g4" id="grupoResultado">
+          <div class="campo span4"><label for="fResultado">Resultado da apreciação</label><select id="fResultado"></select></div>
+        </div>
+        <div class="grade g4" id="grupoRAP">
+          <div class="campo span4"><label for="fConvidados">Convidados</label><textarea id="fConvidados" rows="2"></textarea></div>
+          <div class="campo span4"><label for="fLocal">Local</label><input id="fLocal" type="text"></div>
+        </div>
+        <p class="form-sec-titulo">Datas</p>
+        <div class="grade g4">
+          <div class="campo"><label for="fDataRecebimento">Recebimento</label><input id="fDataRecebimento" type="date"></div>
+          <div class="campo"><label for="fDataDistribuicao">Distribuição</label><input id="fDataDistribuicao" type="date"></div>
+          <div class="campo"><label for="fDataOrdemDia">Em pauta desde</label><input id="fDataOrdemDia" type="date"></div>
+          <div class="campo"><label for="fDataApreciacao">Apreciação</label><input id="fDataApreciacao" type="date"></div>
+        </div>
+        <p id="formErro" class="erro-form" hidden></p>
+      </form>
+    </div>
+    <div class="modal-pe">
+      <button type="button" class="btn" data-fechar="modalNova">Cancelar</button>
+      <button type="submit" form="formNova" class="btn btn-primario">Adicionar proposição</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: confirmação ============ -->
+<div class="modal-fundo" id="modalConfirm" hidden>
+  <div class="modal modal-sm" role="alertdialog" aria-modal="true" aria-labelledby="cfTitulo" aria-describedby="cfMsg">
+    <div class="modal-cabeca">
+      <h2 id="cfTitulo">Confirmar</h2>
+      <button class="btn btn-icone" data-fechar="modalConfirm" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo"><p id="cfMsg" style="margin:0"></p></div>
+    <div class="modal-pe">
+      <button id="cfCancelar" class="btn">Cancelar</button>
+      <button id="cfOk" class="btn btn-primario">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: importar ============ -->
+<div class="modal-fundo" id="modalImportar" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="miTitulo">
+    <div class="modal-cabeca">
+      <h2 id="miTitulo">Importar backup (JSON)</h2>
+      <button class="btn btn-icone" data-fechar="modalImportar" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo">
+      <div class="campo" style="margin-bottom:14px"><label for="importArquivo">Arquivo</label><input type="file" id="importArquivo" accept=".json,application/json"></div>
+      <label class="op-import">
+        <input type="radio" name="modoImport" value="mesclar" checked>
+        <span><strong>Mesclar</strong> — adiciona novas proposições e atualiza existentes (mesma tipo + número + ano), mantendo a versão mais recente.</span>
+      </label>
+      <label class="op-import">
+        <input type="radio" name="modoImport" value="substituir">
+        <span><strong>Substituir tudo</strong> — o quadro atual inteiro é trocado pelo do arquivo. Uma cópia de segurança do quadro atual é baixada automaticamente antes.</span>
+      </label>
+    </div>
+    <div class="modal-pe">
+      <button type="button" class="btn" data-fechar="modalImportar">Cancelar</button>
+      <button type="button" id="btnImportExec" class="btn btn-primario">Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: configurações ============ -->
+<div class="modal-fundo" id="modalConfig" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="mcTitulo">
+    <div class="modal-cabeca">
+      <h2 id="mcTitulo">Configurações do quadro</h2>
+      <button class="btn btn-icone" data-fechar="modalConfig" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo">
+      <div class="campo"><label for="cfgTitulo">Título do quadro</label><input id="cfgTitulo" type="text" maxlength="80" placeholder="Ex.: Comissão de Finanças e Planejamento"></div>
+      <label class="check">
+        <input type="checkbox" id="cfgPreferencias">
+        <span>Usar coluna “Preferências” (fluxo CCCJ — subconjunto da Ordem do Dia indicado a cada reunião; as não apreciadas podem ser recolhidas em lote).</span>
+      </label>
+      <div class="campo"><label for="cfgAging">Sinalizar proposição parada após (dias)</label><input id="cfgAging" type="number" min="1" max="365" step="1"></div>
+      <div class="campo"><label for="cfgEstilo">Estilo dos cards</label>
+        <select id="cfgEstilo">
+          <option value="padrao">Padrão — completo (ementa e chips)</option>
+          <option value="compacto">Compacto — lista densa (uma linha por proposição)</option>
+        </select>
+      </div>
+      <div class="zona-perigo">
+        <h3>Zona de perigo</h3>
+        <div class="zg-item">
+          <div class="zg-texto">
+            <strong>Apagar todas as proposições</strong>
+            <span>Remove todas as proposições do quadro. Configurações e título são mantidos. Um backup do quadro atual é baixado automaticamente antes.</span>
+          </div>
+          <button type="button" id="btnApagarTudo" class="btn btn-perigo zg-btn">Apagar</button>
+        </div>
+        <div class="zg-item">
+          <div class="zg-texto">
+            <strong>Restaurar configurações padrão</strong>
+            <span>Título, modo preferências, limiar de aging e estilo de cards voltam ao padrão. As proposições são mantidas (as de Preferências voltam à Ordem do Dia).</span>
+          </div>
+          <button type="button" id="btnRestaurarPadroes" class="btn btn-perigo zg-btn">Restaurar</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-pe">
+      <button type="button" class="btn" data-fechar="modalConfig">Cancelar</button>
+      <button type="button" id="btnCfgSalvar" class="btn btn-primario">Salvar configurações</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: gerar pauta (v1.3) ============ -->
+<div class="modal-fundo" id="modalPauta" hidden>
+  <div class="modal modal-xl" role="dialog" aria-modal="true" aria-labelledby="mpTitulo">
+    <div class="modal-cabeca">
+      <h2 id="mpTitulo">Gerar pauta</h2>
+      <button class="btn btn-icone" data-fechar="modalPauta" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo pauta-corpo">
+      <div class="pauta-opcoes">
+        <p id="pautaAviso" class="pauta-aviso" hidden></p>
+        <div class="campo"><label for="pautaData">Reunião</label><input id="pautaData" type="date"></div>
+        <div class="campo"><label for="pautaEmenta">Ementa no texto</label>
+          <select id="pautaEmenta">
+            <option value="completa">Completa</option>
+            <option value="linha">Primeira linha</option>
+            <option value="nenhuma">Omitir</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" id="pautaRelParecer" checked><span>Relator e parecer</span></label>
+        <label class="check"><input type="checkbox" id="pautaVistas" checked><span>Vistas registradas</span></label>
+        <label class="check" id="rowAgrupar"><input type="checkbox" id="pautaAgrupar"><span>Agrupar preferências por responsável</span></label>
+      </div>
+      <div class="pauta-preview">
+        <label for="pautaTexto">Pré-visualização — editável</label>
+        <textarea id="pautaTexto" spellcheck="false"></textarea>
+        <p class="dica-campo">Ajustes manuais são permitidos; alterar as opções regenera o texto.</p>
+      </div>
+    </div>
+    <div class="modal-pe">
+      <button type="button" id="btnPautaImprimir" class="btn">Imprimir</button>
+      <button type="button" id="btnPautaCopiar" class="btn btn-primario">Copiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: painéis (v1.3) ============ -->
+<div class="modal-fundo" id="modalPainel" hidden>
+  <div class="modal modal-xl" role="dialog" aria-modal="true" aria-labelledby="pnTitulo">
+    <div class="modal-cabeca">
+      <h2 id="pnTitulo">Painéis — Proponentes</h2>
+      <button class="btn btn-icone" data-fechar="modalPainel" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo">
+      <div class="painel-tabs">
+        <button type="button" id="tabProp" class="btn" aria-pressed="true">Proponentes</button>
+        <button type="button" id="tabRel" class="btn" aria-pressed="false">Relatores</button>
+      </div>
+      <div id="painelTabelaWrap"></div>
+      <p class="dica-campo">Clique numa linha para filtrar o quadro pelo nome; clique no cabeçalho de coluna para ordenar.</p>
+    </div>
+    <div class="modal-pe">
+      <button type="button" id="btnPainelImprimir" class="btn">Imprimir</button>
+      <button type="button" class="btn" data-fechar="modalPainel">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modal: impressão (v1.3) ============ -->
+<div class="modal-fundo" id="modalPrint" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="mprTitulo">
+    <div class="modal-cabeca">
+      <h2 id="mprTitulo">Imprimir</h2>
+      <button class="btn btn-icone" data-fechar="modalPrint" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo">
+      <div class="pr-acao">
+        <button type="button" id="prQuadro" class="btn">Quadro — colunas com os cards</button>
+        <button type="button" id="prRelatorio" class="btn">Relatório — texto corrido por etapa</button>
+      </div>
+      <p class="dica-campo" style="margin-top:12px">A impressão respeita os filtros, a busca, a ordenação e o estilo de cards ativos.</p>
+    </div>
+    <div class="modal-pe">
+      <button type="button" class="btn" data-fechar="modalPrint">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="printArea" aria-hidden="true"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================================================================
+   Constantes de domínio
+   ================================================================ */
+const STORAGE_KEY = 'quadro-tramitacao:v1';
+
+const ETAPAS = [
+  {id:'recebidas',    nome:'Proposições Recebidas'},
+  {id:'distribuicao', nome:'Para Distribuição'},
+  {id:'aguardando',   nome:'Aguardando Relatório'},
+  {id:'ordem',        nome:'Ordem do Dia'},
+  {id:'preferencias', nome:'Preferências', opcional:true},
+  {id:'apreciadas',   nome:'Apreciadas'}
+];
+const NOME_ETAPA = Object.fromEntries(ETAPAS.map(e=>[e.id, e.nome]));
+const ROMANOS = ['I','II','III','IV','V','VI','VII'];
+const NOME_CURTO = {
+  recebidas:'Recebidas', distribuicao:'Distribuição', aguardando:'Aguardando',
+  ordem:'Ordem do Dia', preferencias:'Prefer.', apreciadas:'Apreciadas'
+};
+
+const ETAPAS_COM_DISTRIBUICAO = ['aguardando','ordem','preferencias','apreciadas'];
+const ETAPAS_COM_ORDEM_DIA    = ['ordem','preferencias','apreciadas'];
+
+const TIPOS = {
+  PL:'Projeto de Lei', PLC:'Projeto de Lei Complementar',
+  PEC:'Proposta de Emenda à Constituição', RDI:'Requerimento Diverso',
+  VT:'Veto Total', VP:'Veto Parcial',
+  RAP:'Requerimento de Audiência Pública', REQSUB:'Requerimento de Subcomissão',
+  RELSUB:'Relatório Final de Subcomissão', REQ:'Requerimento'
+};
+const PARECERES  = ['Favorável','Favorável com emenda(s)','Contrário'];
+const RESULTADOS = ['Aprovada por unanimidade','Aprovada por maioria','Rejeitada','Outro'];
+
+/* ================================================================
+   Utilidades
+   ================================================================ */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function norm(s){ return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function str(v){ return typeof v==='string' ? v.trim() : ''; }
+function uuid(){ return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id-'+Date.now()+'-'+Math.random().toString(36).slice(2,10); }
+function hojeISO(){ const d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function agoraISO(){ return new Date().toISOString(); }
+function fmtData(iso){ if(!iso) return '—'; const p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : iso; }
+function fmtDataCurta(iso){ if(!iso) return ''; const p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1] : ''; }
+function fmtDataHora(ts){ const d=new Date(ts); if(isNaN(d)) return ts; return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes()); }
+function rotuloCurto(p){ return p.tipo+' n.º '+p.numero+'/'+p.ano; }
+function chave(p){ return p.tipo+'|'+p.numero+'|'+p.ano; }
+function slug(s){ return (norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)) || 'tramitacao'; }
+function stamp(){ const d=new Date(); return ''+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes()); }
+
+function etapasAtivas(){ return data.config.usarPreferencias ? ETAPAS : ETAPAS.filter(e=>e.id!=='preferencias'); }
+function idxEtapa(id){ return etapasAtivas().findIndex(e=>e.id===id); }
+function nomeEtapa(id){ return NOME_ETAPA[id] || id; }
+
+/* ================================================================
+   Estado e persistência (localStorage)
+   ================================================================ */
+function novoQuadro(){
+  return { schemaVersion:3,
+           config:{titulo:'',usarPreferencias:false,limiarAgingDias:30,estiloCards:'padrao',ordenacao:{}},
+           ultimoBackupExportado:null, proposicoes:[] };
+}
+let data = novoQuadro();
+let storageOk = true;
+const ui = { busca:'', tipoFiltro:'', semParecer:false, drawerId:null };
+let loteRegs = [];
+const sujos = new Set();
+
+function detectarStorage(){
+  try{ localStorage.setItem('__teste','1'); localStorage.removeItem('__teste'); }
+  catch(e){ storageOk=false; }
+}
+function setMemoria(){ if(storageOk){ storageOk=false; $('bannerMemoria').hidden=false; renderFooter(); } }
+function salvar(){
+  if(!storageOk){ setMemoria(); return; }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  catch(e){ setMemoria(); }
+}
+function carregar(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) data = normalizarQuadro(JSON.parse(raw));
+  }catch(e){ /* dados ilegíveis: parte de um quadro novo */ }
+}
+
+function normalizarVistas(p){
+  return Array.isArray(p.pedidosVista)
+    ? p.pedidosVista.filter(v=>v && str(v.partido)).map(v=>({
+        partido:str(v.partido).slice(0,60),
+        data:str(v.data) || null
+      }))
+    : [];
+}
+function normalizarProp(p){
+  if(!p || typeof p!=='object') return null;
+  const num=parseInt(p.numero,10), ano=parseInt(p.ano,10);
+  return {
+    id: str(p.id) || uuid(),
+    tipo: (str(p.tipo) in TIPOS) ? p.tipo : (str(p.tipo) || 'REQ'),
+    numero: Number.isFinite(num) ? num : 0,
+    ano: Number.isFinite(ano) ? ano : 0,
+    proponente: str(p.proponente),
+    coautores: Math.max(0, parseInt(p.coautores,10) || 0),
+    ementa: str(p.ementa),
+    etapa: NOME_ETAPA[p.etapa] ? p.etapa : 'recebidas',
+    dataRecebimento: str(p.dataRecebimento) || null,
+    dataDistribuicao: str(p.dataDistribuicao) || null,
+    dataOrdemDia: str(p.dataOrdemDia) || null,
+    dataApreciacao: str(p.dataApreciacao) || null,
+    relator: str(p.relator), parecer: str(p.parecer),
+    convidados: str(p.convidados), local: str(p.local),
+    resultado: str(p.resultado), resultadoObs: str(p.resultadoObs), notas: str(p.notas),
+    relatorioLidoEm: str(p.relatorioLidoEm) || null,
+    tramitacaoConclusiva: !!p.tramitacaoConclusiva,
+    dataVotacaoConclusiva: str(p.dataVotacaoConclusiva) || null,
+    preferenciaIndicadaPor: str(p.preferenciaIndicadaPor),
+    pedidosVista: normalizarVistas(p),
+    historico: Array.isArray(p.historico)
+      ? p.historico.filter(h=>h && h.para).map(h=>({
+          de: (h.de && NOME_ETAPA[h.de]) ? h.de : null,
+          para: NOME_ETAPA[h.para] ? h.para : 'recebidas',
+          quando: str(h.quando) || agoraISO()
+        }))
+      : [],
+    criadoEm: str(p.criadoEm) || agoraISO(),
+    atualizadoEm: str(p.atualizadoEm) || str(p.criadoEm) || agoraISO()
+  };
+}
+function normalizarQuadro(obj){
+  const q = novoQuadro();
+  if(!obj || typeof obj!=='object') return q;
+  const sv = parseInt(obj.schemaVersion,10);
+  q.schemaVersion = (Number.isFinite(sv) && sv>=1) ? sv : 1;
+  if(obj.config && typeof obj.config==='object'){
+    q.config.titulo = str(obj.config.titulo).slice(0,80);
+    q.config.usarPreferencias = !!obj.config.usarPreferencias;
+    const la = parseInt(obj.config.limiarAgingDias,10);
+    q.config.limiarAgingDias = (la>=1 && la<=365) ? la : 30;
+    q.config.estiloCards = (obj.config.estiloCards==='compacto') ? 'compacto' : 'padrao';
+    if(obj.config.ordenacao && typeof obj.config.ordenacao==='object'){
+      ETAPAS.forEach(e=>{ if(obj.config.ordenacao[e.id]==='desc') q.config.ordenacao[e.id]='desc'; });
+    }
+  }
+  q.ultimoBackupExportado = str(obj.ultimoBackupExportado) || null;
+  q.proposicoes = Array.isArray(obj.proposicoes)
+    ? obj.proposicoes.map(normalizarProp).filter(Boolean) : [];
+  return q;
+}
+
+function migrarProps(lista){
+  let n = 0;
+  const dataDe = ts => (str(ts)).slice(0,10) || null;
+  lista.forEach(p=>{
+    if(!p.dataRecebimento && p.criadoEm){ p.dataRecebimento = dataDe(p.criadoEm); n++; }
+    if(!p.dataDistribuicao){
+      const h = p.historico.find(x=>x.para==='aguardando');
+      if(h){ p.dataDistribuicao = dataDe(h.quando); n++; }
+    }
+    if(!p.dataOrdemDia){
+      const h = p.historico.find(x=>x.para==='ordem' || x.para==='preferencias');
+      if(h){ p.dataOrdemDia = dataDe(h.quando); n++; }
+    }
+    if(!p.dataApreciacao){
+      const h = p.historico.find(x=>x.para==='apreciadas');
+      if(h){ p.dataApreciacao = dataDe(h.quando); n++; }
+    }
+  });
+  return n;
+}
+function migrarSchema(q){
+  const v = q.schemaVersion || 1;
+  if(v >= 3) return null;
+  let campos = 0;
+  if(v < 2) campos = migrarProps(q.proposicoes);
+  q.schemaVersion = 3;
+  return {campos};
+}
+
+function reconciliarPreferencias(){
+  if(data.config.usarPreferencias) return 0;
+  let n=0; const agora=agoraISO();
+  data.proposicoes.forEach(p=>{
+    if(p.etapa==='preferencias'){
+      p.historico.push({de:'preferencias', para:'ordem', quando:agora});
+      p.etapa='ordem'; p.atualizadoEm=agora; n++;
+    }
+  });
+  return n;
+}
+
+/* ================================================================
+   Parser do texto publicado
+   ================================================================ */
+const RE_NUM = String.raw`n\s*[.ºo°]*\s*(\d{1,5})\s*\/\s*(\d{4})`;
+const CABECALHOS = [
+  {tipo:'VT',     re:new RegExp(String.raw`veto\s+total\s+ao\s+projeto\s+de\s+lei\s+`+RE_NUM,'i')},
+  {tipo:'VP',     re:new RegExp(String.raw`veto\s+parcial\s+ao\s+projeto\s+de\s+lei\s+`+RE_NUM,'i')},
+  {tipo:'PLC',    re:new RegExp(String.raw`projeto\s+de\s+lei\s+complementar\s+`+RE_NUM,'i')},
+  {tipo:'PEC',    re:new RegExp(String.raw`proposta\s+de\s+emenda\s+[àa]\s+constitui[çc][ãa]o\s+`+RE_NUM,'i')},
+  {tipo:'RELSUB', re:new RegExp(String.raw`relat[óo]rio\s+final\s+de\s+subcomiss[ãa]o\s+`+RE_NUM,'i')},
+  {tipo:'RAP',    re:new RegExp(String.raw`requerimento\s+de\s+audi[êe]ncia\s+p[úu]blica\s+`+RE_NUM,'i')},
+  {tipo:'REQSUB', re:new RegExp(String.raw`requerimento\s+de\s+subcomiss[ãa]o\s+`+RE_NUM,'i')},
+  {tipo:'RDI',    re:new RegExp(String.raw`requerimentos?\s+diversos?\s+`+RE_NUM,'i')},
+  {tipo:'REQ',    re:new RegExp(String.raw`requerimento\s+`+RE_NUM,'i')},
+  {tipo:'PL',     re:new RegExp(String.raw`projeto\s+de\s+lei\s+`+RE_NUM,'i')}
+];
+const CHAVES = [
+  {k:'proponente',       re:/^proponente\s*:\s*/i},
+  {k:'ementa',           re:/^(?:ementa|assunto)\s*:\s*/i},
+  {k:'relator',          re:/^relator\s*:\s*/i},
+  {k:'parecer',          re:/^parecer\s*:\s*/i},
+  {k:'convidados',       re:/^convidados?\s*:\s*/i},
+  {k:'local',            re:/^local\s*:\s*/i},
+  {k:'dataDistribuicao', re:/^data\s+de\s+distribui[çc][ãa]o\s*:?\s*/i}
+];
+/* Linhas de seção de agenda — ignoradas na colagem (v1.3, decisão 34) */
+const RE_SECAO = /^\s*(?:[IVX]{1,4}\s*[-–—.]\s*)?(?:ordem\s+do\s+dia|prefer[êe]ncias(?:\s+da\s+reuni[ãa]o)?|audi[êe]ncias\s+p[úu]blicas|vota[çc][ãa]o\s+conclusiva|relat[óo]rios\s+lidos)\s*:?\s*$/i;
+
+function casaCabecalho(linha){
+  /* tolera numeração de agenda antes do tipo ("1) ", "12. ") — decisão 34 */
+  const pref = linha.match(/^\s*(?:[–—-]\s*)?(?:\d{1,3}\s*[.)]\s+)?/);
+  const limpa = pref ? linha.slice(pref[0].length) : linha;
+  if(!limpa) return null;
+  for(const c of CABECALHOS){
+    const m = c.re.exec(limpa);
+    if(m && m.index===0){
+      const resto = limpa.slice(m[0].length);
+      if(/^[\s.,;:–—-]*$/.test(resto)) return {tipo:c.tipo, numero:parseInt(m[1],10), ano:parseInt(m[2],10)};
+    }
+  }
+  return null;
+}
+function casaChave(linha){
+  for(const c of CHAVES){
+    const m = c.re.exec(linha);
+    if(m && m.index===0) return {k:c.k, m};
+  }
+  return null;
+}
+function limparNome(v){
+  let s = (v||'').replace(/\s+/g,' ').trim();
+  let coautores = null;
+  const m = s.match(/\+\s*(\d+)\s*deputad/i);
+  if(m){ coautores = parseInt(m[1],10); s = s.slice(0, m.index).trim(); }
+  s = s.replace(/^deputado\(a\)\s+/i,'').replace(/^deputad[oa]s?\s+/i,'').replace(/[.,;]+$/,'').trim();
+  return {nome:s, coautores};
+}
+function normalizarParecer(v){
+  const s = norm(v);
+  if(!s) return '';
+  if(s.includes('emenda')) return 'Favorável com emenda(s)';
+  if(s.includes('favor'))  return 'Favorável';
+  if(s.includes('contr')) return 'Contrário';
+  return '';
+}
+function parseDataBR(v){
+  const m = (v||'').match(/(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(\d{2,4})/);
+  if(!m) return null;
+  let a = parseInt(m[3],10); if(a<100) a+=2000;
+  return a+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+}
+function posProcessar(r){
+  if(r.proponente!=null){
+    const limpo = limparNome(r.proponente);
+    r.proponente = limpo.nome;
+    if(limpo.coautores!=null) r.coautores = limpo.coautores;
+  }
+  if(r.relator) r.relator = limparNome(r.relator).nome;
+  if(r.parecer) r.parecer = normalizarParecer(r.parecer);
+  if(r.dataDistribuicao){
+    const d = parseDataBR(r.dataDistribuicao);
+    if(d) r.dataDistribuicao = d; else delete r.dataDistribuicao;
+  }
+  if(!r.coautores) r.coautores = 0;
+  r.tramitacaoConclusiva = /tramita[çc][ãa]o\s+conclusiva/i.test(r.ementa||'');
+}
+function parseTexto(texto){
+  const linhas = (texto||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const regs = []; let atual=null, campo=null;
+  for(const linha of linhas){
+    if(RE_SECAO.test(linha)) continue;
+    const cab = casaCabecalho(linha);
+    if(cab){ atual = {tipo:cab.tipo, numero:cab.numero, ano:cab.ano}; regs.push(atual); campo=null; continue; }
+    const ch = casaChave(linha);
+    if(ch && atual){
+      campo = ch.k;
+      const val = linha.slice(ch.m[0].length).trim();
+      atual[ch.k] = atual[ch.k] ? atual[ch.k]+' '+val : val;
+      continue;
+    }
+    if(atual && campo){ atual[campo] = (atual[campo] ? atual[campo]+' ' : '') + linha; }
+  }
+  if(!regs.length) return parseRelaxado(texto||'');
+  const validos = regs.filter(r=>r.tipo && r.numero && r.ano);
+  validos.forEach(posProcessar);
+  return validos;
+}
+function parseRelaxado(texto){
+  let melhor = null;
+  for(const c of CABECALHOS){
+    const re = new RegExp(c.re.source,'gi'); let m;
+    while((m = re.exec(texto))){
+      if(!melhor || m.index < melhor.m.index || (m.index === melhor.m.index && m[0].length > melhor.m[0].length))
+        melhor = {c, m};
+    }
+  }
+  if(!melhor) return [];
+  const cab = melhor.c, m = melhor.m;
+  const reg = {tipo:cab.tipo, numero:parseInt(m[1],10), ano:parseInt(m[2],10)};
+  const corpo = texto.slice(m.index + m[0].length);
+  const reChaves = /(proponente|ementa|assunto|relator|parecer|convidados|local)\s*:\s*|data\s+de\s+distribui[çc][ãa]o\s*:?\s*/gi;
+  const ms = []; let k;
+  while((k = reChaves.exec(corpo))) ms.push(k);
+  ms.forEach((kk, i)=>{
+    const ini = kk.index + kk[0].length;
+    const fim = (i+1 < ms.length) ? ms[i+1].index : corpo.length;
+    let campo;
+    if(/^data\s+de\s+distribui/i.test(kk[0])) campo = 'dataDistribuicao';
+    else if(/^assunto/i.test(kk[1]||'')) campo = 'ementa';
+    else campo = (kk[1]||'').toLowerCase();
+    const valor = corpo.slice(ini, fim).trim();
+    if(valor) reg[campo] = reg[campo] ? reg[campo]+' '+valor : valor;
+  });
+  posProcessar(reg);
+  return [reg];
+}
+
+/* ================================================================
+   Marcos de data, conclusiva e aging
+   ================================================================ */
+function infoMarco(p){
+  if(p.tramitacaoConclusiva && p.dataVotacaoConclusiva &&
+     (p.etapa==='ordem' || p.etapa==='preferencias')){
+    return {rotulo:'Conclusiva', rotuloLong:'Votação conclusiva desde', data:p.dataVotacaoConclusiva, comAging:true, conclusiva:true};
+  }
+  switch(p.etapa){
+    case 'recebidas':    return {rotulo:'Recebida',       rotuloLong:'Recebida',       data:p.dataRecebimento,  comAging:true};
+    case 'aguardando':   return {rotulo:'Distribuída',    rotuloLong:'Distribuída',    data:p.dataDistribuicao, comAging:true};
+    case 'ordem':
+    case 'preferencias': return {rotulo:'Em pauta desde', rotuloLong:'Em pauta desde', data:p.dataOrdemDia,     comAging:true};
+    case 'apreciadas':   return {rotulo:'Apreciada',      rotuloLong:'Apreciada',      data:p.dataApreciacao,   comAging:false};
+    default:             return null;
+  }
+}
+function diasNaEtapa(p){
+  const m = infoMarco(p);
+  let t = NaN;
+  if(m && m.data) t = Date.parse(m.data);
+  if(isNaN(t)){
+    const ultimo = p.historico[p.historico.length-1];
+    t = Date.parse(ultimo ? ultimo.quando : p.criadoEm);
+  }
+  if(isNaN(t)) return 0;
+  return Math.floor((Date.now()-t)/864e5);
+}
+function agingAtivo(p){
+  return p.etapa!=='apreciadas' && diasNaEtapa(p) >= (data.config.limiarAgingDias||30);
+}
+function emFaseConclusiva(p){
+  return p.tramitacaoConclusiva && !!p.dataVotacaoConclusiva;
+}
+
+/* ================================================================
+   Toasts e modais
+   ================================================================ */
+function toast(msg, tipo){
+  const t = document.createElement('div');
+  t.className = 'toast' + (tipo==='atencao' ? ' toast-atencao' : tipo==='erro' ? ' toast-erro' : '');
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(()=>{ t.classList.add('saindo'); setTimeout(()=>t.remove(), 260); }, 4200);
+}
+
+const camadas = [];
+function registrarCamada(el, fechar){ camadas.push({el, fechar}); }
+function desregistrarCamada(el){ const i=camadas.findIndex(c=>c.el===el); if(i>-1) camadas.splice(i,1); }
+function abrirModal(id){ const el=$(id); el.hidden=false; registrarCamada(el, ()=>fecharModal(id)); }
+function fecharModal(id){ const el=$(id); el.hidden=true; desregistrarCamada(el); }
+function trapFoco(el, e){
+  const focos = [...el.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+    .filter(x=>!x.disabled && x.offsetParent!==null);
+  if(!focos.length) return;
+  const primeiro=focos[0], ultimo=focos[focos.length-1];
+  if(e.shiftKey && document.activeElement===primeiro){ e.preventDefault(); ultimo.focus(); }
+  else if(!e.shiftKey && document.activeElement===ultimo){ e.preventDefault(); primeiro.focus(); }
+}
+
+let confirmResolve = null;
+function confirmar(opt){
+  return new Promise(res=>{
+    confirmResolve = res;
+    $('cfTitulo').textContent = opt.titulo;
+    $('cfMsg').textContent = opt.mensagem;
+    $('cfOk').textContent = opt.rotulo || 'Confirmar';
+    $('cfOk').className = 'btn ' + (opt.perigo ? 'btn-perigo' : 'btn-primario');
+    const el = $('modalConfirm'); el.hidden = false;
+    registrarCamada(el, ()=>fecharConfirm(false));
+    $('cfCancelar').focus();
+  });
+}
+function fecharConfirm(res){
+  if(confirmResolve){ const r=confirmResolve; confirmResolve=null; r(res); }
+  const el=$('modalConfirm'); el.hidden=true; desregistrarCamada(el);
+}
+
+/* ================================================================
+   Mutações
+   ================================================================ */
+function aplicarMarcosDestino(p, destino){
+  if(destino==='aguardando' && !p.dataDistribuicao) p.dataDistribuicao = hojeISO();
+  if((destino==='ordem' || destino==='preferencias') && !p.dataOrdemDia) p.dataOrdemDia = hojeISO();
+  if(destino==='apreciadas' && !p.dataApreciacao) p.dataApreciacao = hojeISO();
+}
+function criarProposicao(v){
+  const agora = agoraISO();
+  const etapa = v.etapa || 'recebidas';
+  return {
+    id:uuid(), tipo:v.tipo, numero:v.numero, ano:v.ano,
+    proponente:v.proponente||'', coautores:Math.max(0, parseInt(v.coautores,10)||0),
+    ementa:v.ementa||'', etapa,
+    dataRecebimento: v.dataRecebimento || hojeISO(),
+    dataDistribuicao: v.dataDistribuicao || (ETAPAS_COM_DISTRIBUICAO.includes(etapa) ? hojeISO() : null),
+    dataOrdemDia:     v.dataOrdemDia     || (ETAPAS_COM_ORDEM_DIA.includes(etapa)     ? hojeISO() : null),
+    dataApreciacao:   v.dataApreciacao   || (etapa==='apreciadas'                     ? hojeISO() : null),
+    relator:v.relator||'', parecer:v.parecer||'',
+    convidados:v.convidados||'', local:v.local||'',
+    resultado:v.resultado||'', resultadoObs:'', notas:'',
+    relatorioLidoEm: v.relatorioLidoEm || null,
+    tramitacaoConclusiva: !!v.tramitacaoConclusiva,
+    dataVotacaoConclusiva: null,
+    preferenciaIndicadaPor: v.preferenciaIndicadaPor||'',
+    pedidosVista: [],
+    historico:[{de:null, para:etapa, quando:agora}],
+    criadoEm:agora, atualizadoEm:agora
+  };
+}
+function avisoTC(p, destino){
+  if(destino==='apreciadas' && p.tramitacaoConclusiva && !p.dataVotacaoConclusiva){
+    toast('Atenção: '+rotuloCurto(p)+' é de tramitação conclusiva e ainda não passou pela votação conclusiva — normalmente permanece na Ordem do Dia após o parecer aprovado.','atencao');
+    return true;
+  }
+  return false;
+}
+function moverProposicao(id, novaEtapa){
+  const p = data.proposicoes.find(x=>x.id===id);
+  if(!p || p.etapa===novaEtapa) return false;
+  p.historico.push({de:p.etapa, para:novaEtapa, quando:agoraISO()});
+  p.etapa = novaEtapa; p.atualizadoEm = agoraISO();
+  aplicarMarcosDestino(p, novaEtapa);
+  salvar(); renderBoard();
+  if(ui.drawerId===id) abrirDrawer(id, true);
+  toast(rotuloCurto(p)+' movida para “'+nomeEtapa(novaEtapa)+'”.');
+  avisoTC(p, novaEtapa);
+  return true;
+}
+function moverEmLote(ids, destino){
+  const agora = agoraISO(); let n=0, avisos=0;
+  ids.forEach(id=>{
+    const p = data.proposicoes.find(x=>x.id===id);
+    if(!p || p.etapa===destino) return;
+    p.historico.push({de:p.etapa, para:destino, quando:agora});
+    p.etapa = destino; p.atualizadoEm = agora;
+    aplicarMarcosDestino(p, destino);
+    if(destino==='apreciadas' && p.tramitacaoConclusiva && !p.dataVotacaoConclusiva) avisos++;
+    n++;
+  });
+  if(n){
+    salvar(); renderBoard();
+    if(ui.drawerId && !data.proposicoes.some(x=>x.id===ui.drawerId)) fecharDrawer();
+    else if(ui.drawerId) abrirDrawer(ui.drawerId, true);
+  }
+  if(avisos) toast('Atenção: '+avisos+' proposição(ões) de tramitação conclusiva sem votação conclusiva registrada — normalmente permanecem na Ordem do Dia.','atencao');
+  return n;
+}
+
+/* ================================================================
+   Renderização — board
+   ================================================================ */
+const board = $('board');
+
+function visivel(p){
+  if(ui.tipoFiltro && p.tipo!==ui.tipoFiltro) return false;
+  if(ui.semParecer && p.parecer) return false;
+  if(ui.busca){
+    const q = norm(ui.busca.trim());
+    const alvo = norm([p.numero, p.ano, p.ementa, p.proponente, p.relator, p.tipo, TIPOS[p.tipo]||''].join(' '));
+    if(!alvo.includes(q)) return false;
+  }
+  return true;
+}
+function comparar(a,b){ return a.ano-b.ano || a.numero-b.numero || a.tipo.localeCompare(b.tipo,'pt'); }
+function dirComparar(etapa){
+  const s = (data.config.ordenacao && data.config.ordenacao[etapa]==='desc') ? -1 : 1;
+  return (a,b)=> s*comparar(a,b);
+}
+
+function chipMarco(p){
+  const m = infoMarco(p);
+  if(!m){
+    if(agingAtivo(p)) return '<span class="chip so-aging" title="Parada nesta etapa há '+diasNaEtapa(p)+' dias">'+diasNaEtapa(p)+'d</span>';
+    return '';
+  }
+  const dias = m.comAging ? diasNaEtapa(p) : null;
+  let txt = fmtDataCurta(m.data);
+  if(m.comAging && dias>=1) txt += (txt ? ' · ' : '') + dias + 'd';
+  const ativo = m.comAging && agingAtivo(p);
+  const title = m.rotuloLong + (m.data ? ' ' + fmtData(m.data) : '')
+    + (m.comAging ? ' — ' + dias + ' dia(s)' : '');
+  return '<span class="chip marco'+(m.conclusiva?' conclusiva':'')+(ativo?' ativo':'')+'" title="'+esc(title)+'">'+esc(m.rotulo)+' '+esc(txt)+'</span>';
+}
+function tooltipCard(p){
+  const linhas = [];
+  if(p.ementa) linhas.push(p.ementa);
+  const m = infoMarco(p);
+  if(m && m.data){
+    linhas.push('—');
+    linhas.push(m.rotuloLong+' '+fmtData(m.data)+(m.comAging ? ' ('+diasNaEtapa(p)+' dias nesta etapa)' : ''));
+  }
+  if(p.relatorioLidoEm) linhas.push('Relatório lido: '+fmtData(p.relatorioLidoEm));
+  if(p.tramitacaoConclusiva) linhas.push('Tramitação conclusiva'+(p.dataVotacaoConclusiva ? ' — votação conclusiva desde '+fmtData(p.dataVotacaoConclusiva) : ''));
+  if(p.pedidosVista.length) linhas.push('Pedidos de vista: '+p.pedidosVista.map(v=>v.partido+' ('+fmtDataCurta(v.data)+')').join(', '));
+  if(p.etapa==='preferencias' && p.preferenciaIndicadaPor) linhas.push('Preferência indicada por: '+p.preferenciaIndicadaPor);
+  if(p.relator) linhas.push('Relator: '+p.relator);
+  if(p.parecer) linhas.push('Parecer: '+p.parecer);
+  if(p.etapa==='apreciadas' && p.resultado) linhas.push('Resultado: '+p.resultado);
+  return linhas.join('\n');
+}
+function cardHTML(p){
+  if(data.config.estiloCards==='compacto') return cardCompactoHTML(p);
+  const conclusiva = emFaseConclusiva(p);
+  const chips = [];
+  const mc = chipMarco(p);
+  if(mc) chips.push(mc);
+  if(p.relatorioLidoEm) chips.push('<span class="chip chip-lida" title="Relatório lido em '+fmtData(p.relatorioLidoEm)+'"><span class="chip-k">Lida</span>'+esc(fmtDataCurta(p.relatorioLidoEm))+'</span>');
+  if(p.pedidosVista.length){
+    const lista = p.pedidosVista.map(v=>v.partido+' ('+fmtDataCurta(v.data)+')').join(', ');
+    chips.push('<span class="chip chip-vista" title="Pedidos de vista: '+esc(lista)+'"><span class="chip-k">Vista</span>'+esc(p.pedidosVista.map(v=>v.partido).join(', '))+'</span>');
+  }
+  if(!conclusiva && p.relator) chips.push('<span class="chip chip-rel"><span class="chip-k">Rel.</span>'+esc(p.relator)+'</span>');
+  if(!conclusiva && p.parecer) chips.push('<span class="chip '+(p.parecer.indexOf('Favor')===0?'chip-fav':'chip-con')+'">'+esc(p.parecer)+'</span>');
+  if(p.etapa==='preferencias' && p.preferenciaIndicadaPor) chips.push('<span class="chip chip-pref"><span class="chip-k">Pref.</span>'+esc(p.preferenciaIndicadaPor)+'</span>');
+  if(p.etapa==='apreciadas' && p.resultado) chips.push('<span class="chip chip-resultado">'+esc(p.resultado)+'</span>');
+  if(p.tipo==='RAP' && p.local) chips.push('<span class="chip chip-local" title="Local">'+esc(p.local)+'</span>');
+  return '<article class="card" draggable="true" tabindex="0" role="button" data-id="'+p.id+'" '
+    + 'aria-label="'+esc(rotuloCurto(p)+' — '+nomeEtapa(p.etapa))+'">'
+    + '<div class="card-topo"><span class="sigla">'+esc(p.tipo)+'</span>'
+    + '<span class="card-num">n.º '+p.numero+'/'+p.ano+'</span>'
+    + '</div>'
+    + '<p class="card-prop">'+esc(p.proponente)
+      + (p.coautores>0 ? ' <span class="coautores" title="'+p.coautores+' coautor(es)">+'+p.coautores+'</span>' : '')
+    + '</p>'
+    + '<p class="card-ementa">'+esc(p.ementa)+'</p>'
+    + (chips.length ? '<div class="card-chips">'+chips.join('')+'</div>' : '')
+    + '</article>';
+}
+function cardCompactoHTML(p){
+  const m = infoMarco(p);
+  const dias = diasNaEtapa(p);
+  const conclusiva = emFaseConclusiva(p);
+  const mostrarDias = (m && m.comAging && dias>=1) || (!m && agingAtivo(p));
+  const tags = [];
+  if(conclusiva) tags.push('<span class="comp-tag">conclusiva</span>');
+  if(p.relatorioLidoEm) tags.push('<span class="comp-tag">lida</span>');
+  const pdot = (p.parecer && !conclusiva)
+    ? '<span class="pdot '+(p.parecer.indexOf('Favor')===0?'pdot-fav':'pdot-con')+'" title="Parecer: '+esc(p.parecer)+'"></span>'
+    : '';
+  return '<article class="card compacto" draggable="true" tabindex="0" role="button" data-id="'+p.id+'"'
+    + ' title="'+esc(tooltipCard(p))+'"'
+    + ' aria-label="'+esc(rotuloCurto(p)+' — '+nomeEtapa(p.etapa))+'">'
+    + '<span class="sigla">'+esc(p.tipo)+'</span>'
+    + '<span class="card-num">n.º '+p.numero+'/'+p.ano+'</span>'
+    + tags.join('')
+    + '<span class="comp-prop">'+esc(p.proponente)+(p.coautores>0 ? ' +'+p.coautores : '')+'</span>'
+    + pdot
+    + (mostrarDias ? '<span class="comp-aging'+(agingAtivo(p)?' ativo':'')+'">'+dias+'d</span>' : '')
+    + '</article>';
+}
+
+const VAZIO_HTML =
+  '<div class="vazio">'
+  + '<p class="vazio-titulo">O quadro está vazio.</p>'
+  + '<p class="vazio-texto">Cadastre a primeira proposição — cole o texto publicado e o sistema preenche os campos para revisão.</p>'
+  + '<div class="vazio-acoes">'
+  + '<button class="btn btn-primario" data-acao="nova"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nova proposição</button>'
+  + '<button class="btn" data-acao="interpretar">Interpretar texto publicado</button>'
+  + '</div>'
+  + '<button class="vazio-exemplos" data-acao="exemplos">Carregar os 10 exemplos de teste no campo de interpretação</button>'
+  + '</div>';
+
+/* Cards de uma coluna — ordenação + agrupamento de lidas (compartilhado com a impressão) */
+function cardsDaColuna(et, vis){
+  const cmp = dirComparar(et.id);
+  const lista = vis.slice().sort(cmp);
+  if(et.id==='ordem' || et.id==='preferencias'){
+    const lidas  = lista.filter(p=>p.relatorioLidoEm);
+    const outras = lista.filter(p=>!p.relatorioLidoEm);
+    return lidas.map(cardHTML).join('')
+      + ((lidas.length && outras.length) ? '<div class="sep-lidas"><span>relatório lido</span></div>' : '')
+      + outras.map(cardHTML).join('');
+  }
+  return lista.map(cardHTML).join('');
+}
+
+function renderBoard(){
+  if(!data.proposicoes.length){ board.innerHTML = VAZIO_HTML; return; }
+  const etapas = etapasAtivas();
+  const filtrando = !!(ui.busca || ui.tipoFiltro || ui.semParecer);
+  board.innerHTML = etapas.map((et,i)=>{
+    const todas = data.proposicoes.filter(p=>p.etapa===et.id);
+    const vis = todas.filter(visivel);
+    const nAging = vis.filter(agingAtivo).length;
+    const count = (filtrando && vis.length<todas.length) ? vis.length+'/'+todas.length : String(todas.length);
+    const cardsHTML = cardsDaColuna(et, vis);
+    const desc = data.config.ordenacao && data.config.ordenacao[et.id]==='desc';
+    const btnOrdem =
+      '<button class="btn btn-mini" data-acao="ordenar" data-etapa="'+et.id+'"'
+      + ' title="'+(desc?'Mais novas no topo — clique para mais antigas':'Mais antigas no topo — clique para mais novas')+'"'
+      + ' aria-label="Alternar ordenação de '+esc(et.nome)+'">'
+      + '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="'+(desc?'M12 5v14M19 12l-7 7-7-7':'M12 19V5M5 12l7-7 7 7')+'"/></svg></button>';
+    const lidasNaColuna = (et.id==='ordem') ? todas.filter(p=>p.relatorioLidoEm).length : 0;
+    const btnEnviarLidas = (et.id==='ordem' && data.config.usarPreferencias && lidasNaColuna>0)
+      ? '<button class="btn btn-mini" data-acao="enviar-lidas" title="Enviar as proposições com relatório lido (engessados) para Preferências" aria-label="Enviar lidas para Preferências"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15M13.5 5.5l6.5 6.5-6.5 6.5"/></svg></button>'
+      : '';
+    const btnPauta = ((et.id==='ordem' && !data.config.usarPreferencias) || et.id==='preferencias')
+      ? '<button class="btn btn-mini" data-acao="pauta" title="Gerar texto da pauta da reunião (para copiar nas notas)" aria-label="Gerar pauta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 16h5"/></svg></button>'
+      : '';
+    return '<section class="coluna" data-etapa="'+et.id+'">'
+      + '<header class="col-cabeca">'
+      +   '<div class="col-titulo"><span class="col-num">'+ROMANOS[i]+'</span>'
+      +     '<span class="col-nome">'+esc(et.nome)+'</span>'
+      +     (et.id==='ordem' && data.config.usarPreferencias ? '<span class="col-tag">aptas</span>' : '')
+      +   '</div>'
+      +   '<div class="col-acoes">'
+      +     (nAging ? '<span class="col-aging" title="'+nAging+' proposição(ões) nesta etapa há '+data.config.limiarAgingDias+' dias ou mais"><span class="aging-dot"></span>'+nAging+'</span>' : '')
+      +     '<span class="col-count"'+(filtrando?' title="visíveis / total"':'')+'>'+count+'</span>'
+      +     btnPauta
+      +     btnOrdem
+      +     btnEnviarLidas
+      +     (et.id==='preferencias'
+          ? '<button class="btn btn-mini" data-acao="recolher" title="Recolher preferências — devolver as não apreciadas à Ordem do Dia" aria-label="Recolher preferências"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 6l-6 6 6 6M18.5 6l-6 6 6 6"/></svg></button>'
+          : '')
+      +     '<button class="btn btn-mini" data-acao="nova-coluna" data-etapa="'+et.id+'" title="Nova proposição nesta etapa" aria-label="Nova proposição em '+esc(et.nome)+'"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>'
+      +   '</div>'
+      + '</header>'
+      + '<div class="col-lista">'
+      +   (cardsHTML || '<p class="col-vazia">'+(filtrando?'nenhuma corresponde ao filtro':'—')+'</p>')
+      + '</div>'
+      + '</section>';
+  }).join('');
+}
+
+function renderTopbar(){
+  $('tituloQuadro').textContent = data.config.titulo || 'Quadro de Tramitação';
+}
+function renderFooter(){
+  const n = data.proposicoes.length;
+  $('rodapeInfo').textContent = n+' '+(n===1?'proposição':'proposições')
+    + (storageOk ? ' · salvamento automático no navegador' : ' · atenção: alterações não persistem (ver aviso acima)');
+  $('rodapeBackup').textContent = data.ultimoBackupExportado
+    ? 'Último backup exportado: '+fmtDataHora(data.ultimoBackupExportado)
+    : 'Último backup exportado: nunca — exporte um JSON com regularidade';
+}
+function renderTudo(){ renderTopbar(); renderBoard(); renderFooter(); }
+
+function aplicarEstilo(){
+  const comp = data.config.estiloCards==='compacto';
+  document.body.classList.toggle('modo-compacto', comp);
+  const b = $('btnEstilo');
+  b.setAttribute('aria-pressed', String(comp));
+  b.title = comp ? 'Cards compactos — clique para voltar ao padrão' : 'Alternar para cards compactos';
+}
+
+/* ================================================================
+   Exportar / importar
+   ================================================================ */
+function baixarArquivo(nome, conteudo, tipo){
+  const blob = new Blob([conteudo], {type:tipo});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function exportarJSON(){
+  const nome = 'quadro-'+slug(data.config.titulo || 'tramitacao')+'-'+stamp()+'.json';
+  baixarArquivo(nome, JSON.stringify(data,null,2), 'application/json');
+  data.ultimoBackupExportado = agoraISO();
+  salvar(); renderFooter();
+  toast('Backup exportado: '+nome);
+}
+function lerArquivo(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsText(file,'utf-8');
+  });
+}
+async function executarImportacao(){
+  const file = $('importArquivo').files[0];
+  if(!file){ toast('Selecione um arquivo JSON.','atencao'); return; }
+  let obj;
+  try{ obj = JSON.parse(await lerArquivo(file)); }
+  catch(e){ toast('Arquivo inválido: não é um JSON legível.','erro'); return; }
+  if(!obj || !Array.isArray(obj.proposicoes)){
+    toast('Arquivo sem a lista de proposições — verifique se é um backup deste quadro.','erro'); return;
+  }
+  const modo = document.querySelector('input[name="modoImport"]:checked').value;
+  const importQ = normalizarQuadro(obj);
+  const migArq = migrarSchema(importQ);
+  const notaMig = (migArq && migArq.campos>0) ? ' Marcos de data preenchidos a partir do histórico (arquivo antigo).' : '';
+
+  if(modo==='substituir'){
+    let backupFeito = false;
+    if(data.proposicoes.length){
+      baixarArquivo('backup-automatico-'+slug(data.config.titulo||'tramitacao')+'-'+stamp()+'.json',
+        JSON.stringify(data,null,2), 'application/json');
+      backupFeito = true;
+    }
+    data = importQ;
+    data.ultimoBackupExportado = agoraISO();
+    reconciliarPreferencias();
+    fecharModal('modalImportar');
+    if(ui.drawerId && !data.proposicoes.some(p=>p.id===ui.drawerId)) fecharDrawer();
+    aplicarEstilo(); salvar(); renderTudo();
+    toast('Quadro substituído: '+data.proposicoes.length+' proposições.'
+      + (backupFeito ? ' Cópia de segurança do quadro anterior baixada.' : '') + notaMig);
+  } else {
+    let add=0, upd=0, mant=0;
+    const idx = new Map(data.proposicoes.map(p=>[chave(p), p]));
+    const idsExistentes = new Set(data.proposicoes.map(p=>p.id));
+    for(const imp of importQ.proposicoes){
+      const ex = idx.get(chave(imp));
+      if(!ex){
+        if(idsExistentes.has(imp.id)) imp.id = uuid();
+        data.proposicoes.push(imp);
+        idx.set(chave(imp), imp);
+        idsExistentes.add(imp.id);
+        add++;
+      } else {
+        const impMaisRecente = Date.parse(imp.atualizadoEm||0) >= Date.parse(ex.atualizadoEm||0);
+        if(impMaisRecente){ imp.id = ex.id; Object.assign(ex, imp); upd++; }
+        else mant++;
+      }
+    }
+    reconciliarPreferencias();
+    fecharModal('modalImportar');
+    salvar(); renderTudo();
+    const partes = [add+' adicionada'+(add===1?'':'s')];
+    if(upd)  partes.push(upd+' atualizada'+(upd===1?'':'s'));
+    if(mant) partes.push(mant+' mantida'+(mant===1?'':'s'));
+    toast('Importação concluída: '+partes.join(', ')+'.'+notaMig);
+  }
+  $('importArquivo').value='';
+}
+
+/* ================================================================
+   Drawer
+   ================================================================ */
+const drawer = $('drawer'), drawerScrim = $('drawerScrim');
+function propAtual(){ return data.proposicoes.find(p=>p.id===ui.drawerId); }
+
+function refreshDrawerMeta(p){
+  $('dwSigla').textContent = p.tipo;
+  $('dwTitulo').textContent = 'n.º '+p.numero+'/'+p.ano;
+  $('dwTipoNome').textContent = TIPOS[p.tipo] || p.tipo;
+  $('dEmentaLabel').textContent = p.tipo==='RAP' ? 'Assunto' : 'Ementa';
+  $('grupoRAPDrawer').classList.toggle('escondido', p.tipo!=='RAP');
+  $('dEtapaAtual').textContent = nomeEtapa(p.etapa);
+  const apreciando = p.etapa==='apreciadas';
+  $('dResultado').disabled = !apreciando;
+  $('dResultadoObs').disabled = !apreciando;
+  $('dicaResultado').hidden = apreciando;
+  $('camposConclusiva').classList.toggle('escondido', !p.tramitacaoConclusiva);
+  $('btnMarcarConclusiva').hidden = !(p.tramitacaoConclusiva && !p.dataVotacaoConclusiva
+    && (p.etapa==='ordem' || p.etapa==='preferencias'));
+  $('dicaConclusiva').hidden = !emFaseConclusiva(p);
+}
+function renderTimeline(p){
+  const itens = [...p.historico].reverse();
+  $('dwTimeline').innerHTML = itens.map(h=>
+    '<div class="tl-item"><span class="tl-mov">'
+    + (h.de ? esc(nomeEtapa(h.de)) : '<span class="tl-origem">cadastro</span>')
+    + ' <span class="tl-seta">→</span> '+esc(nomeEtapa(h.para))
+    + '</span><time>'+fmtDataHora(h.quando)+'</time></div>'
+  ).join('') || '<p class="tl-vazia">Sem registros.</p>';
+}
+function renderMoverPara(p){
+  const etapas = etapasAtivas();
+  $('dwMoverPara').innerHTML = etapas.filter(e=>e.id!==p.etapa).map(e=>{
+    const i = etapas.indexOf(e);
+    return '<option value="'+e.id+'">'+ROMANOS[i]+' · '+esc(e.nome)+'</option>';
+  }).join('');
+}
+function renderVistaChips(p){
+  const box = $('dwVistaChips');
+  if(!p.pedidosVista.length){
+    box.innerHTML = '<p class="tl-vazia" style="margin:0">Nenhum pedido registrado.</p>';
+    return;
+  }
+  box.innerHTML = p.pedidosVista.map((v,i)=>{
+    const txt = v.partido + (v.data ? ' · '+fmtDataCurta(v.data) : '');
+    return '<span class="chip chip-vista" title="Pedido de vista em '+esc(fmtData(v.data))+'">'+esc(txt)
+      + '<button type="button" class="vista-x" data-idx="'+i+'" aria-label="Remover '+esc(v.partido)+'">×</button></span>';
+  }).join('');
+}
+function preencherCamposDrawer(p){
+  $('dTipo').value = p.tipo; $('dNumero').value = p.numero; $('dAno').value = p.ano;
+  $('dProponente').value = p.proponente; $('dCoautores').value = p.coautores||'';
+  $('dEmenta').value = p.ementa; $('dRelator').value = p.relator; $('dParecer').value = p.parecer;
+  $('dResultado').value = p.resultado; $('dResultadoObs').value = p.resultadoObs;
+  $('dConvidados').value = p.convidados; $('dLocal').value = p.local; $('dNotas').value = p.notas;
+  $('dDataRecebimento').value = p.dataRecebimento||'';
+  $('dDataDistribuicao').value = p.dataDistribuicao||'';
+  $('dDataOrdemDia').value = p.dataOrdemDia||'';
+  $('dDataApreciacao').value = p.dataApreciacao||'';
+  $('dRelatorioLido').checked = !!p.relatorioLidoEm;
+  $('dRelatorioLidoEm').value = p.relatorioLidoEm||'';
+  $('dPreferenciaPor').value = p.preferenciaIndicadaPor;
+  $('dTramitacaoConclusiva').checked = !!p.tramitacaoConclusiva;
+  $('dDataVotacaoConclusiva').value = p.dataVotacaoConclusiva||'';
+  $('dVistaPartido').value = '';
+  $('dVistaData').value = hojeISO();
+  renderVistaChips(p);
+  refreshDrawerMeta(p); renderTimeline(p); renderMoverPara(p);
+}
+function abrirDrawer(id, apenasAtualizar){
+  const p = data.proposicoes.find(x=>x.id===id);
+  if(!p){ fecharDrawer(); return; }
+  ui.drawerId = id;
+  preencherCamposDrawer(p);
+  if(!apenasAtualizar || !drawer.classList.contains('aberta')){
+    drawer.classList.add('aberta');
+    drawer.setAttribute('aria-hidden','false');
+    drawerScrim.classList.add('visivel');
+    if(!camadas.some(c=>c.el===drawer)) registrarCamada(drawer, fecharDrawer);
+    if(!apenasAtualizar) $('dwFechar').focus();
+  }
+}
+function fecharDrawer(){
+  const id = ui.drawerId;
+  drawer.classList.remove('aberta');
+  drawer.setAttribute('aria-hidden','true');
+  drawerScrim.classList.remove('visivel');
+  ui.drawerId = null;
+  desregistrarCamada(drawer);
+  if(id){ const c = board.querySelector('[data-id="'+id+'"]'); if(c) c.focus(); }
+}
+function bindCampo(idCampo, prop){
+  const el = $(idCampo);
+  const imediato = el.tagName==='SELECT' || el.type==='date';
+  let t = null;
+  el.addEventListener(imediato?'change':'input', ()=>{
+    const fn = ()=>{
+      const p = propAtual(); if(!p) return;
+      let v = el.value;
+      if(el.type==='number') v = v==='' ? 0 : (parseInt(v,10)||0);
+      if(el.type==='date') v = v || null;
+      p[prop] = v; p.atualizadoEm = agoraISO();
+      salvar(); renderBoard(); refreshDrawerMeta(p);
+    };
+    clearTimeout(t);
+    if(imediato) fn(); else t = setTimeout(fn, 450);
+  });
+}
+[['dTipo','tipo'],['dNumero','numero'],['dAno','ano'],['dProponente','proponente'],
+ ['dCoautores','coautores'],['dEmenta','ementa'],['dRelator','relator'],['dParecer','parecer'],
+ ['dResultado','resultado'],['dResultadoObs','resultadoObs'],['dConvidados','convidados'],
+ ['dLocal','local'],['dNotas','notas'],['dDataRecebimento','dataRecebimento'],
+ ['dDataDistribuicao','dataDistribuicao'],['dDataOrdemDia','dataOrdemDia'],
+ ['dDataApreciacao','dataApreciacao'],['dPreferenciaPor','preferenciaIndicadaPor'],
+ ['dDataVotacaoConclusiva','dataVotacaoConclusiva']
+].forEach(par=>bindCampo(par[0], par[1]));
+
+ $('dRelatorioLido').addEventListener('change', ()=>{
+  const p = propAtual(); if(!p) return;
+  if($('dRelatorioLido').checked){
+    if(!p.relatorioLidoEm){
+      p.relatorioLidoEm = hojeISO();
+      $('dRelatorioLidoEm').value = p.relatorioLidoEm;
+    }
+  } else {
+    p.relatorioLidoEm = null;
+    $('dRelatorioLidoEm').value = '';
+  }
+  p.atualizadoEm = agoraISO();
+  salvar(); renderBoard();
+});
+ $('dRelatorioLidoEm').addEventListener('change', ()=>{
+  const p = propAtual(); if(!p) return;
+  p.relatorioLidoEm = $('dRelatorioLidoEm').value || null;
+  $('dRelatorioLido').checked = !!p.relatorioLidoEm;
+  p.atualizadoEm = agoraISO();
+  salvar(); renderBoard();
+});
+
+ $('dTramitacaoConclusiva').addEventListener('change', ()=>{
+  const p = propAtual(); if(!p) return;
+  p.tramitacaoConclusiva = $('dTramitacaoConclusiva').checked;
+  if(!p.tramitacaoConclusiva && p.dataVotacaoConclusiva){
+    p.dataVotacaoConclusiva = null;
+    $('dDataVotacaoConclusiva').value = '';
+  }
+  p.atualizadoEm = agoraISO();
+  salvar(); renderBoard(); refreshDrawerMeta(p);
+});
+ $('btnMarcarConclusiva').addEventListener('click', ()=>{
+  const p = propAtual(); if(!p) return;
+  p.tramitacaoConclusiva = true;
+  $('dTramitacaoConclusiva').checked = true;
+  if(!p.dataVotacaoConclusiva){
+    p.dataVotacaoConclusiva = hojeISO();
+    $('dDataVotacaoConclusiva').value = p.dataVotacaoConclusiva;
+  }
+  p.atualizadoEm = agoraISO();
+  salvar(); renderBoard(); refreshDrawerMeta(p);
+  toast(rotuloCurto(p)+' em votação conclusiva — aguarda a 2ª votação na comissão.');
+});
+
+ $('btnVistaAdd').addEventListener('click', ()=>{
+  const p = propAtual(); if(!p) return;
+  const partido = $('dVistaPartido').value.trim();
+  if(!partido){ toast('Informe o partido/bancada do pedido de vista.','atencao'); return; }
+  const dataV = $('dVistaData').value || hojeISO();
+  p.pedidosVista.push({partido:partido.slice(0,60), data:dataV});
+  p.atualizadoEm = agoraISO();
+  $('dVistaPartido').value = '';
+  salvar(); renderBoard(); renderVistaChips(p);
+  $('dVistaPartido').focus();
+});
+ $('dVistaPartido').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); $('btnVistaAdd').click(); }
+});
+ $('dwVistaChips').addEventListener('click', e=>{
+  const b = e.target.closest('.vista-x'); if(!b) return;
+  const p = propAtual(); if(!p) return;
+  p.pedidosVista.splice(parseInt(b.dataset.idx,10),1);
+  p.atualizadoEm = agoraISO();
+  salvar(); renderBoard(); renderVistaChips(p);
+});
+
+ $('dwFechar').addEventListener('click', fecharDrawer);
+drawerScrim.addEventListener('mousedown', fecharDrawer);
+ $('btnMover').addEventListener('click', ()=>{
+  const v = $('dwMoverPara').value;
+  if(v) moverProposicao(ui.drawerId, v);
+});
+ $('dwExcluir').addEventListener('click', async ()=>{
+  const p = propAtual(); if(!p) return;
+  const ok = await confirmar({
+    titulo:'Excluir proposição',
+    mensagem:'Excluir '+rotuloCurto(p)+' ('+nomeEtapa(p.etapa)+')? Esta ação não pode ser desfeita.',
+    rotulo:'Excluir', perigo:true
+  });
+  if(!ok) return;
+  data.proposicoes = data.proposicoes.filter(x=>x.id!==p.id);
+  fecharDrawer(); salvar(); renderTudo();
+  toast('Proposição excluída.');
+});
+
+/* ================================================================
+   Modal: nova proposição
+   ================================================================ */
+function atualizarCondicionaisForm(){
+  const etapa = $('fEtapa').value, tipo = $('fTipo').value;
+  const idx = idxEtapa(etapa), idxAg = idxEtapa('aguardando');
+  $('grupoRelParecer').classList.toggle('escondido',
+    !(idx>=idxAg || $('fRelator').value || $('fParecer').value));
+  $('grupoResultado').classList.toggle('escondido',
+    !(etapa==='apreciadas' || $('fResultado').value));
+  const lidoVis = (etapa==='ordem' || etapa==='preferencias');
+  const prefVis = (etapa==='preferencias');
+  $('campoFLido').classList.toggle('escondido', !lidoVis);
+  $('campoFPref').classList.toggle('escondido', !prefVis);
+  $('grupoLido').classList.toggle('escondido', !(lidoVis || prefVis));
+  $('grupoRAP').classList.toggle('escondido', tipo!=='RAP');
+  $('fEmentaLabel').textContent = tipo==='RAP' ? 'Assunto' : 'Ementa';
+  recalcDatasForm();
+}
+function recalcDatasForm(){
+  const etapa = $('fEtapa').value;
+  const hoje = hojeISO();
+  const regras = [
+    ['fDataRecebimento', true],
+    ['fDataDistribuicao', ETAPAS_COM_DISTRIBUICAO.includes(etapa)],
+    ['fDataOrdemDia',     ETAPAS_COM_ORDEM_DIA.includes(etapa)],
+    ['fDataApreciacao',   etapa==='apreciadas']
+  ];
+  regras.forEach(par=>{
+    if(sujos.has(par[0])) return;
+    $(par[0]).value = par[1] ? hoje : '';
+  });
+}
+['fDataRecebimento','fDataDistribuicao','fDataOrdemDia','fDataApreciacao'].forEach(id=>{
+  $(id).addEventListener('input', ()=>sujos.add(id));
+  $(id).addEventListener('change', ()=>sujos.add(id));
+});
+function abrirModalNova(etapa){
+  const etapas = etapasAtivas();
+  $('fEtapa').innerHTML = etapas.map((e,i)=>'<option value="'+e.id+'">'+ROMANOS[i]+' · '+esc(e.nome)+'</option>').join('');
+  $('formNova').reset();
+  sujos.clear();
+  $('fEtapa').value = (etapa && etapas.some(e=>e.id===etapa)) ? etapa : 'recebidas';
+  $('fTipo').value='PL'; $('fParecer').value=''; $('fResultado').value='';
+  $('parseTexto').value=''; $('parseInfo').textContent=''; $('btnLote').hidden=true;
+  $('formErro').hidden=true; loteRegs=[];
+  atualizarCondicionaisForm();
+  abrirModal('modalNova');
+  setTimeout(()=>$('parseTexto').focus(), 30);
+}
+function preencherForm(r){
+  if(TIPOS[r.tipo]) $('fTipo').value = r.tipo;
+  $('fNumero').value = r.numero||'';
+  $('fAno').value = r.ano||'';
+  $('fProponente').value = r.proponente||'';
+  $('fCoautores').value = r.coautores||'';
+  $('fEmenta').value = r.ementa||'';
+  $('fRelator').value = r.relator||'';
+  $('fParecer').value = PARECERES.includes(r.parecer) ? r.parecer : '';
+  $('fConvidados').value = r.convidados||'';
+  $('fLocal').value = r.local||'';
+  $('fResultado').value = '';
+  $('fTramitacaoConclusiva').checked = !!r.tramitacaoConclusiva;
+  if(r.dataDistribuicao){
+    $('fDataDistribuicao').value = r.dataDistribuicao;
+    sujos.add('fDataDistribuicao');
+  }
+  atualizarCondicionaisForm();
+}
+ $('btnInterpretar').addEventListener('click', ()=>{
+  const regs = parseTexto($('parseTexto').value);
+  loteRegs = regs;
+  if(!regs.length){
+    $('parseInfo').textContent=''; $('btnLote').hidden=true;
+    toast('Não foi possível identificar uma proposição — verifique se o texto traz o cabeçalho (ex.: “Projeto de Lei n.º 308/2024”).','atencao');
+    return;
+  }
+  preencherForm(regs[0]);
+  if(regs.length>1){
+    $('parseInfo').textContent = regs.length+' proposições identificadas — o formulário mostra a primeira; “Adicionar todas” ignora duplicadas.';
+    $('btnLote').hidden=false;
+    $('btnLote').textContent = 'Adicionar todas ('+regs.length+')';
+  } else {
+    $('parseInfo').textContent = 'Proposição interpretada — revise os campos e confirme.'
+      + (regs[0].tramitacaoConclusiva ? ' Tramitação conclusiva detectada na ementa.' : '');
+    $('btnLote').hidden=true;
+  }
+});
+ $('btnLote').addEventListener('click', ()=>{
+  const etapa = $('fEtapa').value;
+  const existentes = new Set(data.proposicoes.map(chave));
+  let add=0, dup=0;
+  for(const r of loteRegs){
+    if(!r.tipo || !r.numero || !r.ano) continue;
+    const k = chave(r);
+    if(existentes.has(k)){ dup++; continue; }
+    existentes.add(k);
+    data.proposicoes.push(criarProposicao({
+      tipo:r.tipo, numero:r.numero, ano:r.ano, proponente:r.proponente,
+      coautores:r.coautores, ementa:r.ementa, etapa,
+      relator:r.relator, parecer:r.parecer, convidados:r.convidados,
+      local:r.local, dataDistribuicao:r.dataDistribuicao||null,
+      tramitacaoConclusiva: r.tramitacaoConclusiva
+    }));
+    add++;
+  }
+  salvar(); renderTudo(); fecharModal('modalNova');
+  toast('Lote concluído: '+add+' adicionada'+(add===1?'':'s')
+    +(dup ? ', '+dup+' ignorada'+(dup===1?'':'s')+' por duplicidade' : '')+'.');
+});
+function lerForm(){
+  return {
+    etapa:$('fEtapa').value, tipo:$('fTipo').value,
+    numero:parseInt($('fNumero').value,10)||0,
+    ano:parseInt($('fAno').value,10)||0,
+    proponente:$('fProponente').value.trim(),
+    coautores:Math.max(0, parseInt($('fCoautores').value,10)||0),
+    ementa:$('fEmenta').value.trim(),
+    relator:$('fRelator').value.trim(),
+    parecer:$('fParecer').value,
+    resultado:$('fResultado').value,
+    convidados:$('fConvidados').value.trim(),
+    local:$('fLocal').value.trim(),
+    dataRecebimento: $('fDataRecebimento').value || null,
+    dataDistribuicao: $('fDataDistribuicao').value || null,
+    dataOrdemDia: $('fDataOrdemDia').value || null,
+    dataApreciacao: $('fDataApreciacao').value || null,
+    relatorioLidoEm: $('fRelatorioLidoEm').value || null,
+    preferenciaIndicadaPor: $('fPreferenciaPor').value.trim(),
+    tramitacaoConclusiva: $('fTramitacaoConclusiva').checked
+  };
+}
+function validarForm(v){
+  const e=[];
+  if(!(v.numero>=1)) e.push('número');
+  if(!(v.ano>=1900 && v.ano<=2100)) e.push('ano');
+  if(!v.proponente) e.push('proponente');
+  if(!v.ementa) e.push(v.tipo==='RAP'?'assunto':'ementa');
+  return e;
+}
+ $('formNova').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const v = lerForm();
+  const erros = validarForm(v);
+  if(erros.length){
+    $('formErro').textContent = 'Preencha os campos obrigatórios: '+erros.join(', ')+'.';
+    $('formErro').hidden=false; return;
+  }
+  $('formErro').hidden=true;
+  const dup = data.proposicoes.find(p=>p.tipo===v.tipo && p.numero===v.numero && p.ano===v.ano);
+  if(dup){
+    const ok = await confirmar({
+      titulo:'Proposição duplicada',
+      mensagem:rotuloCurto(v)+' já consta no quadro ('+nomeEtapa(dup.etapa)+'). Adicionar mesmo assim?',
+      rotulo:'Adicionar'
+    });
+    if(!ok) return;
+  }
+  const p = criarProposicao(v);
+  data.proposicoes.push(p);
+  salvar(); renderTudo(); fecharModal('modalNova');
+  toast(rotuloCurto(p)+' adicionada em “'+nomeEtapa(p.etapa)+'”.');
+});
+ $('fEtapa').addEventListener('change', atualizarCondicionaisForm);
+ $('fTipo').addEventListener('change', atualizarCondicionaisForm);
+
+/* ================================================================
+   Recolher preferências / enviar lidas
+   ================================================================ */
+async function recolherPreferencias(){
+  const alvo = data.proposicoes.filter(p=>p.etapa==='preferencias');
+  if(!alvo.length){ toast('Nenhuma proposição em Preferências.','atencao'); return; }
+  const n = alvo.length;
+  const ok = await confirmar({
+    titulo:'Recolher preferências',
+    mensagem:'Devolver '+n+' '+(n===1?'proposição não apreciada':'proposições não apreciadas')+' de Preferências à Ordem do Dia?',
+    rotulo:'Recolher'
+  });
+  if(!ok) return;
+  moverEmLote(alvo.map(p=>p.id), 'ordem');
+  toast(n+' '+(n===1?'proposição devolvida':'proposições devolvidas')+' à Ordem do Dia.');
+}
+async function enviarLidas(){
+  const alvo = data.proposicoes.filter(p=>p.etapa==='ordem' && p.relatorioLidoEm);
+  if(!alvo.length){ toast('Nenhuma proposição com relatório lido na Ordem do Dia.','atencao'); return; }
+  const n = alvo.length;
+  const ok = await confirmar({
+    titulo:'Enviar lidas para Preferências',
+    mensagem:'Enviar as '+n+' proposições com relatório lido (engessados) da Ordem do Dia para Preferências, compondo a pauta da próxima reunião?',
+    rotulo:'Enviar'
+  });
+  if(!ok) return;
+  moverEmLote(alvo.map(p=>p.id), 'preferencias');
+  toast(n+' '+(n===1?'proposição enviada':'proposições enviadas')+' para Preferências — preencha quem indicou cada uma no painel.');
+}
+
+/* ================================================================
+   Gerador de pauta (v1.3)
+   ================================================================ */
+function rotuloTipoPauta(t){
+  if(t==='VT') return 'Veto Total ao Projeto de Lei';
+  if(t==='VP') return 'Veto Parcial ao Projeto de Lei';
+  return TIPOS[t] || t;
+}
+function itemPauta(p, n, opts){
+  const L = [];
+  L.push(n+') '+rotuloTipoPauta(p.tipo)+' n.º '+p.numero+'/'+p.ano);
+  L.push('Proponente: '+p.proponente+(p.coautores>0 ? ' + '+p.coautores+' Deputado(s)' : ''));
+  if(opts.ementa!=='nenhuma'){
+    let em = p.ementa || '';
+    if(opts.ementa==='linha') em = (em.split(/\r?\n/)[0]||'');
+    L.push((p.tipo==='RAP' ? 'Assunto' : 'Ementa')+': '+em);
+  }
+  const faseC = emFaseConclusiva(p);
+  if(opts.relParecer && !faseC){
+    if(p.relator) L.push('Relator: '+p.relator);
+    if(p.parecer) L.push('Parecer: '+p.parecer);
+  }
+  if(opts.vistas && p.pedidosVista.length){
+    L.push('Vistas registradas: '+p.pedidosVista.map(v=>v.partido+(v.data?' ('+fmtDataCurta(v.data)+')':'')).join(', ')+'.');
+  }
+  if(p.tipo==='RAP'){
+    if(p.convidados) L.push('Convidados: '+p.convidados);
+    if(p.local)      L.push('Local: '+p.local);
+  }
+  return L.join('\n');
+}
+function gerarPautaTexto(){
+  const opts = {
+    data: $('pautaData').value || hojeISO(),
+    ementa: $('pautaEmenta').value || 'completa',
+    relParecer: $('pautaRelParecer').checked,
+    vistas: $('pautaVistas').checked,
+    agrupar: $('pautaAgrupar').checked
+  };
+  const ccj = data.config.usarPreferencias;
+  const fonte = ccj ? 'preferencias' : 'ordem';
+  const itens = data.proposicoes.filter(p=>p.etapa===fonte).sort(comparar);
+  const titulo = data.config.titulo ? ' — '+data.config.titulo : '';
+  const out = [];
+  if(ccj){
+    out.push('IV- ORDEM DO DIA'+titulo);
+    out.push('Reunião de '+fmtData(opts.data));
+    out.push('- Preferências da Reunião:');
+  } else {
+    out.push('ORDEM DO DIA'+titulo);
+    out.push('Reunião de '+fmtData(opts.data));
+  }
+  out.push('');
+  let n = 0; const prox = ()=>++n;
+  if(!ccj){
+    const lidas = itens.filter(p=>p.relatorioLidoEm && !emFaseConclusiva(p) && p.tipo!=='RAP');
+    const dem   = itens.filter(p=>!p.relatorioLidoEm && !emFaseConclusiva(p) && p.tipo!=='RAP');
+    const concl = itens.filter(p=>emFaseConclusiva(p) && p.tipo!=='RAP');
+    const raps  = itens.filter(p=>p.tipo==='RAP');
+    if(lidas.length){ out.push('Relatórios lidos:'); out.push(''); lidas.forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); }); }
+    dem.forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); });
+    if(concl.length){ out.push('Votação Conclusiva:'); out.push(''); concl.forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); }); }
+    if(raps.length){ out.push('Audiências Públicas:'); out.push(''); raps.forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); }); }
+  } else {
+    const lidas = itens.filter(p=>p.relatorioLidoEm);
+    const dem   = itens.filter(p=>!p.relatorioLidoEm);
+    lidas.forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); });
+    if(opts.agrupar){
+      const grupos = new Map();
+      dem.forEach(p=>{
+        const k = p.preferenciaIndicadaPor || '';
+        if(!grupos.has(k)) grupos.set(k, []);
+        grupos.get(k).push(p);
+      });
+      const chaves = [...grupos.keys()].sort((a,b)=>{
+        if(!a && b) return 1;
+        if(a && !b) return -1;
+        return a.localeCompare(b,'pt');
+      });
+      chaves.forEach(k=>{
+        out.push(k ? 'Indicadas por '+k+':' : 'Sem indicação:');
+        out.push('');
+        grupos.get(k).forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); });
+      });
+    } else {
+      dem.forEach(p=>{ out.push(itemPauta(p,prox(),opts)); out.push(''); });
+    }
+  }
+  let txt = out.join('\n');
+  txt = txt.replace(/\n{3,}/g,'\n\n').trim();
+  return txt ? txt+'\n' : '';
+}
+function atualizarPauta(){
+  $('pautaTexto').value = gerarPautaTexto();
+  const ccj = data.config.usarPreferencias;
+  const fonte = ccj ? 'preferencias' : 'ordem';
+  let aviso = '';
+  if(!data.proposicoes.some(p=>p.etapa===fonte)){
+    aviso = 'Nenhuma proposição nesta coluna — o texto sairá apenas com o cabeçalho.';
+  } else if(ccj){
+    const n = data.proposicoes.filter(p=>p.etapa==='ordem' && p.relatorioLidoEm).length;
+    if(n) aviso = 'Há '+n+' proposição(ões) com relatório lido na Ordem do Dia ainda não enviadas — use “enviar lidas” para incluí-las na pauta.';
+  }
+  $('pautaAviso').hidden = !aviso;
+  if(aviso) $('pautaAviso').textContent = aviso;
+}
+function abrirModalPauta(){
+  $('mpTitulo').textContent = data.config.usarPreferencias
+    ? 'Gerar pauta — Preferências' : 'Gerar pauta — Ordem do Dia';
+  $('pautaData').value = hojeISO();
+  $('pautaEmenta').value = 'completa';
+  $('pautaRelParecer').checked = true;
+  $('pautaVistas').checked = true;
+  $('rowAgrupar').classList.toggle('escondido', !data.config.usarPreferencias);
+  $('pautaAgrupar').checked = data.config.usarPreferencias;
+  atualizarPauta();
+  abrirModal('modalPauta');
+}
+['pautaData','pautaEmenta','pautaRelParecer','pautaVistas','pautaAgrupar'].forEach(id=>{
+  $(id).addEventListener('change', atualizarPauta);
+});
+async function copiarPauta(){
+  const txt = $('pautaTexto').value;
+  if(!txt.trim()){ toast('Nada para copiar.','atencao'); return; }
+  try{
+    await navigator.clipboard.writeText(txt);
+    toast('Pauta copiada para a área de transferência.');
+  }catch(err){
+    const ta = $('pautaTexto');
+    ta.focus(); ta.select();
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e2){}
+    if(ok) toast('Pauta copiada (via seleção do texto).');
+    else toast('Não foi possível copiar automaticamente — o texto está selecionado; use Ctrl+C.','atencao');
+  }
+}
+ $('btnPautaCopiar').addEventListener('click', copiarPauta);
+ $('btnPautaImprimir').addEventListener('click', ()=>{
+  const modo = data.config.usarPreferencias ? 'Pauta — Preferências (CCJ)' : 'Pauta — Ordem do Dia';
+  imprimirHTML('<h2 class="pr-tabela-t">'+esc(modo)+'</h2><pre class="pr-pauta">'+esc($('pautaTexto').value)+'</pre>', 'Pauta');
+});
+
+/* ================================================================
+   Impressão (v1.3)
+   ================================================================ */
+function cabecalhoImpressao(sub){
+  const t = data.config.titulo || 'Quadro de Tramitação';
+  const cont = etapasAtivas().map(e=>e.nome+' '+data.proposicoes.filter(p=>p.etapa===e.id).length).join(' · ');
+  return '<div class="pr-titulo">'+esc(t)+'</div>'
+       + '<div class="pr-sub">'+esc(sub||'')+' · emitido em '+fmtDataHora(agoraISO())+'</div>'
+       + '<div class="pr-cont">'+esc(cont)+'</div>';
+}
+function imprimirHTML(conteudo, subtitulo){
+  const area = $('printArea');
+  area.innerHTML = '<div class="pr-cabeca">'+cabecalhoImpressao(subtitulo)+'</div>'+conteudo;
+  document.body.classList.add('imprimindo');
+  const limpar = function(){
+    document.body.classList.remove('imprimindo');
+    area.innerHTML = '';
+  };
+  window.addEventListener('afterprint', limpar, {once:true});
+  window.print();
+}
+function imprimirQuadro(){
+  const etapas = etapasAtivas();
+  const html = etapas.map((et,i)=>{
+    const vis = data.proposicoes.filter(p=>p.etapa===et.id && visivel(p));
+    const cards = cardsDaColuna(et, vis);
+    return '<section class="pr-col"><header><span class="col-num">'+ROMANOS[i]+'</span>'
+      + '<span class="col-nome">'+esc(et.nome)+'</span>'
+      + '<span class="col-count">'+vis.length+'</span></header>'
+      + (cards || '<p class="col-vazia">—</p>')
+      + '</section>';
+  }).join('');
+  imprimirHTML('<div class="pr-grid">'+html+'</div>', 'Quadro');
+}
+function itemRelatorio(p){
+  const d = [];
+  const m = infoMarco(p);
+  if(m && m.data) d.push(m.rotuloLong+' '+fmtData(m.data)+(m.comAging ? ' ('+diasNaEtapa(p)+' dias)' : ''));
+  if(p.relatorioLidoEm) d.push('relatório lido '+fmtData(p.relatorioLidoEm));
+  if(p.relator) d.push('Relator: '+p.relator);
+  if(p.parecer) d.push('Parecer: '+p.parecer);
+  if(p.pedidosVista.length) d.push('Vistas: '+p.pedidosVista.map(v=>v.partido+(v.data?' ('+fmtDataCurta(v.data)+')':'')).join(', '));
+  if(p.etapa==='preferencias' && p.preferenciaIndicadaPor) d.push('Indicada por: '+p.preferenciaIndicadaPor);
+  if(p.etapa==='apreciadas' && p.resultado) d.push('Resultado: '+p.resultado+(p.resultadoObs ? ' — '+p.resultadoObs : ''));
+  if(p.tipo==='RAP' && p.convidados) d.push('Convidados: '+p.convidados);
+  if(p.tipo==='RAP' && p.local) d.push('Local: '+p.local);
+  if(p.notas) d.push('Notas: '+p.notas);
+  return '<div class="pr-item"><div class="pr-item-t">'+esc(rotuloCurto(p))+' — '+esc(p.proponente)+(p.coautores>0?' +'+p.coautores:'')+'</div>'
+    + (p.ementa ? '<div class="pr-item-e">'+esc(p.ementa)+'</div>' : '')
+    + (d.length ? '<div class="pr-item-d">'+esc(d.join('  ·  '))+'</div>' : '')
+    + '</div>';
+}
+function imprimirRelatorio(){
+  const etapas = etapasAtivas();
+  let html = '';
+  etapas.forEach((et,i)=>{
+    const vis = data.proposicoes.filter(p=>p.etapa===et.id && visivel(p));
+    vis.sort(dirComparar(et.id));
+    let corpo = '';
+    if(et.id==='ordem' || et.id==='preferencias'){
+      const lidas  = vis.filter(p=>p.relatorioLidoEm);
+      const outras = vis.filter(p=>!p.relatorioLidoEm);
+      if(lidas.length)  corpo += '<div class="pr-subgrupo">Relatórios lidos</div>'+lidas.map(itemRelatorio).join('');
+      if(outras.length) corpo += ((lidas.length && outras.length) ? '<div class="pr-subgrupo">Demais</div>' : '')+outras.map(itemRelatorio).join('');
+    } else {
+      corpo = vis.map(itemRelatorio).join('');
+    }
+    html += '<section class="pr-sec"><h2>'+ROMANOS[i]+'. '+esc(et.nome)+' <span class="pr-n">('+vis.length+')</span></h2>'
+      + (corpo || '<p class="col-vazia">—</p>')
+      + '</section>';
+  });
+  imprimirHTML(html, 'Relatório');
+}
+
+/* ================================================================
+   Painéis-tabela por proponente / relator (v1.3)
+   ================================================================ */
+const painelEstado = { campo:'proponente', sort:{col:'nome', dir:1} };
+
+function diasDesdeData(iso){
+  if(!iso) return null;
+  const t = Date.parse(iso);
+  if(isNaN(t)) return null;
+  return Math.floor((Date.now()-t)/864e5);
+}
+function agregarPainel(campo){
+  const mapa = new Map();
+  data.proposicoes.forEach(p=>{
+    const nome = str(p[campo]);
+    if(!nome) return;
+    let r = mapa.get(nome);
+    if(!r){ r = {nome:nome, total:0, etapas:{}, semParecer:0, antigaDias:null}; mapa.set(nome,r); }
+    r.total++;
+    r.etapas[p.etapa] = (r.etapas[p.etapa]||0)+1;
+    if(!p.parecer) r.semParecer++;
+    if(p.etapa!=='apreciadas'){
+      const d = diasDesdeData(p.dataRecebimento || String(p.criadoEm||'').slice(0,10));
+      if(d!=null && (r.antigaDias==null || d>r.antigaDias)) r.antigaDias = d;
+    }
+  });
+  return Array.from(mapa.values());
+}
+function renderPainel(){
+  $('tabProp').setAttribute('aria-pressed', String(painelEstado.campo==='proponente'));
+  $('tabRel').setAttribute('aria-pressed', String(painelEstado.campo==='relator'));
+  $('pnTitulo').textContent = 'Painéis — '+(painelEstado.campo==='proponente'?'Proponentes':'Relatores');
+  const etapas = etapasAtivas();
+  const linhas = agregarPainel(painelEstado.campo);
+  const s = painelEstado.sort;
+  const val = r=>{
+    if(s.col==='total') return r.total;
+    if(s.col==='semParecer') return r.semParecer;
+    if(s.col==='antiga') return (r.antigaDias==null ? -1 : r.antigaDias);
+    return r.etapas[s.col]||0;
+  };
+  linhas.sort((a,b)=>{
+    if(s.col==='nome') return s.dir*a.nome.localeCompare(b.nome,'pt');
+    return s.dir*((val(a)||0)-(val(b)||0));
+  });
+  const seta = c => (s.col===c ? (s.dir===1?' ▲':' ▼') : '');
+  const cols = [{id:'nome',rot:'Nome'},{id:'total',rot:'Total'}]
+    .concat(etapas.map(e=>({id:e.id,rot:NOME_CURTO[e.id]||e.nome})))
+    .concat([{id:'semParecer',rot:'Sem parecer'},{id:'antiga',rot:'Antiga (dias)'}]);
+  let h = '<table class="tb-painel" id="painelTabela"><thead><tr>';
+  cols.forEach(c=>{
+    h += '<th data-col="'+c.id+'"'+(s.col===c.id?' class="ordenado"':'')+'>'+esc(c.rot)+seta(c.id)+'</th>';
+  });
+  h += '</tr></thead><tbody>';
+  if(!linhas.length){
+    h += '<tr><td colspan="'+cols.length+'" style="text-align:left">Nada para agregar — nenhuma proposição com '+esc(painelEstado.campo)+' preenchido.</td></tr>';
+  }
+  linhas.forEach(r=>{
+    h += '<tr data-nome="'+esc(r.nome)+'"><td>'+esc(r.nome)+'</td><td>'+r.total+'</td>';
+    etapas.forEach(e=>{
+      const v = r.etapas[e.id]||0;
+      h += '<td'+(v?'':' class="num-zero"')+'>'+(v||'·')+'</td>';
+    });
+    h += '<td'+(r.semParecer?'':' class="num-zero"')+'>'+(r.semParecer||'·')+'</td>';
+    h += '<td'+(r.antigaDias!=null?'':' class="num-zero"')+'>'+(r.antigaDias!=null ? r.antigaDias+'d' : '·')+'</td>';
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  $('painelTabelaWrap').innerHTML = h;
+}
+ $('tabProp').addEventListener('click', ()=>{
+  painelEstado.campo='proponente'; painelEstado.sort={col:'nome',dir:1}; renderPainel();
+});
+ $('tabRel').addEventListener('click', ()=>{
+  painelEstado.campo='relator'; painelEstado.sort={col:'nome',dir:1}; renderPainel();
+});
+ $('painelTabelaWrap').addEventListener('click', e=>{
+  const th = e.target.closest('th[data-col]');
+  if(th){
+    const c = th.dataset.col;
+    if(painelEstado.sort.col===c) painelEstado.sort.dir *= -1;
+    else painelEstado.sort = {col:c, dir:(c==='nome'?1:-1)};
+    renderPainel();
+    return;
+  }
+  const tr = e.target.closest('tr[data-nome]');
+  if(tr){
+    const nome = tr.dataset.nome;
+    $('inputBusca').value = nome;
+    ui.busca = nome;
+    renderBoard(); atualizarIndicadorFiltro();
+    fecharModal('modalPainel');
+    toast('Quadro filtrado por “'+nome+'”.');
+  }
+});
+ $('btnPainel').addEventListener('click', ()=>{
+  painelEstado.campo='proponente'; painelEstado.sort={col:'nome',dir:1};
+  renderPainel();
+  abrirModal('modalPainel');
+});
+ $('btnPainelImprimir').addEventListener('click', ()=>{
+  const rot = painelEstado.campo==='proponente' ? 'Proponentes' : 'Relatores';
+  const tb = $('painelTabela');
+  if(!tb) return;
+  const clone = tb.cloneNode(true);
+  clone.removeAttribute('id');
+  imprimirHTML('<h2 class="pr-tabela-t">Painel por '+rot+' — '+data.proposicoes.length+' proposições</h2>'+clone.outerHTML, 'Painel');
+});
+
+/* ================================================================
+   Busca e filtros
+   ================================================================ */
+function atualizarIndicadorFiltro(){
+  $('btnLimparFiltros').hidden = !(ui.busca || ui.tipoFiltro || ui.semParecer);
+}
+let tBusca=null;
+ $('inputBusca').addEventListener('input', ()=>{
+  clearTimeout(tBusca);
+  tBusca=setTimeout(()=>{ ui.busca=$('inputBusca').value; renderBoard(); atualizarIndicadorFiltro(); },160);
+});
+ $('selectTipoFiltro').addEventListener('change', ()=>{
+  ui.tipoFiltro=$('selectTipoFiltro').value; renderBoard(); atualizarIndicadorFiltro();
+});
+ $('btnSemParecer').addEventListener('click', ()=>{
+  ui.semParecer=!ui.semParecer;
+  $('btnSemParecer').setAttribute('aria-pressed', String(ui.semParecer));
+  renderBoard(); atualizarIndicadorFiltro();
+});
+ $('btnLimparFiltros').addEventListener('click', ()=>{
+  ui.busca=''; ui.tipoFiltro=''; ui.semParecer=false;
+  $('inputBusca').value=''; $('selectTipoFiltro').value='';
+  $('btnSemParecer').setAttribute('aria-pressed','false');
+  renderBoard(); atualizarIndicadorFiltro();
+});
+
+/* ================================================================
+   Board: delegação de eventos
+   ================================================================ */
+board.addEventListener('click', e=>{
+  const a = e.target.closest('[data-acao]');
+  if(a){
+    const acao = a.dataset.acao;
+    if(acao==='recolher'){ e.stopPropagation(); recolherPreferencias(); return; }
+    if(acao==='enviar-lidas'){ e.stopPropagation(); enviarLidas(); return; }
+    if(acao==='pauta'){ e.stopPropagation(); abrirModalPauta(); return; }
+    if(acao==='ordenar'){
+      e.stopPropagation();
+      const et = a.dataset.etapa;
+      if(data.config.ordenacao[et]==='desc') delete data.config.ordenacao[et];
+      else data.config.ordenacao[et] = 'desc';
+      salvar(); renderBoard();
+      return;
+    }
+    if(acao==='nova-coluna'){ e.stopPropagation(); abrirModalNova(a.dataset.etapa); return; }
+    if(acao==='nova'){ abrirModalNova('recebidas'); return; }
+    if(acao==='interpretar'){ abrirModalNova(); setTimeout(()=>$('parseTexto').focus(),60); return; }
+    if(acao==='exemplos'){
+      abrirModalNova();
+      $('parseTexto').value = EXEMPLOS;
+      toast('Exemplos carregados — clique em “Interpretar”.','atencao');
+      return;
+    }
+  }
+  const card = e.target.closest('.card');
+  if(card) abrirDrawer(card.dataset.id);
+});
+board.addEventListener('keydown', e=>{
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const card = e.target.closest('.card');
+  if(card && e.target===card){ e.preventDefault(); abrirDrawer(card.dataset.id); }
+});
+
+let arrastandoId = null;
+board.addEventListener('dragstart', e=>{
+  const card = e.target.closest('.card'); if(!card) return;
+  arrastandoId = card.dataset.id;
+  e.dataTransfer.setData('text/plain', arrastandoId);
+  e.dataTransfer.effectAllowed = 'move';
+  requestAnimationFrame(()=>card.classList.add('arrastando'));
+});
+board.addEventListener('dragover', e=>{
+  const col = e.target.closest('.coluna');
+  if(!col || !arrastandoId) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  board.querySelectorAll('.coluna.alvo').forEach(c=>{ if(c!==col) c.classList.remove('alvo'); });
+  col.classList.add('alvo');
+});
+board.addEventListener('dragleave', e=>{
+  const col = e.target.closest('.coluna');
+  if(col && !col.contains(e.relatedTarget)) col.classList.remove('alvo');
+});
+board.addEventListener('drop', e=>{
+  const col = e.target.closest('.coluna'); if(!col) return;
+  e.preventDefault();
+  col.classList.remove('alvo');
+  const id = e.dataTransfer.getData('text/plain') || arrastandoId;
+  if(id && col.dataset.etapa) moverProposicao(id, col.dataset.etapa);
+});
+function limparDrag(){
+  arrastandoId = null;
+  board.querySelectorAll('.arrastando').forEach(c=>c.classList.remove('arrastando'));
+  board.querySelectorAll('.alvo').forEach(c=>c.classList.remove('alvo'));
+}
+board.addEventListener('dragend', limparDrag);
+window.addEventListener('dragend', limparDrag);
+
+/* ================================================================
+   Modais: navegação global (ESC, Tab, fechar)
+   ================================================================ */
+document.addEventListener('keydown', e=>{
+  const topo = camadas[camadas.length-1];
+  if(!topo) return;
+  if(e.key==='Escape'){ topo.fechar(); }
+  else if(e.key==='Tab'){ trapFoco(topo.el, e); }
+});
+document.querySelectorAll('[data-fechar]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const id = b.dataset.fechar;
+    if(id==='modalConfirm') fecharConfirm(false);
+    else fecharModal(id);
+  });
+});
+document.querySelectorAll('.modal-fundo').forEach(f=>{
+  f.addEventListener('mousedown', e=>{
+    if(e.target!==f) return;
+    if(f.id==='modalConfirm') fecharConfirm(false);
+    else fecharModal(f.id);
+  });
+});
+
+/* ================================================================
+   Botões do cabeçalho
+   ================================================================ */
+ $('btnNova').addEventListener('click', ()=>abrirModalNova('recebidas'));
+ $('btnEstilo').addEventListener('click', ()=>{
+  data.config.estiloCards = (data.config.estiloCards==='compacto') ? 'padrao' : 'compacto';
+  salvar(); aplicarEstilo(); renderBoard();
+});
+ $('btnPrint').addEventListener('click', ()=>abrirModal('modalPrint'));
+ $('prQuadro').addEventListener('click', ()=>{ fecharModal('modalPrint'); setTimeout(imprimirQuadro, 50); });
+ $('prRelatorio').addEventListener('click', ()=>{ fecharModal('modalPrint'); setTimeout(imprimirRelatorio, 50); });
+ $('btnExportar').addEventListener('click', exportarJSON);
+ $('btnImportar').addEventListener('click', ()=>{
+  $('importArquivo').value='';
+  document.querySelector('input[name="modoImport"][value="mesclar"]').checked=true;
+  abrirModal('modalImportar');
+});
+ $('btnImportExec').addEventListener('click', executarImportacao);
+ $('btnConfig').addEventListener('click', ()=>{
+  $('cfgTitulo').value = data.config.titulo;
+  $('cfgPreferencias').checked = data.config.usarPreferencias;
+  $('cfgAging').value = data.config.limiarAgingDias;
+  $('cfgEstilo').value = data.config.estiloCards;
+  abrirModal('modalConfig');
+});
+ $('btnCfgSalvar').addEventListener('click', ()=>{
+  const antes = data.config.usarPreferencias;
+  data.config.titulo = $('cfgTitulo').value.trim().slice(0,80);
+  data.config.usarPreferencias = $('cfgPreferencias').checked;
+  const la = parseInt($('cfgAging').value,10);
+  data.config.limiarAgingDias = (la>=1 && la<=365) ? la : 30;
+  data.config.estiloCards = ($('cfgEstilo').value==='compacto') ? 'compacto' : 'padrao';
+  let movidas = 0;
+  if(antes && !data.config.usarPreferencias){
+    movidas = moverEmLote(
+      data.proposicoes.filter(p=>p.etapa==='preferencias').map(p=>p.id), 'ordem');
+  }
+  aplicarEstilo();
+  salvar(); fecharModal('modalConfig'); renderTudo();
+  toast('Configurações salvas.'
+    +(movidas ? ' '+movidas+' proposição(ões) devolvida(s) de Preferências à Ordem do Dia.' : ''));
+});
+
+/* Zona de perigo */
+ $('btnApagarTudo').addEventListener('click', async ()=>{
+  const n = data.proposicoes.length;
+  if(!n){ toast('Não há proposições a apagar.','atencao'); return; }
+  const ok = await confirmar({
+    titulo:'Apagar todas as proposições',
+    mensagem:'Apagar as '+n+' proposições do quadro? Um backup do quadro atual será baixado automaticamente antes. Esta ação não pode ser desfeita.',
+    rotulo:'Apagar tudo', perigo:true
+  });
+  if(!ok) return;
+  const nome = 'backup-pre-apagar-'+slug(data.config.titulo||'tramitacao')+'-'+stamp()+'.json';
+  baixarArquivo(nome, JSON.stringify(data,null,2), 'application/json');
+  data.proposicoes = [];
+  data.ultimoBackupExportado = agoraISO();
+  fecharDrawer(); fecharModal('modalConfig');
+  salvar(); renderTudo();
+  toast('Quadro limpo — '+n+' proposição(ões) apagada(s). Backup salvo: '+nome);
+});
+ $('btnRestaurarPadroes').addEventListener('click', async ()=>{
+  const emPref = data.proposicoes.filter(p=>p.etapa==='preferencias').length;
+  const ok = await confirmar({
+    titulo:'Restaurar configurações padrão',
+    mensagem:'Voltar título, modo preferências, limiar de aging e estilo de cards ao padrão?'
+      +(emPref ? ' '+emPref+' proposição(ões) em Preferências serão devolvida(s) à Ordem do Dia.' : '')
+      +' As proposições são mantidas.',
+    rotulo:'Restaurar', perigo:true
+  });
+  if(!ok) return;
+  data.config = {titulo:'', usarPreferencias:false, limiarAgingDias:30, estiloCards:'padrao', ordenacao:{}};
+  const movidas = reconciliarPreferencias();
+  aplicarEstilo();
+  fecharModal('modalConfig');
+  salvar(); renderTudo();
+  toast('Configurações restauradas ao padrão.'
+    +(movidas ? ' '+movidas+' proposição(ões) devolvida(s) à Ordem do Dia.' : ''));
+});
+
+ $('cfOk').addEventListener('click', ()=>fecharConfirm(true));
+ $('cfCancelar').addEventListener('click', ()=>fecharConfirm(false));
+
+window.addEventListener('beforeunload', e=>{
+  if(!storageOk && data.proposicoes.length){ e.preventDefault(); e.returnValue=''; }
+});
+
+/* ================================================================
+   Exemplos de teste (10 casos de aceitação, no formato publicado)
+   ================================================================ */
+const EXEMPLOS = `Projeto de Lei n.º 308/2024
+Proponente: Deputado(a) Vilmar Zanchin
+Ementa: Dispõe sobre a destinação de óleos de origem vegetal e animal de uso culinário e seus resíduos, em empreendimentos, no Estado do Rio Grande do Sul e dá outras providências.
+
+Projeto de Lei Complementar n.º 311/2023
+Proponente: Deputado(a) Edivilson Brum
+Ementa: Altera a redação do Inciso I do art. 3º da Lei Complementar nº 15.405, de 18 de dezembro de 2019, que cria o Programa de Incentivo ao Acesso Asfáltico do Estado do Rio Grande do Sul- PIAA/RS. (SEI 11315-01.00/23-8)
+Relator: Deputado(a) Prof. Claudio Branchieri
+Parecer: Favorável
+
+Projeto de Lei n.º 100/2021
+Proponente: Deputado(a) Beto Fantinel + 3 Deputado(s)
+Ementa: Altera a Lei n.º 8.820, de 27 de janeiro de 1989, que institui o Imposto sobre Operações Relativas à Circulação de Mercadorias e sobre Prestações de Serviços de Transporte Interestadual e Intermunicipal e de Comunicação e dá outras providências.(SEI 3237-0100/21-0)
+Relator: Deputado(a) Guilherme Pasin
+Data de Distribuição 17/06/2026
+
+Requerimento n.º 3/2026
+Proponente: Deputado(a) Halley Lino
+Ementa: Requer o convite do Presidente da Portos RS, Fábio Silveira Machado, para participar de reunião desta Comissão, a fim de prestar esclarecimentos e apresentar as diretrizes de sua gestão à frente da empresa pública.
+
+Requerimento de Audiência Pública n.º 13/2026
+Proponente: Deputado(a) Marcus Vinícius
+Assunto: Dbater a grave situação enfrentada pela cadeia produtiva do alho no Rio Grande do Sul e na região Sul do Brasil.
+Convidados: Prefeitos e Vereadores dos municípios produtores São Marcos, Vacaria, Ipê, Caxias do Sul, Flores da Cunha, Muitos Capões, Campestre da Serra; Secretário do Desenvolvimento Rural do RGS; Ministério de Agricultura; Secretaria da Agricultura do RS; Representantes de entidades estaduais e nacionais do setor do alho.
+Local: Município de São Marcos.
+
+Proposta de Emenda à Constituição n.º 303/2025
+Proponente: Deputado(a) Stela Farias + 18 Deputado(s)
+Ementa: Inclui §5º ao Art. 38 e Art. 47-A, ambos dada Constituição Estadual do Rio Grande do Sul.
+Relator: Deputado(a) Delegada Nadine
+Parecer: Favorável
+
+Relatório final de subcomissão n.º 1/2026
+Proponente: Subcomissão para tratar da revisão legislativa dos animais domésticos no RS - REQSUB 1/2025
+Ementa: Leitura e votação do Relatório Final da Subcomissão para tratar da revisão legislativa dos animais domésticos no RS - REQSUB 1/2025.
+Relator: Deputado(a) Leonel Radde
+
+Requerimentos Diversos n.º 3/2025
+Proponente: Poder Executivo
+Ementa: Encaminha a prorrogação do mandato do Senhor Alexandre Alves Porsse pelo prazo faltante para completar 6 (seis) anos, como membro do Conselho Superior da Agência Estadual de Regulação dos Serviços Públicos Delegados do Rio Grande do Sul - AGERGS, de acordo com a previsão contina no art. 90º, da Lei nº 16.266, de 27 de dezembro de 2024.
+Relator: Deputado(a) Cláudio Tatsch
+Parecer: Favorável
+
+Veto Parcial ao Projeto de Lei n.º 378/2019
+Proponente: Poder Executivo
+Ementa: Encaminha Veto Parcial ao Projeto de Lei nº 378/2019, de iniciativa do Deputado Pepe Vargas, que estabelece critérios de transparência para a cobrança de dívidas dos consumidores gaúchos, e dá providências correlatas.
+Relator: Deputado Gustavo Victorino
+Parecer: Favorável
+
+Projeto de Lei n.º 421/2026
+Proponente: Deputado(a) Rui Falcão
+Ementa: Institui a Rota do Surf no Estado do Rio Grande do Sul e dá outras providências. (Tramitação Conclusiva CEDST)`;
+
+/* ================================================================
+   Inicialização
+   ================================================================ */
+(function init(){
+  detectarStorage();
+  carregar();
+  if(!storageOk) $('bannerMemoria').hidden=false;
+
+  const mig = migrarSchema(data);
+  const migradas = reconciliarPreferencias();
+  if(mig || migradas) salvar();
+
+  $('fTipo').innerHTML = Object.entries(TIPOS).map(par=>'<option value="'+par[0]+'">'+par[0]+' — '+esc(par[1])+'</option>').join('');
+  $('dTipo').innerHTML = $('fTipo').innerHTML;
+  $('selectTipoFiltro').innerHTML = '<option value="">Todos os tipos</option>'
+    + Object.entries(TIPOS).map(par=>'<option value="'+par[0]+'">'+par[0]+' — '+esc(par[1])+'</option>').join('');
+  $('fParecer').innerHTML = '<option value="">—</option>'+PARECERES.map(p=>'<option>'+p+'</option>').join('');
+  $('dParecer').innerHTML = $('fParecer').innerHTML;
+  $('fResultado').innerHTML = '<option value="">—</option>'+RESULTADOS.map(r=>'<option>'+r+'</option>').join('');
+  $('dResultado').innerHTML = $('fResultado').innerHTML;
+
+  aplicarEstilo();
+  renderTudo();
+  if(mig && mig.campos>0)
+    toast(mig.campos+' data(s) de marco preenchida(s) a partir do histórico (atualização do formato de dados).','atencao');
+  if(migradas)
+    toast(migradas+' proposição(ões) em Preferências migrada(s) para a Ordem do Dia (modo preferências desativado).','atencao');
+})();
+
+})();
+</script>
+</body>
+</html>
