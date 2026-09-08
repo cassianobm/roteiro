@@ -67,6 +67,8 @@ label{ display:block; font:600 10.5px/1.3 var(--sans); letter-spacing:.05em; tex
   display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
 }
 .btn:hover{ background:#eae3cf; border-color:var(--tinta-2); }
+.btn:disabled{ opacity:.45; cursor:default; }
+.btn:disabled:hover{ background:transparent; border-color:#8f8468; }
 .btn-primario{ background:var(--tinta); color:var(--papel); border-color:var(--tinta); }
 .btn-primario:hover{ background:#3a3324; }
 .btn-perigo{ background:var(--vinho); color:#fdf6f2; border-color:var(--vinho); }
@@ -118,6 +120,33 @@ main{ flex:1; min-height:0; display:flex; }
 .modo-compacto .col-lista{ gap:4px; }
 .modo-compacto .col-acoes{ gap:3px; }
 .modo-compacto .btn-mini{ padding:3px; }
+
+/* ============ Multiseleção (v1.4) ============ */
+body.modo-selecao .card{ cursor:pointer; }
+body.modo-selecao .col-titulo{ cursor:pointer; }
+body.modo-selecao .col-titulo:hover .col-nome{ color:var(--tinta); text-decoration:underline dotted var(--tinta-3); }
+.card.selecionado{ outline:2px solid var(--tinta); outline-offset:-2px; background:#ece5d0; }
+.barra-sel{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:16px; z-index:110;
+  background:var(--tinta); color:var(--papel); border-radius:3px;
+  padding:8px 12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  box-shadow:0 10px 28px rgba(20,15,5,.38); max-width:min(94vw, 1020px);
+}
+.barra-sel .btn{ border-color:#5d5540; color:var(--papel); background:transparent; }
+.barra-sel .btn:hover:not(:disabled){ background:#3a3324; border-color:#8f8468; }
+.barra-sel .btn-perigo{ border-color:var(--vinho); }
+.barra-sel .btn-perigo:hover:not(:disabled){ background:#6d2835; }
+.barra-sel .btn:disabled{ opacity:.4; background:transparent; }
+.bsel-cont{ font:500 12px var(--sans); white-space:nowrap; }
+.bsel-cont strong{ font-variant-numeric:tabular-nums; }
+.bsel-sep{ width:1px; height:22px; background:#4a4230; flex:none; }
+.bsel-mover{ display:flex; gap:6px; align-items:center; }
+.bsel-mover select{ width:auto; }
+
+/* Linhas do modal de lote */
+.ml-linha-data{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.ml-linha-data .check-inline{ margin:0; flex:1; min-width:0; }
+.ml-linha-data input[type="date"]{ width:150px; flex:none; }
 
 /* ============ Card ============ */
 .card{
@@ -325,7 +354,7 @@ footer{
 .zg-texto strong{ color:var(--tinta); font-weight:600; }
 .zg-btn{ flex:none; }
 
-/* ============ Modal pauta (v1.3) ============ */
+/* ============ Modal pauta ============ */
 .pauta-corpo{ display:grid; grid-template-columns:250px 1fr; gap:18px; }
 .pauta-opcoes .campo{ margin-bottom:12px; }
 .pauta-preview{ display:flex; flex-direction:column; min-width:0; }
@@ -338,7 +367,7 @@ footer{
   border:1px solid #d8c48a; border-radius:2px; padding:8px 10px; margin:0 0 12px;
 }
 
-/* ============ Modal painéis (v1.3) ============ */
+/* ============ Modal painéis ============ */
 .painel-tabs{ display:flex; gap:8px; margin-bottom:14px; }
 .tb-painel{ width:100%; border-collapse:collapse; font:400 12px var(--sans); }
 .tb-painel th{
@@ -377,17 +406,16 @@ footer{
 ::-webkit-scrollbar-thumb{ background:#cfc5a8; border-radius:4px; border:2px solid var(--papel); }
 ::-webkit-scrollbar-track{ background:transparent; }
 
-/* ============ Área de impressão (v1.3) ============ */
+/* ============ Área de impressão ============ */
 #printArea{ display:none; }
 @media print{
-  /* fluxo próprio: só a área de impressão sai no papel */
   body.imprimindo #printArea{ display:block; }
   body.imprimindo > *:not(#printArea){ display:none !important; }
   body.imprimindo .tb-painel tbody tr{ cursor:default; }
-  /* Ctrl+P direto (sem passar pelo botão): página limpa de controles */
   body:not(.imprimindo) .acoes, body:not(.imprimindo) .banner,
   body:not(.imprimindo) .drawer, body:not(.imprimindo) .drawer-scrim,
   body:not(.imprimindo) .modal-fundo, body:not(.imprimindo) .toasts,
+  body:not(.imprimindo) .barra-sel,
   body:not(.imprimindo) footer, body:not(.imprimindo) .col-acoes,
   body:not(.imprimindo) #printArea{ display:none !important; }
   body:not(.imprimindo){ height:auto; }
@@ -395,8 +423,9 @@ footer{
   body:not(.imprimindo) .coluna{ break-inside:avoid; border-left:1px solid #ccc; border-top:2px solid #000; min-width:0; flex:none; }
   body:not(.imprimindo) .col-lista{ overflow:visible; }
   body:not(.imprimindo) .card{ break-inside:avoid; }
+  .barra-sel{ display:none !important; }
+  .card.selecionado{ outline:none; background:var(--card); }
 }
-/* conteúdo da área de impressão (visível apenas no papel) */
 .pr-cabeca{ border-bottom:3px double var(--tinta); padding-bottom:8px; margin-bottom:16px; }
 .pr-titulo{ font:700 21px/1.15 var(--serifada); }
 .pr-sub{ font:italic 11.5px var(--serifada); color:var(--tinta-2); margin-top:2px; }
@@ -723,7 +752,7 @@ footer{
   </div>
 </div>
 
-<!-- ============ Modal: gerar pauta (v1.3) ============ -->
+<!-- ============ Modal: gerar pauta ============ -->
 <div class="modal-fundo" id="modalPauta" hidden>
   <div class="modal modal-xl" role="dialog" aria-modal="true" aria-labelledby="mpTitulo">
     <div class="modal-cabeca">
@@ -760,7 +789,7 @@ footer{
   </div>
 </div>
 
-<!-- ============ Modal: painéis (v1.3) ============ -->
+<!-- ============ Modal: painéis ============ -->
 <div class="modal-fundo" id="modalPainel" hidden>
   <div class="modal modal-xl" role="dialog" aria-modal="true" aria-labelledby="pnTitulo">
     <div class="modal-cabeca">
@@ -784,7 +813,7 @@ footer{
   </div>
 </div>
 
-<!-- ============ Modal: impressão (v1.3) ============ -->
+<!-- ============ Modal: impressão ============ -->
 <div class="modal-fundo" id="modalPrint" hidden>
   <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="mprTitulo">
     <div class="modal-cabeca">
@@ -804,6 +833,43 @@ footer{
       <button type="button" class="btn" data-fechar="modalPrint">Cancelar</button>
     </div>
   </div>
+</div>
+
+<!-- ============ Modal: ação em lote (v1.4) ============ -->
+<div class="modal-fundo" id="modalLote" hidden>
+  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="mlTitulo">
+    <div class="modal-cabeca">
+      <h2 id="mlTitulo">Ação em lote</h2>
+      <button class="btn btn-icone" data-fechar="modalLote" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-corpo" id="mlCorpo"></div>
+    <div class="modal-pe">
+      <button type="button" class="btn" data-fechar="modalLote">Cancelar</button>
+      <button type="button" id="mlAplicar" class="btn btn-primario">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Barra de seleção (v1.4) ============ -->
+<div class="barra-sel" id="barraSel" hidden>
+  <span class="bsel-cont" id="bselCont">Nenhuma selecionada</span>
+  <span class="bsel-sep"></span>
+  <span class="bsel-mover">
+    <select id="bselEtapa" aria-label="Mover seleção para"></select>
+    <button type="button" class="btn" id="bselMover">Mover</button>
+  </span>
+  <button type="button" class="btn" data-lote="relator">Relator…</button>
+  <button type="button" class="btn" data-lote="parecer">Parecer…</button>
+  <button type="button" class="btn" data-lote="datas">Datas…</button>
+  <button type="button" class="btn" data-lote="lida">Lida…</button>
+  <button type="button" class="btn" data-lote="vista">Vista…</button>
+  <button type="button" class="btn" data-lote="indicada">Indicada por…</button>
+  <span class="bsel-sep"></span>
+  <button type="button" class="btn btn-perigo" data-lote="excluir">Excluir…</button>
+  <button type="button" class="btn" id="bselLimpar" title="Desmarcar todas as proposições">Limpar seleção</button>
+  <button type="button" class="btn" id="bselSair">Concluir</button>
 </div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -882,6 +948,8 @@ let storageOk = true;
 const ui = { busca:'', tipoFiltro:'', semParecer:false, drawerId:null };
 let loteRegs = [];
 const sujos = new Set();
+const sel = { ativo:false, ids:new Set() }; /* v1.4: transitório, não persiste */
+let dragGrupo = null;
 
 function detectarStorage(){
   try{ localStorage.setItem('__teste','1'); localStorage.removeItem('__teste'); }
@@ -1030,11 +1098,9 @@ const CHAVES = [
   {k:'local',            re:/^local\s*:\s*/i},
   {k:'dataDistribuicao', re:/^data\s+de\s+distribui[çc][ãa]o\s*:?\s*/i}
 ];
-/* Linhas de seção de agenda — ignoradas na colagem (v1.3, decisão 34) */
 const RE_SECAO = /^\s*(?:[IVX]{1,4}\s*[-–—.]\s*)?(?:ordem\s+do\s+dia|prefer[êe]ncias(?:\s+da\s+reuni[ãa]o)?|audi[êe]ncias\s+p[úu]blicas|vota[çc][ãa]o\s+conclusiva|relat[óo]rios\s+lidos)\s*:?\s*$/i;
 
 function casaCabecalho(linha){
-  /* tolera numeração de agenda antes do tipo ("1) ", "12. ") — decisão 34 */
   const pref = linha.match(/^\s*(?:[–—-]\s*)?(?:\d{1,3}\s*[.)]\s+)?/);
   const limpa = pref ? linha.slice(pref[0].length) : linha;
   if(!limpa) return null;
@@ -1289,6 +1355,21 @@ function moverEmLote(ids, destino){
   if(avisos) toast('Atenção: '+avisos+' proposição(ões) de tramitação conclusiva sem votação conclusiva registrada — normalmente permanecem na Ordem do Dia.','atencao');
   return n;
 }
+/* Escrita de lote genérica (v1.4): fn(p) → true quando alterou */
+function aplicarLote(ids, fn){
+  const agora = agoraISO(); let n=0;
+  ids.forEach(id=>{
+    const p = data.proposicoes.find(x=>x.id===id);
+    if(!p) return;
+    if(fn(p)){ p.atualizadoEm = agora; n++; }
+  });
+  if(n){
+    salvar(); renderBoard();
+    if(ui.drawerId && ids.includes(ui.drawerId)) abrirDrawer(ui.drawerId, true);
+  }
+  return n;
+}
+function sincronizarAposLote(){ atualizarBarraSel(); }
 
 /* ================================================================
    Renderização — board
@@ -1343,7 +1424,12 @@ function tooltipCard(p){
   return linhas.join('\n');
 }
 function cardHTML(p){
-  if(data.config.estiloCards==='compacto') return cardCompactoHTML(p);
+  const marcada = sel.ativo && sel.ids.has(p.id);
+  const attrs = ' draggable="true" tabindex="0" role="button" data-id="'+p.id+'"'
+    + (sel.ativo ? ' aria-pressed="'+marcada+'"' : '')
+    + ' aria-label="'+esc(rotuloCurto(p)+' — '+nomeEtapa(p.etapa))+'"';
+  const classe = 'card' + (data.config.estiloCards==='compacto' ? ' compacto' : '') + (marcada ? ' selecionado' : '');
+  if(data.config.estiloCards==='compacto') return cardCompactoHTML(p, classe, attrs);
   const conclusiva = emFaseConclusiva(p);
   const chips = [];
   const mc = chipMarco(p);
@@ -1358,8 +1444,7 @@ function cardHTML(p){
   if(p.etapa==='preferencias' && p.preferenciaIndicadaPor) chips.push('<span class="chip chip-pref"><span class="chip-k">Pref.</span>'+esc(p.preferenciaIndicadaPor)+'</span>');
   if(p.etapa==='apreciadas' && p.resultado) chips.push('<span class="chip chip-resultado">'+esc(p.resultado)+'</span>');
   if(p.tipo==='RAP' && p.local) chips.push('<span class="chip chip-local" title="Local">'+esc(p.local)+'</span>');
-  return '<article class="card" draggable="true" tabindex="0" role="button" data-id="'+p.id+'" '
-    + 'aria-label="'+esc(rotuloCurto(p)+' — '+nomeEtapa(p.etapa))+'">'
+  return '<article class="'+classe+'"'+attrs+'>'
     + '<div class="card-topo"><span class="sigla">'+esc(p.tipo)+'</span>'
     + '<span class="card-num">n.º '+p.numero+'/'+p.ano+'</span>'
     + '</div>'
@@ -1370,7 +1455,7 @@ function cardHTML(p){
     + (chips.length ? '<div class="card-chips">'+chips.join('')+'</div>' : '')
     + '</article>';
 }
-function cardCompactoHTML(p){
+function cardCompactoHTML(p, classe, attrs){
   const m = infoMarco(p);
   const dias = diasNaEtapa(p);
   const conclusiva = emFaseConclusiva(p);
@@ -1381,9 +1466,7 @@ function cardCompactoHTML(p){
   const pdot = (p.parecer && !conclusiva)
     ? '<span class="pdot '+(p.parecer.indexOf('Favor')===0?'pdot-fav':'pdot-con')+'" title="Parecer: '+esc(p.parecer)+'"></span>'
     : '';
-  return '<article class="card compacto" draggable="true" tabindex="0" role="button" data-id="'+p.id+'"'
-    + ' title="'+esc(tooltipCard(p))+'"'
-    + ' aria-label="'+esc(rotuloCurto(p)+' — '+nomeEtapa(p.etapa))+'">'
+  return '<article class="'+classe+'"'+attrs+' title="'+esc(tooltipCard(p))+'">'
     + '<span class="sigla">'+esc(p.tipo)+'</span>'
     + '<span class="card-num">n.º '+p.numero+'/'+p.ano+'</span>'
     + tags.join('')
@@ -1404,7 +1487,6 @@ const VAZIO_HTML =
   + '<button class="vazio-exemplos" data-acao="exemplos">Carregar os 10 exemplos de teste no campo de interpretação</button>'
   + '</div>';
 
-/* Cards de uma coluna — ordenação + agrupamento de lidas (compartilhado com a impressão) */
 function cardsDaColuna(et, vis){
   const cmp = dirComparar(et.id);
   const lista = vis.slice().sort(cmp);
@@ -1442,6 +1524,13 @@ function renderBoard(){
     const btnPauta = ((et.id==='ordem' && !data.config.usarPreferencias) || et.id==='preferencias')
       ? '<button class="btn btn-mini" data-acao="pauta" title="Gerar texto da pauta da reunião (para copiar nas notas)" aria-label="Gerar pauta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 16h5"/></svg></button>'
       : '';
+    const btnSel = '<button class="btn btn-mini" data-acao="selecionar"'
+      + (sel.ativo?' aria-pressed="true"':'')
+      + ' title="'+(sel.ativo
+          ? 'Sair do modo de seleção'
+          : 'Selecionar proposições — clique marca/desmarca; arraste move o grupo; título da coluna marca todas')+'"'
+      + ' aria-label="Modo de seleção">'
+      + '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2"/><path d="M8.5 12.5l3 3 5-6"/></svg></button>';
     return '<section class="coluna" data-etapa="'+et.id+'">'
       + '<header class="col-cabeca">'
       +   '<div class="col-titulo"><span class="col-num">'+ROMANOS[i]+'</span>'
@@ -1457,6 +1546,7 @@ function renderBoard(){
       +     (et.id==='preferencias'
           ? '<button class="btn btn-mini" data-acao="recolher" title="Recolher preferências — devolver as não apreciadas à Ordem do Dia" aria-label="Recolher preferências"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 6l-6 6 6 6M18.5 6l-6 6 6 6"/></svg></button>'
           : '')
+      +     btnSel
       +     '<button class="btn btn-mini" data-acao="nova-coluna" data-etapa="'+et.id+'" title="Nova proposição nesta etapa" aria-label="Nova proposição em '+esc(et.nome)+'"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>'
       +   '</div>'
       + '</header>'
@@ -1539,7 +1629,8 @@ async function executarImportacao(){
     reconciliarPreferencias();
     fecharModal('modalImportar');
     if(ui.drawerId && !data.proposicoes.some(p=>p.id===ui.drawerId)) fecharDrawer();
-    aplicarEstilo(); salvar(); renderTudo();
+    sel.ids.clear();
+    aplicarEstilo(); salvar(); renderTudo(); sincronizarAposLote();
     toast('Quadro substituído: '+data.proposicoes.length+' proposições.'
       + (backupFeito ? ' Cópia de segurança do quadro anterior baixada.' : '') + notaMig);
   } else {
@@ -1562,7 +1653,7 @@ async function executarImportacao(){
     }
     reconciliarPreferencias();
     fecharModal('modalImportar');
-    salvar(); renderTudo();
+    salvar(); renderTudo(); sincronizarAposLote();
     const partes = [add+' adicionada'+(add===1?'':'s')];
     if(upd)  partes.push(upd+' atualizada'+(upd===1?'':'s'));
     if(mant) partes.push(mant+' mantida'+(mant===1?'':'s'));
@@ -1771,7 +1862,8 @@ drawerScrim.addEventListener('mousedown', fecharDrawer);
   });
   if(!ok) return;
   data.proposicoes = data.proposicoes.filter(x=>x.id!==p.id);
-  fecharDrawer(); salvar(); renderTudo();
+  sel.ids.delete(p.id);
+  fecharDrawer(); salvar(); renderTudo(); sincronizarAposLote();
   toast('Proposição excluída.');
 });
 
@@ -1972,7 +2064,339 @@ async function enviarLidas(){
 }
 
 /* ================================================================
-   Gerador de pauta (v1.3)
+   Multiseleção e ações em lote (v1.4)
+   ================================================================ */
+function entrarModoSel(){
+  if(sel.ativo) return;
+  sel.ativo = true;
+  document.body.classList.add('modo-selecao');
+  $('bselEtapa').innerHTML = etapasAtivas().map((e,i)=>'<option value="'+e.id+'">'+ROMANOS[i]+' · '+esc(e.nome)+'</option>').join('');
+  renderBoard();
+  atualizarBarraSel();
+  toast('Modo de seleção: clique nos cards para marcar; arraste um marcado para mover o grupo; o título da coluna marca todas. ESC ou “Concluir” encerram.','atencao');
+}
+function sairModoSel(){
+  sel.ativo = false;
+  sel.ids.clear();
+  document.body.classList.remove('modo-selecao');
+  renderBoard();
+  atualizarBarraSel();
+}
+function alternarModoSel(){ sel.ativo ? sairModoSel() : entrarModoSel(); }
+
+function toggleCardSel(id, el){
+  if(sel.ids.has(id)) sel.ids.delete(id); else sel.ids.add(id);
+  if(el){
+    const marcada = sel.ids.has(id);
+    el.classList.toggle('selecionado', marcada);
+    el.setAttribute('aria-pressed', String(marcada));
+  }
+  atualizarBarraSel();
+}
+function toggleColunaSel(colEl){
+  const cards = [...colEl.querySelectorAll('.card')];
+  if(!cards.length) return;
+  const todos = cards.every(c=>sel.ids.has(c.dataset.id));
+  cards.forEach(c=>{
+    const id = c.dataset.id;
+    todos ? sel.ids.delete(id) : sel.ids.add(id);
+    c.classList.toggle('selecionado', !todos);
+    c.setAttribute('aria-pressed', String(!todos));
+  });
+  atualizarBarraSel();
+}
+function limparSelecao(){
+  sel.ids.clear();
+  board.querySelectorAll('.card.selecionado').forEach(c=>{
+    c.classList.remove('selecionado');
+    c.setAttribute('aria-pressed','false');
+  });
+  atualizarBarraSel();
+}
+function atualizarBarraSel(){
+  /* sanitiza ids de proposições que não existem mais */
+  const vivos = [...sel.ids].filter(id=>data.proposicoes.some(p=>p.id===id));
+  if(vivos.length!==sel.ids.size) sel.ids = new Set(vivos);
+  const barra = $('barraSel');
+  barra.hidden = !sel.ativo;
+  if(!sel.ativo) return;
+  const n = sel.ids.size;
+  $('bselCont').innerHTML = n===0
+    ? 'Modo de seleção — clique nos cards'
+    : '<strong>'+n+'</strong> selecionada'+(n===1?'':'s');
+  barra.querySelectorAll('button, select').forEach(el=>{
+    if(el.id==='bselSair') return;
+    el.disabled = (n===0);
+  });
+}
+
+/* ---- Modais de lote ---- */
+const ROT_DATA = {dataRecebimento:'Recebimento', dataDistribuicao:'Distribuição',
+                  dataOrdemDia:'Em pauta desde', dataApreciacao:'Apreciação'};
+let loteTipo = null;
+
+function radiosModoLote(rotulo, n){
+  return '<label class="op-import"><input type="radio" name="mlModoRadio" value="subst" checked>'
+    + '<span><strong>Substituir</strong> — define o '+rotulo+' em todas as '+n+'</span></label>'
+    + '<label class="op-import"><input type="radio" name="mlModoRadio" value="vazios">'
+    + '<span><strong>Apenas sem '+rotulo+'</strong> — as que já têm são mantidas</span></label>';
+}
+function modoRadioLote(){
+  const r = document.querySelector('input[name="mlModoRadio"]:checked');
+  return r ? r.value : 'subst';
+}
+function abrirModalLote(tipo){
+  const n = sel.ids.size;
+  if(!n) return;
+  loteTipo = tipo;
+  const corpo = $('mlCorpo');
+  if(tipo==='relator' || tipo==='indicada'){
+    const ehRel = tipo==='relator';
+    $('mlTitulo').textContent = ehRel ? 'Relator em lote' : 'Indicada por em lote';
+    corpo.innerHTML =
+      '<div class="campo"><label for="mlTexto">'+(ehRel?'Relator':'Indicada por (preferência)')+'</label>'
+      + '<input id="mlTexto" type="text" placeholder="'+(ehRel?'Ex.: Guilherme Pasin':'Deputado(a) que indicou')+'"></div>'
+      + radiosModoLote(ehRel?'relator':'responsável', n);
+    setTimeout(()=>$('mlTexto').focus(), 30);
+  }
+  else if(tipo==='parecer'){
+    $('mlTitulo').textContent = 'Parecer em lote';
+    corpo.innerHTML =
+      '<div class="campo"><label for="mlParecer">Parecer</label><select id="mlParecer">'
+      + PARECERES.map(p=>'<option>'+p+'</option>').join('') + '</select></div>'
+      + radiosModoLote('parecer', n);
+  }
+  else if(tipo==='datas'){
+    $('mlTitulo').textContent = 'Datas de marco em lote';
+    corpo.innerHTML =
+      '<p class="dica-campo" style="margin:0 0 12px">Marque os marcos a alterar e informe a data — vazios não preenchidos não são tocados.</p>'
+      + Object.entries(ROT_DATA).map(([c,rot])=>
+        '<div class="ml-linha-data">'
+        + '<label class="check-inline"><input type="checkbox" id="mlChk_'+c+'"><span>'+rot+'</span></label>'
+        + '<input type="date" id="mlDt_'+c+'" aria-label="'+rot+'">'
+        + '</div>').join('')
+      + radiosModoLote('preenchido', n);
+    setTimeout(()=>$('mlChk_dataRecebimento').focus(), 30);
+  }
+  else if(tipo==='lida'){
+    $('mlTitulo').textContent = 'Relatório lido em lote';
+    corpo.innerHTML =
+      '<label class="op-import"><input type="radio" name="mlModoRadio" value="marcar" checked>'
+      + '<span><strong>Marcar como lida</strong> — define a data abaixo (substitui a existente)</span></label>'
+      + '<label class="op-import"><input type="radio" name="mlModoRadio" value="desmarcar">'
+      + '<span><strong>Desmarcar</strong> — limpa a data de leitura de todas</span></label>'
+      + '<div class="campo" id="mlLinhaData"><label for="mlLidaData">Data da leitura</label><input type="date" id="mlLidaData"></div>';
+    $('mlLidaData').value = hojeISO();
+    document.querySelectorAll('#mlCorpo input[name="mlModoRadio"]').forEach(r=>{
+      r.addEventListener('change', ()=>{ $('mlLinhaData').hidden = (modoRadioLote()==='desmarcar'); });
+    });
+    setTimeout(()=>$('mlLidaData').focus(), 30);
+  }
+  else if(tipo==='vista'){
+    $('mlTitulo').textContent = 'Pedido de vista em lote';
+    corpo.innerHTML =
+      '<div class="campo"><label for="mlVistaPartido">Partido / bancada</label>'
+      + '<input id="mlVistaPartido" type="text" placeholder="Ex.: PT"></div>'
+      + '<div class="campo"><label for="mlVistaData">Data do pedido (opcional)</label>'
+      + '<input id="mlVistaData" type="date"></div>'
+      + '<p class="parse-info" id="mlVistaInfo" aria-live="polite"></p>';
+    $('mlVistaData').value = hojeISO();
+    $('mlVistaPartido').addEventListener('input', atualizarInfoVista);
+    atualizarInfoVista();
+    setTimeout(()=>$('mlVistaPartido').focus(), 30);
+  }
+  $('mlAplicar').textContent = 'Aplicar a '+n;
+  abrirModal('modalLote');
+}
+function atualizarInfoVista(){
+  const info = $('mlVistaInfo'); if(!info) return;
+  const part = str($('mlVistaPartido').value);
+  if(!part){ info.textContent=''; return; }
+  const ids = [...sel.ids];
+  const jaTem = ids.filter(id=>{
+    const p = data.proposicoes.find(x=>x.id===id);
+    return p && p.pedidosVista.some(v=>norm(v.partido)===norm(part));
+  }).length;
+  info.textContent = jaTem
+    ? jaTem+' das '+ids.length+' selecionadas já têm vista deste partido — serão mantidas.'
+    : 'Nenhuma das '+ids.length+' selecionadas tem vista deste partido.';
+}
+function idsSel(){ return [...sel.ids]; }
+function propDe(id){ return data.proposicoes.find(x=>x.id===id); }
+
+ $('mlAplicar').addEventListener('click', async ()=>{
+  if(!loteTipo || !sel.ids.size) return;
+  const ids = idsSel();
+  const n = ids.length;
+
+  if(loteTipo==='relator' || loteTipo==='indicada'){
+    const campo = loteTipo==='relator' ? 'relator' : 'preferenciaIndicadaPor';
+    const rot = loteTipo==='relator' ? 'relator' : 'responsável pela preferência';
+    const valor = str($('mlTexto').value);
+    if(!valor){ toast('Informe um valor.','atencao'); return; }
+    const modo = modoRadioLote();
+    const comValor = ids.filter(id=>str(propDe(id)[campo])).length;
+    const ok = await confirmar({
+      titulo:'Aplicar em lote',
+      mensagem:'Definir “'+valor+'” como '+rot+' em '+n+' proposição(ões)? '
+        + (modo==='vazios' ? comValor+' já têm e serão mantidas.' : 'Valores existentes serão substituídos.'),
+      rotulo:'Aplicar'
+    });
+    if(!ok) return;
+    const r = {n:0, puladas:0};
+    aplicarLote(ids, p=>{
+      if(modo==='vazios' && str(p[campo])){ r.puladas++; return false; }
+      p[campo] = valor; r.n++; return true;
+    });
+    fecharModal('modalLote'); sincronizarAposLote();
+    toast((loteTipo==='relator'?'Relator':'Responsável')+' definido em '+r.n+' proposição(ões)'
+      +(r.puladas ? ' — '+r.puladas+' já tinham (mantidas)' : '')+'.');
+    return;
+  }
+
+  if(loteTipo==='parecer'){
+    const valor = $('mlParecer').value;
+    if(!valor){ toast('Selecione um parecer.','atencao'); return; }
+    const modo = modoRadioLote();
+    const comValor = ids.filter(id=>str(propDe(id).parecer)).length;
+    const ok = await confirmar({
+      titulo:'Aplicar em lote',
+      mensagem:'Definir parecer “'+valor+'” em '+n+' proposição(ões)? '
+        + (modo==='vazios' ? comValor+' já têm e serão mantidas.' : 'Pareceres existentes serão substituídos.'),
+      rotulo:'Aplicar'
+    });
+    if(!ok) return;
+    const r = {n:0, puladas:0};
+    aplicarLote(ids, p=>{
+      if(modo==='vazios' && str(p.parecer)){ r.puladas++; return false; }
+      p.parecer = valor; r.n++; return true;
+    });
+    fecharModal('modalLote'); sincronizarAposLote();
+    toast('Parecer definido em '+r.n+' proposição(ões)'
+      +(r.puladas ? ' — '+r.puladas+' já tinham (mantidas)' : '')+'.');
+    return;
+  }
+
+  if(loteTipo==='datas'){
+    const marcados = Object.keys(ROT_DATA).filter(c=>{
+      const chk = $('mlChk_'+c); return chk && chk.checked && $('mlDt_'+c).value;
+    });
+    if(!marcados.length){ toast('Marque ao menos um marco com data preenchida.','atencao'); return; }
+    const modo = modoRadioLote();
+    const prev = marcados.map(c=>{
+      const k = modo==='vazios'
+        ? ids.filter(id=>!propDe(id)[c]).length
+        : n;
+      return ROT_DATA[c]+' ('+k+')';
+    }).join(', ');
+    const ok = await confirmar({
+      titulo:'Aplicar em lote',
+      mensagem:'Atualizar marcos em '+n+' proposição(ões): '+prev+'? '
+        + (modo==='vazios' ? 'Marcos já preenchidos são mantidos.' : 'Valores existentes serão substituídos.'),
+      rotulo:'Aplicar'
+    });
+    if(!ok) return;
+    const aplicadas = aplicarLote(ids, p=>{
+      let mudou = false;
+      marcados.forEach(c=>{
+        if(modo==='vazios' && p[c]) return;
+        p[c] = $('mlDt_'+c).value; mudou = true;
+      });
+      return mudou;
+    });
+    fecharModal('modalLote'); sincronizarAposLote();
+    toast('Marcos de data atualizados em '+aplicadas+' proposição(ões).');
+    return;
+  }
+
+  if(loteTipo==='lida'){
+    const modo = modoRadioLote();
+    const dataL = $('mlLidaData') ? $('mlLidaData').value : '';
+    if(modo==='marcar' && !dataL){ toast('Informe a data da leitura.','atencao'); return; }
+    const ok = await confirmar({
+      titulo:'Aplicar em lote',
+      mensagem: modo==='marcar'
+        ? 'Marcar '+n+' proposição(ões) com relatório lido em '+fmtData(dataL)+'? (Datas existentes serão substituídas.)'
+        : 'Limpar a marcação de leitura de '+n+' proposição(ões)?',
+      rotulo:'Aplicar'
+    });
+    if(!ok) return;
+    aplicarLote(ids, p=>{ p.relatorioLidoEm = (modo==='marcar' ? dataL : null); return true; });
+    fecharModal('modalLote'); sincronizarAposLote();
+    toast(modo==='marcar'
+      ? n+' proposição(ões) marcadas como lidas em '+fmtData(dataL)+'.'
+      : 'Marcação de leitura removida de '+n+' proposição(ões).');
+    return;
+  }
+
+  if(loteTipo==='vista'){
+    const partido = str($('mlVistaPartido').value);
+    if(!partido){ toast('Informe o partido/bancada.','atencao'); return; }
+    const dataV = $('mlVistaData').value || null;
+    const jaTem = ids.filter(id=>{
+      const p = propDe(id);
+      return p && p.pedidosVista.some(v=>norm(v.partido)===norm(partido));
+    }).length;
+    const ok = await confirmar({
+      titulo:'Aplicar em lote',
+      mensagem:'Registrar vista de “'+partido+'”'+(dataV?' em '+fmtData(dataV):'')+' nas '+n+' selecionadas? '
+        + (jaTem ? jaTem+' já têm deste partido e serão mantidas.' : ''),
+      rotulo:'Aplicar'
+    });
+    if(!ok) return;
+    let add=0, skip=0;
+    aplicarLote(ids, p=>{
+      if(p.pedidosVista.some(v=>norm(v.partido)===norm(partido))){ skip++; return false; }
+      p.pedidosVista.push({partido:partido.slice(0,60), data:dataV});
+      add++; return true;
+    });
+    fecharModal('modalLote'); sincronizarAposLote();
+    toast('Vista de “'+partido+'” registrada em '+add+' proposição(ões)'
+      +(skip ? ' — '+skip+' já tinham (mantidas)' : '')+'.');
+    return;
+  }
+});
+
+async function excluirLote(){
+  const ids = idsSel();
+  const n = ids.length;
+  if(!n) return;
+  const ok = await confirmar({
+    titulo:'Excluir proposições selecionadas',
+    mensagem:'Excluir as '+n+' proposições selecionadas? Um backup do quadro atual será baixado automaticamente antes. Esta ação não pode ser desfeita.',
+    rotulo:'Excluir tudo', perigo:true
+  });
+  if(!ok) return;
+  const nome = 'backup-pre-apagar-lote-'+slug(data.config.titulo||'tramitacao')+'-'+stamp()+'.json';
+  baixarArquivo(nome, JSON.stringify(data,null,2), 'application/json');
+  data.proposicoes = data.proposicoes.filter(p=>!ids.includes(p.id));
+  data.ultimoBackupExportado = agoraISO();
+  sel.ids.clear();
+  if(ui.drawerId && ids.includes(ui.drawerId)) fecharDrawer();
+  salvar(); renderTudo(); sincronizarAposLote();
+  toast('Excluída(s) '+n+' proposição(ões). Backup salvo: '+nome);
+}
+
+ $('barraSel').addEventListener('click', e=>{
+  const b = e.target.closest('[data-lote]');
+  if(b && !b.disabled){
+    if(b.dataset.lote==='excluir'){ excluirLote(); return; }
+    abrirModalLote(b.dataset.lote);
+    return;
+  }
+});
+ $('bselMover').addEventListener('click', ()=>{
+  const destino = $('bselEtapa').value;
+  if(!destino || !sel.ids.size) return;
+  const n = moverEmLote(idsSel(), destino);
+  if(n) toast(n+' proposição(ões) movida(s) para “'+nomeEtapa(destino)+'”.');
+  sincronizarAposLote();
+});
+ $('bselLimpar').addEventListener('click', limparSelecao);
+ $('bselSair').addEventListener('click', sairModoSel);
+
+/* ================================================================
+   Gerador de pauta
    ================================================================ */
 function rotuloTipoPauta(t){
   if(t==='VT') return 'Veto Total ao Projeto de Lei';
@@ -2114,7 +2538,7 @@ async function copiarPauta(){
 });
 
 /* ================================================================
-   Impressão (v1.3)
+   Impressão
    ================================================================ */
 function cabecalhoImpressao(sub){
   const t = data.config.titulo || 'Quadro de Tramitação';
@@ -2188,7 +2612,7 @@ function imprimirRelatorio(){
 }
 
 /* ================================================================
-   Painéis-tabela por proponente / relator (v1.3)
+   Painéis-tabela
    ================================================================ */
 const painelEstado = { campo:'proponente', sort:{col:'nome', dir:1} };
 
@@ -2323,7 +2747,7 @@ let tBusca=null;
 });
 
 /* ================================================================
-   Board: delegação de eventos
+   Board: delegação de eventos (com modo de seleção — v1.4)
    ================================================================ */
 board.addEventListener('click', e=>{
   const a = e.target.closest('[data-acao]');
@@ -2332,6 +2756,7 @@ board.addEventListener('click', e=>{
     if(acao==='recolher'){ e.stopPropagation(); recolherPreferencias(); return; }
     if(acao==='enviar-lidas'){ e.stopPropagation(); enviarLidas(); return; }
     if(acao==='pauta'){ e.stopPropagation(); abrirModalPauta(); return; }
+    if(acao==='selecionar'){ e.stopPropagation(); alternarModoSel(); return; }
     if(acao==='ordenar'){
       e.stopPropagation();
       const et = a.dataset.etapa;
@@ -2350,22 +2775,46 @@ board.addEventListener('click', e=>{
       return;
     }
   }
+  if(sel.ativo){
+    /* modo seleção: clique marca; título da coluna alterna todos */
+    const titulo = e.target.closest('.col-titulo');
+    if(titulo){ toggleColunaSel(titulo.closest('.coluna')); return; }
+    const card = e.target.closest('.card');
+    if(card){ toggleCardSel(card.dataset.id, card); return; }
+    return;
+  }
   const card = e.target.closest('.card');
   if(card) abrirDrawer(card.dataset.id);
 });
 board.addEventListener('keydown', e=>{
   if(e.key!=='Enter' && e.key!==' ') return;
   const card = e.target.closest('.card');
-  if(card && e.target===card){ e.preventDefault(); abrirDrawer(card.dataset.id); }
+  if(card && e.target===card){
+    e.preventDefault();
+    if(sel.ativo) toggleCardSel(card.dataset.id, card);
+    else abrirDrawer(card.dataset.id);
+  }
 });
 
 let arrastandoId = null;
 board.addEventListener('dragstart', e=>{
   const card = e.target.closest('.card'); if(!card) return;
   arrastandoId = card.dataset.id;
+  /* drag do grupo: card origem selecionado + outros marcados → grupo (v1.4) */
+  if(sel.ativo && sel.ids.has(arrastandoId) && sel.ids.size>1){
+    dragGrupo = [...sel.ids];
+    requestAnimationFrame(()=>{
+      dragGrupo.forEach(gid=>{
+        const el = board.querySelector('[data-id="'+gid+'"]');
+        if(el) el.classList.add('arrastando');
+      });
+    });
+  } else {
+    dragGrupo = null;
+    requestAnimationFrame(()=>card.classList.add('arrastando'));
+  }
   e.dataTransfer.setData('text/plain', arrastandoId);
   e.dataTransfer.effectAllowed = 'move';
-  requestAnimationFrame(()=>card.classList.add('arrastando'));
 });
 board.addEventListener('dragover', e=>{
   const col = e.target.closest('.coluna');
@@ -2384,10 +2833,17 @@ board.addEventListener('drop', e=>{
   e.preventDefault();
   col.classList.remove('alvo');
   const id = e.dataTransfer.getData('text/plain') || arrastandoId;
-  if(id && col.dataset.etapa) moverProposicao(id, col.dataset.etapa);
+  if(dragGrupo && dragGrupo.length>1){
+    const n = moverEmLote(dragGrupo, col.dataset.etapa);
+    if(n) toast(n+' proposição(ões) movida(s) para “'+nomeEtapa(col.dataset.etapa)+'”.');
+    sincronizarAposLote();
+  } else if(id && col.dataset.etapa){
+    moverProposicao(id, col.dataset.etapa);
+  }
 });
 function limparDrag(){
   arrastandoId = null;
+  dragGrupo = null;
   board.querySelectorAll('.arrastando').forEach(c=>c.classList.remove('arrastando'));
   board.querySelectorAll('.alvo').forEach(c=>c.classList.remove('alvo'));
 }
@@ -2395,13 +2851,16 @@ board.addEventListener('dragend', limparDrag);
 window.addEventListener('dragend', limparDrag);
 
 /* ================================================================
-   Modais: navegação global (ESC, Tab, fechar)
+   Modais: navegação global (ESC com prioridade a modais; ESC encerra seleção)
    ================================================================ */
 document.addEventListener('keydown', e=>{
   const topo = camadas[camadas.length-1];
-  if(!topo) return;
-  if(e.key==='Escape'){ topo.fechar(); }
-  else if(e.key==='Tab'){ trapFoco(topo.el, e); }
+  if(topo){
+    if(e.key==='Escape'){ topo.fechar(); }
+    else if(e.key==='Tab'){ trapFoco(topo.el, e); }
+  } else if(e.key==='Escape' && sel.ativo){
+    sairModoSel();
+  }
 });
 document.querySelectorAll('[data-fechar]').forEach(b=>{
   b.addEventListener('click', ()=>{
@@ -2456,7 +2915,7 @@ document.querySelectorAll('.modal-fundo').forEach(f=>{
       data.proposicoes.filter(p=>p.etapa==='preferencias').map(p=>p.id), 'ordem');
   }
   aplicarEstilo();
-  salvar(); fecharModal('modalConfig'); renderTudo();
+  salvar(); fecharModal('modalConfig'); renderTudo(); sincronizarAposLote();
   toast('Configurações salvas.'
     +(movidas ? ' '+movidas+' proposição(ões) devolvida(s) de Preferências à Ordem do Dia.' : ''));
 });
@@ -2475,8 +2934,9 @@ document.querySelectorAll('.modal-fundo').forEach(f=>{
   baixarArquivo(nome, JSON.stringify(data,null,2), 'application/json');
   data.proposicoes = [];
   data.ultimoBackupExportado = agoraISO();
+  sel.ids.clear();
   fecharDrawer(); fecharModal('modalConfig');
-  salvar(); renderTudo();
+  salvar(); renderTudo(); sincronizarAposLote();
   toast('Quadro limpo — '+n+' proposição(ões) apagada(s). Backup salvo: '+nome);
 });
  $('btnRestaurarPadroes').addEventListener('click', async ()=>{
@@ -2493,7 +2953,7 @@ document.querySelectorAll('.modal-fundo').forEach(f=>{
   const movidas = reconciliarPreferencias();
   aplicarEstilo();
   fecharModal('modalConfig');
-  salvar(); renderTudo();
+  salvar(); renderTudo(); sincronizarAposLote();
   toast('Configurações restauradas ao padrão.'
     +(movidas ? ' '+movidas+' proposição(ões) devolvida(s) à Ordem do Dia.' : ''));
 });

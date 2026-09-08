@@ -452,17 +452,7 @@
       "telefone": null,
       "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2023/2/16/357181_G.png",
       "ativo": true
-    },
-    {
-      "id_assembleia": 2163,
-      "nome": "Professor Bonatto",
-      "partido": "PSD",
-      "partido_nome": "Partido Social Democrático",
-      "email": "professor.bonatto@al.rs.gov.br",
-      "telefone": null,
-      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2024/2/19/383749_G.jpg",
-      "ativo": true
-    },
+    },    
     {
       "id_assembleia": 2136,
       "nome": "Rodrigo Lorenzoni",
@@ -551,6 +541,16 @@
       "email": "ze.nunes@al.rs.gov.br",
       "telefone": "(51) 32101350",
       "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2015/2/23/177876_G.jpg",
+      "ativo": true
+    },
+	{
+      "id_assembleia": 1510,
+      "nome": "Zilá Breitenbach",
+      "partido": "PSDB",
+      "partido_nome": "Partido da Social Democracia Brasileira",
+      "email": "zila.breitenbach@al.rs.gov.br",
+      "telefone": "(51) 32102620",
+      "foto": "https://ww2.al.rs.gov.br/filerepository/fotografias/2017/1/5/208916_G.png",
       "ativo": true
     }
   ]

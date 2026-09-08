@@ -37,9 +37,9 @@
           "partido": "PSD"
         },
         {
-          "id_assembleia": 65,
-          "nome": "Frederico Antunes",
-          "partido": "PSD"
+          "id_assembleia": 1510,
+          "nome": "Zilá Breitenbach",
+          "partido": "PSDB"
         },
         {
           "id_assembleia": 1509,
@@ -92,12 +92,7 @@
           "id_assembleia": 2125,
           "nome": "Neri, o Carteiro",
           "partido": "PSD"
-        },
-        {
-          "id_assembleia": 2163,
-          "nome": "Professor Bonatto",
-          "partido": "PSD"
-        },
+        },        
         {
           "id_assembleia": 2155,
           "nome": "Joel Wilhelm",
