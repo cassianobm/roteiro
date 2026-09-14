@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual — Quadro de Tramitação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#f4f0e4; --card:#fcf9f0; --tinta:#221d13; --tinta-2:#55503e; --tinta-3:#8a8168;
+  --linha:#d8d0b8; --oliva:#57683a; --vinho:#83303f; --ambar:#96690f;
+  --serifada:'Spectral', Georgia, 'Times New Roman', serif;
+  --sans:'IBM Plex Sans','Segoe UI',Helvetica,sans-serif;
+}
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; scroll-padding-top:14px; }
+body{ margin:0; background:var(--papel); color:var(--tinta); font:400 14px/1.65 var(--sans); }
+a{ color:var(--tinta-2); }
+
+/* ============ Topo ============ */
+.m-top{
+  border-bottom:3px double var(--tinta); padding:22px 30px 16px;
+  display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;
+}
+.m-top h1{ font:700 26px/1.1 var(--serifada); margin:0; }
+.m-top .sub{ font:600 10px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--tinta-3); margin:6px 0 0; }
+.m-top .versao{ font:italic 500 12px var(--serifada); color:var(--tinta-3); }
+.btn{
+  font:500 12.5px/1 var(--sans); padding:9px 14px; border:1px solid #8f8468;
+  background:transparent; color:var(--tinta); border-radius:2px; cursor:pointer;
+}
+.btn:hover{ background:#eae3cf; border-color:var(--tinta-2); }
+#voltarAviso{ font:italic 12px var(--serifada); color:var(--ambar); }
+
+/* ============ Layout ============ */
+.m-wrap{ display:flex; min-height:calc(100vh - 110px); }
+nav.m-nav{
+  width:232px; flex:none; border-right:1px solid var(--linha);
+  padding:18px 10px 30px 26px; position:sticky; top:0; align-self:flex-start;
+  max-height:100vh; overflow-y:auto;
+}
+nav.m-nav .parte{
+  font:600 9.5px var(--sans); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--tinta-3); margin:16px 0 5px;
+}
+nav.m-nav a{
+  display:block; text-decoration:none; color:var(--tinta-2); font:400 12.5px/1.35 var(--sans);
+  padding:3px 8px; border-left:2px solid transparent;
+}
+nav.m-nav a:hover{ color:var(--tinta); background:#ece5d0; }
+main.m-main{ flex:1; min-width:0; max-width:840px; padding:8px 34px 60px; }
+main.m-main > section{ border-top:2px solid var(--tinta); margin-top:38px; padding-top:10px; }
+main.m-main > section:first-child{ margin-top:14px; }
+h2{ font:600 24px/1.2 var(--serifada); margin:6px 0 14px; }
+h2 .n{ color:var(--tinta-3); font-weight:500; margin-right:8px; }
+h3{ font:600 13px var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--tinta-3); margin:26px 0 8px; border-bottom:1px solid var(--linha); padding-bottom:4px; }
+p{ margin:10px 0; }
+ul,ol{ padding-left:24px; margin:10px 0; }
+li{ margin:5px 0; }
+.ui{ font-weight:600; }
+code{ font:500 12.5px var(--sans); background:#ece5d0; border:1px solid var(--linha); border-radius:2px; padding:1px 5px; }
+
+/* ============ Tabelas ============ */
+table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+th{
+  font:600 9.5px var(--sans); text-transform:uppercase; letter-spacing:.06em; color:var(--tinta-3);
+  border-bottom:2px solid var(--tinta); padding:6px 8px; text-align:left;
+}
+td{ border-bottom:1px solid var(--linha); padding:6px 8px; vertical-align:top; }
+td:first-child{ font-weight:500; white-space:nowrap; }
+
+/* ============ Boxes ============ */
+.exp{ border:1px solid var(--oliva); background:#eef0da; padding:12px 16px; border-radius:2px; margin:18px 0; }
+.exp .t{ font:600 10px var(--sans); letter-spacing:.1em; text-transform:uppercase; color:var(--oliva); margin:0 0 8px; }
+.aviso{ border:1px solid var(--ambar); background:#f6ecd4; padding:12px 16px; border-radius:2px; margin:18px 0; }
+.aviso .t{ font:600 10px var(--sans); letter-spacing:.1em; text-transform:uppercase; color:var(--ambar); margin:0 0 8px; }
+.dica{ border:1px dashed #b7ad92; padding:12px 16px; border-radius:2px; margin:18px 0; }
+.dica .t{ font:italic 600 12px var(--serifada); color:var(--tinta-2); margin:0 0 6px; }
+.exp ol,.exp ul{ margin:6px 0; }
+
+/* ============ Diagramas ============ */
+.d-board{ display:flex; gap:10px; margin:16px 0 6px; }
+.d-col{ flex:1; border-top:2px solid var(--tinta); padding-top:5px; min-width:0; }
+.d-col .d-h{
+  font:600 8.5px var(--sans); letter-spacing:.06em; text-transform:uppercase; color:var(--tinta-3);
+  border-bottom:1px solid var(--linha); padding-bottom:4px; margin-bottom:6px;
+  display:flex; justify-content:space-between;
+}
+.d-card{ border:1px solid var(--linha); background:var(--card); padding:5px 7px; margin-bottom:5px; font-size:10.5px; line-height:1.4; }
+.d-card .d-top{ display:flex; gap:5px; align-items:center; }
+.d-sig{ font:600 8px var(--sans); letter-spacing:.08em; border:1px solid var(--tinta-2); border-radius:2px; padding:1px 4px; }
+.d-num{ font:600 11.5px var(--serifada); }
+.d-prop{ color:var(--tinta-2); margin:2px 0 0; font-size:10px; }
+.d-ementa{ font:italic 400 10px/1.4 var(--serifada); color:var(--tinta-3); margin:2px 0 0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.d-chips{ display:flex; flex-wrap:wrap; gap:3px; margin-top:4px; }
+.d-chip{ font:500 8.5px var(--sans); border:1px solid var(--linha); border-radius:2px; padding:1px 4px; color:var(--tinta-2); white-space:nowrap; }
+.d-chip.m{ font-variant-numeric:tabular-nums; }
+.d-chip.l{ background:#ece5d0; border-color:#a89d7d; }
+.d-chip.v{ border-style:dashed; }
+.d-chip.f{ border-color:var(--oliva); color:var(--oliva); background:#eef0da; }
+.d-leg{ font:italic 11.5px var(--serifada); color:var(--tinta-3); margin:4px 0 0; }
+
+/* ============ Impressão ============ */
+@media print{
+  nav.m-nav,.m-top .btn,#voltarAviso{ display:none !important; }
+  .m-wrap{ display:block; }
+  main.m-main{ max-width:none; padding:0; }
+  body{ font-size:12px; }
+  section{ break-inside:avoid-page; }
+}
+@media (max-width:1000px){
+  .m-wrap{ display:block; }
+  nav.m-nav{ position:static; width:auto; max-height:none; border-right:none; border-bottom:1px solid var(--linha); padding:14px 26px; }
+  main.m-main{ padding:8px 22px 50px; }
+}
+</style>
+</head>
+<body>
+
+<header class="m-top">
+  <div>
+    <h1>Manual do Quadro de Tramitação</h1>
+    <p class="sub">Guia de uso · controle de proposições em comissão</p>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+    <span class="versao">Cobre a versão 1.4 do sistema</span>
+    <button class="btn" onclick="voltar()">Voltar ao quadro</button>
+    <span id="voltarAviso" hidden>Não foi possível fechar esta aba automaticamente — feche-a (Ctrl+W); o quadro segue aberto na outra.</span>
+  </div>
+</header>
+
+<div class="m-wrap">
+<nav class="m-nav" aria-label="Índice">
+  <div class="parte">Parte I — Entender</div>
+  <a href="#s1">1. O que é (e o que não é)</a>
+  <a href="#s2">2. Primeiros passos</a>
+  <a href="#s3">3. Tour da tela</a>
+  <div class="parte">Parte II — Fazer</div>
+  <a href="#s4">4. Cadastrar proposições</a>
+  <a href="#s5">5. Tramitação no dia a dia</a>
+  <a href="#s6">6. A reunião</a>
+  <a href="#s7">7. Ações em lote</a>
+  <a href="#s8">8. Saídas: pauta e relatórios</a>
+  <a href="#s9">9. Cuidar dos dados</a>
+  <div class="parte">Parte III — Referência</div>
+  <a href="#s10">10. Dicionário de campos</a>
+  <a href="#s11">11. Configurações</a>
+  <a href="#s12">12. Problemas frequentes</a>
+</nav>
+
+<main class="m-main">
+
+<!-- ============================ 1 ============================ -->
+<section id="s1">
+<h2><span class="n">1.</span>O que é (e o que não é)</h2>
+<p>O Quadro de Tramitação é uma ferramenta de <strong>apoio visual</strong> para o acompanhamento de proposições em comissão: um quadro estilo <em>kanban</em>, em colunas que representam as etapas da tramitação, em que cada proposição é um cartão que avança de coluna em coluna.</p>
+<p>Ele foi feito para responder, de imediato e num só olhar, a perguntas que no sistema corporativo exigem consulta por consulta: <em>o que chegou e ainda não foi distribuído? O que está há mais tempo sem parecer? O que entra na reunião de amanhã? Quem pediu vista sobre o quê?</em></p>
+<h3>O que ele é</h3>
+<ul>
+  <li>Um arquivo único de página web que abre no navegador, sem instalação, sem servidor e sem login;</li>
+  <li>Um quadro por comissão — cada secretário ou responsável mantém o seu, no seu próprio computador;</li>
+  <li>Um registro posterior ao fato: você anota o que aconteceu (a data real é sempre editável);</li>
+  <li>Um gerador de pauta e relatórios a partir do que está no quadro.</li>
+</ul>
+<h3>O que ele não é</h3>
+<ul>
+  <li><strong>Não substitui o sistema corporativo.</strong> A tramitação oficial continua lá; nada aqui tem valor de registro oficial;</li>
+  <li>Não é multiusuário nem sincronizado — não há rede envolvida;</li>
+  <li>Não controla regras processuais (prazos, quóruns, regimes): quem decide continua sendo você — o sistema avisa, mas nunca bloqueia ou impõe.</li>
+</ul>
+<div class="aviso">
+  <p class="t">Atenção — onde os dados moram</p>
+  <p>As informações ficam salvas <strong>no armazenamento interno do seu navegador, na sua máquina</strong>. Elas não vão para a internet e não aparecem se o arquivo for aberto em outro computador. Por isso, a regra de ouro: <strong>exporte uma cópia de segurança (JSON) com regularidade</strong> — o rodapé do quadro mostra quando foi a última. Veja a seção 9.</p>
+</div>
+</section>
+
+<!-- ============================ 2 ============================ -->
+<section id="s2">
+<h2><span class="n">2.</span>Primeiros passos</h2>
+<ol>
+  <li><strong>Salve os dois arquivos juntos, na mesma pasta:</strong> o do quadro e este manual (<code>manual.html</code>). O quadro tem um botão de ajuda que abre o manual — se os arquivos forem separados, o link deixa de funcionar;</li>
+  <li><strong>Abra o quadro:</strong> duplo clique no arquivo HTML — ele abre direto no navegador;</li>
+  <li><strong>Dê um título ao quadro:</strong> botão de <span class="ui">Configurações</span> (engrenagem, canto superior direito) → preencha o <span class="ui">título</span> com o nome da comissão. O título passa a aparecer no topo, nos relatórios impressos e no nome dos arquivos de backup;</li>
+  <li><strong>Cadastre a primeira proposição</strong> — o caminho rápido está na seção 4;</li>
+  <li><strong>Exporte um backup</strong> (botão de seta para baixo, no cabeçalho) para criar o hábito desde o primeiro dia.</li>
+</ol>
+<div class="dica">
+  <p class="t">Dica</p>
+  <p>Use um navegador atualizado (Chrome, Edge ou Firefox) em computador. O quadro foi projetado para uso com mouse; em telas de toque o arrastar de cartões não funciona. O salvamento é automático a cada alteração — não há botão “salvar”.</p>
+</div>
+<div class="exp">
+  <p class="t">Experimente</p>
+  <ol>
+    <li>Abra as configurações e dê um título ao quadro (ex.: o nome da sua comissão) — ao salvar, o título aparece no topo;</li>
+    <li>Clique no botão de exportar (seta para baixo) — um arquivo <code>.json</code> é baixado e o rodapé passa a exibir a data deste backup.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 3 ============================ -->
+<section id="s3">
+<h2><span class="n">3.</span>Tour da tela</h2>
+<h3>O cabeçalho</h3>
+<ul>
+  <li><span class="ui">Busca</span> — procura ao mesmo tempo por número, ano, ementa, proponente, relator e tipo;</li>
+  <li><span class="ui">Filtro por tipo</span> e botão <span class="ui">Sem parecer</span> — podem ser combinados com a busca; o botão <span class="ui">Limpar filtros</span> surge quando algo está ativo;</li>
+  <li><span class="ui">Alternar estilo</span> (ícone de linhas) — alterna entre cards completos e <strong>compactos</strong> (uma linha por proposição, para ver mais de cada vez);</li>
+  <li><span class="ui">Nova proposição</span> — abre o cadastro;</li>
+  <li><span class="ui">Imprimir</span> (impressora) — quadro ou relatório, na seção 8;</li>
+  <li><span class="ui">Painéis</span> (tabela) — agregações por proponente e relator, na seção 8;</li>
+  <li><span class="ui">Exportar</span> / <span class="ui">Importar</span> (setas) — cópia de segurança JSON, na seção 9;</li>
+  <li><span class="ui">Configurações</span> (engrenagem) — seção 11;</li>
+  <li><span class="ui">Ajuda</span> (<strong>?</strong>) — abre este manual em nova aba.</li>
+</ul>
+<h3>As colunas</h3>
+<p>Cada coluna é uma etapa, numerada em romanos. A ordem normal é: <em>Proposições Recebidas → Para Distribuição → Aguardando Relatório → Ordem do Dia → Apreciadas</em>. No modo CCJ (seção 11), entra a coluna <em>Preferências</em> entre Ordem do Dia e Apreciadas, e a Ordem do Dia passa a exibir a etiqueta “aptas”.</p>
+<p>No cabeçalho de cada coluna: o <strong>contador</strong> de cartões (no formato “visíveis/total” quando há filtro ativo), o <strong>indicador âmbar</strong> de envelhecimento (quantas proposições paradas há mais dias que o limite configurado) e os <strong>botões</strong> — da esquerda para a direita: <span class="ui">gerar pauta</span> (só na coluna-fonte da pauta), <span class="ui">ordenar</span> (seta: mais antigas ↔ mais novas), <span class="ui">enviar lidas</span> (Ordem do Dia, no modo CCJ), <span class="ui">recolher preferências</span> (coluna Preferências), <span class="ui">modo de seleção</span> (check, seção 7) e <span class="ui">+</span> (cadastrar já nesta etapa).</p>
+<h3>Os cartões</h3>
+<div class="d-board">
+  <div class="d-col">
+    <div class="d-h"><span>ORDEM DO DIA</span><span>12</span></div>
+    <div class="d-card">
+      <div class="d-top"><span class="d-sig">PL</span><span class="d-num">n.º 100/2021</span></div>
+      <p class="d-prop">Beto Fantinel <span style="border:1px solid var(--linha);border-radius:2px;padding:0 3px;">+3</span></p>
+      <p class="d-ementa">Altera a Lei n.º 8.820, de 27 de janeiro de 1989, que institui o Imposto…</p>
+      <div class="d-chips">
+        <span class="d-chip m">Em pauta desde 12/03 · 45d</span>
+        <span class="d-chip l">Lida 28/03</span>
+        <span class="d-chip v">Vista PT, MDB</span>
+        <span class="d-chip">Rel. Guilherme Pasin</span>
+        <span class="d-chip f">Favorável</span>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="d-leg">Anatomia de um cartão completo (estilo padrão).</p>
+<p>Clicar no cartão abre o <strong>painel de detalhes</strong>, com todos os campos editáveis e o histórico de tramitação. Arrastar move a proposição de coluna. No estilo compacto, o cartão vira uma linha — ementa e detalhes ficam na dica flutuante (posicione o mouse) e no painel.</p>
+<table>
+  <tr><th>Chip</th><th>Quando aparece</th><th>O que significa</th></tr>
+  <tr><td>Recebida / Distribuída / Em pauta desde / Apreciada <em>data · Nd</em></td><td>Conforme a coluna</td><td>A data de entrada naquela etapa e há quantos dias está nela (aging). Fica âmbar ao cruzar o limite</td></tr>
+  <tr><td>Conclusiva <em>data · Nd</em></td><td>Proposição conclusiva em fase de 2ª votação</td><td>Aguarda a votação conclusiva na comissão; relator e parecer saem do cartão porque o parecer já foi aprovado</td></tr>
+  <tr><td>Lida <em>data</em></td><td>Leitura do relatório registrada</td><td>“Engessado”: relatório lido em reunião, ainda não votado</td></tr>
+  <tr><td>Vista <em>siglas</em></td><td>Pedidos de vista registrados</td><td>Partidos/bancadas que já pediram vista (a data de cada um vai na dica flutuante)</td></tr>
+  <tr><td>Rel. <em>nome</em></td><td>Relator designado</td><td>Relator da proposição</td></tr>
+  <tr><td>Parecer (verde-oliva / vinho)</td><td>Parecer lançado</td><td>Oliva = favorável; vinho = contrário</td></tr>
+  <tr><td>Pref. <em>nome</em></td><td>Na coluna Preferências</td><td>Quem indicou a preferência</td></tr>
+  <tr><td>Resultado / Local</td><td>Apreciadas / audiências</td><td>Resultado da apreciação; local da audiência pública</td></tr>
+</table>
+<h3>A barra de seleção e o rodapé</h3>
+<p>Quando o <strong>modo de seleção</strong> está ativo (seção 7), surge uma barra escura fixa na parte de baixo com a contagem e as ações em lote. O rodapé, sempre visível, mostra o total de proposições, o estado do salvamento e a data do último backup exportado — além do link para este manual.</p>
+</section>
+
+<!-- ============================ 4 ============================ -->
+<section id="s4">
+<h2><span class="n">4.</span>Cadastrar proposições</h2>
+<h3>Do zero</h3>
+<ol>
+  <li>Botão <span class="ui">Nova proposição</span> (ou o <span class="ui">+</span> de uma coluna, para já cadastrar naquela etapa — o padrão é “Recebidas”);</li>
+  <li>Preencha o essencial: <strong>tipo, número, ano, proponente e ementa</strong> (em requerimentos de audiência pública, o campo se chama <strong>Assunto</strong>);</li>
+  <li>Conforme a etapa escolhida, o formulário oferece relator, parecer, resultado; para audiências, convidados e local; marque <strong>tramitação conclusiva</strong> se for o caso;</li>
+  <li>A seção <strong>Datas</strong> vem pré-preenchida com “hoje” nos marcos aplicáveis à etapa — ajuste se estiver registrando algo que aconteceu antes;</li>
+  <li><span class="ui">Adicionar proposição</span>. Se já existir uma proposição com o mesmo tipo + número + ano, o sistema pergunta se quer adicionar mesmo assim.</li>
+</ol>
+<h3>Interpretando texto publicado — o caminho do dia a dia</h3>
+<p>O quadro lê o texto no formato em que as proposições (e as agendas) são publicadas. Em vez de digitar campo a campo:</p>
+<ol>
+  <li>Abra o cadastro e <strong>cole o texto</strong> na caixa “Interpretar texto publicado” — uma proposição ou várias de uma vez (inclusive a agenda/ordem do dia inteira);</li>
+  <li>Clique em <span class="ui">Interpretar</span> — os campos são preenchidos para você <strong>revisar</strong>;</li>
+  <li>Um cartão por vez: revise e confirme. Vários: use <span class="ui">Adicionar todas (N)</span> — duplicadas são ignoradas e avisadas.</li>
+</ol>
+<table>
+  <tr><th>O que é reconhecido</th><th>Detalhes</th></tr>
+  <tr><td>Cabeçalho</td><td>“Projeto de Lei n.º 308/2024” e equivalentes dos 10 tipos (inclusive “Veto Total/Parcial <em>ao</em> Projeto de Lei”, em que o número é o do projeto vetado). Aceita nº, n.º, n.o, n° e a numeração de agenda (“1) ”, “12. ”)</td></tr>
+  <tr><td>Linhas de seção</td><td>Títulos de agenda (ORDEM DO DIA, PREFERÊNCIAS DA REUNIÃO, VOTAÇÃO CONCLUSIVA…) são ignorados — só os itens são lidos</td></tr>
+  <tr><td>Campos</td><td>Proponente, Ementa ou Assunto, Relator, Parecer, Convidados, Local, Data de Distribuição</td></tr>
+  <tr><td>Limpezas</td><td>O “Deputado(a)” inicial é removido do nome; “+ 18 Deputado(s)” vira contador de coautores; o parecer é normalizado (ex.: “favorável com emendas” → “Favorável com emenda(s)”)</td></tr>
+  <tr><td>Detecção automática</td><td>“(Tramitação Conclusiva …)” na ementa marca a caixa correspondente — o texto permanece na ementa, assim como códigos SEI e outras observações entre parênteses</td></tr>
+</table>
+<div class="dica">
+  <p class="t">Dica</p>
+  <p>O interpretador é uma conveniência, não um requisito: se um texto não for reconhecido, preencha à mão normalmente. Textos fora do padrão podem ser enviados ao mantenedor do sistema para melhorar o reconhecimento.</p>
+</div>
+<div class="exp">
+  <p class="t">Experimente</p>
+  <ol>
+    <li>Com o quadro vazio, clique em “carregar os 10 exemplos de teste” e depois em <span class="ui">Interpretar</span> — os casos difíceis (veto, PLC, “+18” deputados, tramitação conclusiva) aparecem preenchidos;</li>
+    <li>Use <span class="ui">Adicionar todas (10)</span> e confira o quadro populado;</li>
+    <li>Cole a seguir uma agenda publicada real e repita — as linhas de seção somem, os itens viram proposições.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 5 ============================ -->
+<section id="s5">
+<h2><span class="n">5.</span>Tramitação no dia a dia</h2>
+<h3>Mover uma proposição</h3>
+<p>Arraste o cartão para a coluna de destino, ou abra o painel e use <span class="ui">Mover para</span>. Ao mover, o sistema registra automaticamente data e hora no histórico e, se for a primeira vez que a proposição entra em certas etapas, a data de marco correspondente.</p>
+<h3>As datas de marco</h3>
+<p><strong>Recebimento</strong> (no cadastro), <strong>distribuição</strong> (ao entrar em Aguardando Relatório), <strong>em pauta desde</strong> (ao entrar em Ordem do Dia ou Preferências) e <strong>apreciação</strong> (ao entrar em Apreciadas) são preenchidas automaticamente <em>na primeira entrada em cada etapa</em> — e nunca mais são alteradas automaticamente. Se a matéria sai da Ordem do Dia (devolução, ciclo de preferências) e volta, a data original permanece: o envelhecimento acumula, mostrando há quanto tempo a matéria trafega de verdade. Para corrigir qualquer marco, edite no painel — e o envelhecimento recalcula na hora.</p>
+<h3>Distribuir</h3>
+<p>Mova para <em>Aguardando Relatório</em> e preencha o <strong>relator</strong> no painel (ou em lote, seção 7 — o caso típico: um deputado designado relator de várias matérias na mesma reunião).</p>
+<h3>Envelhecimento (aging)</h3>
+<p>O “<em>data · Nd</em>” do cartão e do contador âmbar da coluna mostra há quantos dias a proposição está naquela etapa. O limite que acende o âmbar é configurável (padrão: 30 dias).</p>
+<h3>Ordenar, buscar, filtrar</h3>
+<p>Cada coluna tem seu botão de ordenação (mais antigas no topo por padrão; a preferência fica memorizada por coluna). A busca e os filtros do cabeçalho combinam entre si, e vale lembrar o atalho <span class="ui">Sem parecer</span>: um retrato instantâneo do que ainda falta relatório.</p>
+<div class="exp">
+  <p class="t">Experimente</p>
+  <ol>
+    <li>Arraste um cartão para <em>Aguardando Relatório</em> — o chip vira “Distribuída” com a data de hoje;</li>
+    <li>Abra o painel, mude a data de distribuição para 40 dias atrás — o cartão acende em âmbar e entra na contagem da coluna;</li>
+    <li>Volte a data e clique na seta de ordenação da coluna para ver a inversão.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 6 ============================ -->
+<section id="s6">
+<h2><span class="n">6.</span>A reunião</h2>
+<h3>Comissão comum</h3>
+<p><strong>Antes:</strong> confira a Ordem do Dia; gere e copie a pauta (seção 8) para as notas da reunião.</p>
+<p><strong>Durante:</strong> com o painel da proposição aberto, registre o que acontece — <strong>relatório lido</strong> (marque a caixa; a data de hoje é sugerida e editável), <strong>pedidos de vista</strong> (partido/bancada e data — um por linha; remova com ×), <strong>votação conclusiva</strong> (botão “Marcar votação conclusiva” quando o parecer de matéria conclusiva é aprovado — o cartão passa a exibir “Conclusiva”, pois agora é o projeto que será votado).</p>
+<p><strong>Depois:</strong> as aprecadas vão para <em>Apreciadas</em> — arraste (ou mova em lote) e preencha o <strong>resultado</strong> no painel. As não votadas simplesmente ficam na Ordem do Dia.</p>
+<h3>Comissão com (ciclo CCJ)</h3>
+<p>Nas comissões com a coluna <em>Preferências</em> ativa, a Ordem do Dia é o conjunto de aptas; a cada reunião, os deputados indicam um subconjunto. O ciclo completo no quadro:</p>
+<ol>
+  <li><strong>Montar a pauta:</strong> na Ordem do Dia, <span class="ui">enviar lidas</span> leva os “engessados” (relatório lido) para Preferências; arraste as demais indicadas e preencha <span class="ui">Indicada por</span> em cada uma (ou em lote, seção 7);</li>
+  <li><strong>Pauta:</strong> gere pela coluna Preferências — engessados primeiro, depois as indicadas (opcionalmente agrupadas por responsável);</li>
+  <li><strong>Reunião:</strong> como na comissão comum — leituras, vistas, conclusivas, resultados;</li>
+  <li><strong>Fechar o ciclo:</strong> <span class="ui">Recolher preferências</span> devolve em lote as não apreciadas à Ordem do Dia. As leituras registradas <strong>continuam marcadas</strong> — na próxima reunião, “enviar lidas” já as leva de volta.</li>
+</ol>
+<div class="aviso">
+  <p class="t">Atenção — tramitação conclusiva</p>
+  <p>Ao mover uma matéria de tramitação conclusiva para <em>Apreciadas</em> sem a votação conclusiva registrada, o sistema mostra um aviso — mas move. Isso é proposital: depois de aprovado o parecer, a matéria normalmente permanece na Ordem do Dia para a segunda votação; o aviso apenas lembra disso. O sistema nunca bloqueia movimentos.</p>
+</div>
+<div class="exp">
+  <p class="t">Experimente (modo CCJ)</p>
+  <ol>
+    <li>Nas configurações, ative “usar coluna Preferências”;</li>
+    <li>Marque dois cartões da Ordem do Dia como lidos e clique no botão de “enviar lidas” — eles vão para Preferências;</li>
+    <li>Preencha “Indicada por” em um deles e gere a pauta pela coluna Preferências;</li>
+    <li>Clique em “recolher preferências” — tudo volta à Ordem do Dia, lidos ainda marcados.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 7 ============================ -->
+<section id="s7">
+<h2><span class="n">7.</span>Ações em lote</h2>
+<p>Para operar sobre várias proposições de uma vez — mover um bloco, designar o mesmo relator, registrar a vista de um partido sobre várias matérias, corrigir datas em massa:</p>
+<ol>
+  <li><strong>Entre no modo de seleção:</strong> ícone de check no cabeçalho de qualquer coluna. Uma barra de ações surge na parte de baixo da tela;</li>
+  <li><strong>Selecione:</strong> clique nos cartões (o clique agora marca, não abre o painel) ou clique no <strong>título da coluna</strong> para marcar/desmarcar todos os visíveis — com filtro ativo, só os filtrados são marcados;</li>
+  <li><strong>Aja:</strong> arraste um cartão marcado e o grupo inteiro se move; ou use os botões da barra (abaixo);</li>
+  <li><strong>Saia:</strong> <span class="ui">Concluir</span> ou a tecla ESC. A seleção é temporária — nada é perdido ao sair.</li>
+</ol>
+<table>
+  <tr><th>Botão</th><th>Comportamento</th></tr>
+  <tr><td>Mover para</td><td>Move o grupo (histórico individual por proposição preservado)</td></tr>
+  <tr><td>Relator… / Parecer… / Indicada por…</td><td>Aplica o valor a todas — ou apenas às que ainda não têm, se escolher “apenas vazios”</td></tr>
+  <tr><td>Datas…</td><td>Marque os marcos a alterar e informe a data; os demais não são tocados</td></tr>
+  <tr><td>Lida…</td><td>Marca como lita com a data informada — ou desmarca</td></tr>
+  <tr><td>Vista…</td><td>Registra o pedido do partido/bancada em todas as selecionadas; as que já têm vista desse partido são mantidas (nada é duplicado)</td></tr>
+  <tr><td>Excluir…</td><td>Confirmação com contagem exata — e um backup do quadro é baixado automaticamente antes</td></tr>
+</table>
+<div class="exp">
+  <p class="t">Experimente</p>
+  <ol>
+    <li>Entre no modo de seleção e clique no título de uma coluna — todos os cartões visíveis marcam;</li>
+    <li>Arraste um deles para outra coluna — o grupo inteiro se move;</li>
+    <li>Selecione algumas e use <span class="ui">Relator…</span> com “apenas sem relator” — veja a contagem na confirmação e o resultado nos cartões.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 8 ============================ -->
+<section id="s8">
+<h2><span class="n">8.</span>Saídas: pauta e relatórios</h2>
+<h3>Gerar a pauta</h3>
+<p>O botão de documento fica no cabeçalho da <strong>coluna-fonte</strong>: Ordem do Dia nas comissões comuns; Preferências no modo CCJ. A janela traz opções (data da reunião, ementa completa/primeira linha/omitida, relator e parecer, vistas, agrupamento por responsável) e uma <strong>pré-visualização editável</strong> — corrija ali qualquer detalhe antes de copiar. O texto segue o formato das agendas publicadas: seções (relatórios lidos → itens → votação conclusiva → audiências), numeração contínua e, no modo CCJ, engessados primeiro.</p>
+<div class="dica">
+  <p class="t">Dica</p>
+  <p>A pauta espelha o quadro, não a agenda oficial do sistema corporativo — que envolve regras e decisões fora do alcance desta ferramenta. Para casar 1:1 com a pauta oficial em algum item, ajuste o texto na pré-visualização.</p>
+</div>
+<h3>Imprimir</h3>
+<p>O botão <span class="ui">Imprimir</span> oferece dois formatos: <strong>Quadro</strong> (colunas com os cartões) e <strong>Relatório</strong> (texto corrido por etapa, com marcos, pareceres, vistas e resultados). Ambos <strong>respeitam os filtros e a busca ativos</strong> — filtro “sem parecer” + imprimir relatório produz a lista de pendências da comissão.</p>
+<h3>Painéis por proponente e relator</h3>
+<p>O botão de tabela do cabeçalho abre o painel com duas abas. As colunas incluem “sem parecer” e “mais antiga em tramitação” — o retrato de quem está sobrecarregado. Clique no título de coluna para ordenar; <strong>clique numa linha para filtrar o quadro</strong> pelo nome.</p>
+<div class="exp">
+  <p class="t">Experimente</p>
+  <ol>
+    <li>Gere a pauta da Ordem do Dia com ementa “primeira linha” e depois com “completa” — compare;</li>
+    <li>Copie o texto e cole-o de volta no “Interpretar” de um novo cadastro: o sistema reconhece tudo (o formato de saída e de entrada são o mesmo);</li>
+    <li>Abra os painéis e clique na linha de um relator — o quadro filtra por ele.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 9 ============================ -->
+<section id="s9">
+<h2><span class="n">9.</span>Cuidar dos dados</h2>
+<h3>Salvamento automático</h3>
+<p>Toda alteração é salva no navegador imediatamente. Se aparecer a faixa âmbar de “armazenamento indisponível”, você provavelmente está numa janela privada/anônima — os dados valerão só para aquela sessão: exporte antes de fechar.</p>
+<h3>Exportar e importar</h3>
+<p><span class="ui">Exportar</span> baixa o quadro completo em JSON — o nome do arquivo traz o título e a data. <span class="ui">Importar</span> oferece dois modos: <strong>mesclar</strong> (adiciona as novas e atualiza as existentes — a versão mais recente de cada proposição vence) ou <strong>substituir tudo</strong> (o quadro inteiro é trocado; uma cópia de segurança do quadro atual é baixada automaticamente antes).</p>
+<h3>Trocar de computador ou navegador</h3>
+<ol>
+  <li>Na máquina antiga: <span class="ui">Exportar</span>;</li>
+  <li>Leve o arquivo (e-mail, pendrive, rede);</li>
+  <li>Na nova: abra o quadro e <span class="ui">Importar</span> → substituir tudo.</li>
+</ol>
+<h3>Zona de perigo</h3>
+<p>Nas configurações, duas ações destrutivas de escopos diferentes: <strong>apagar todas as proposições</strong> (mantém configurações; backup automático baixado antes) e <strong>restaurar configurações padrão</strong> (mantém proposições; as de Preferências voltam à Ordem do Dia).</p>
+<div class="exp">
+  <p class="t">Experimente</p>
+  <ol>
+    <li>Exporte um backup;</li>
+    <li>Apague tudo (zona de perigo) — note o backup automático baixado antes e o quadro vazio;</li>
+    <li>Importe o arquivo exportado, modo “substituir tudo” — o quadro volta exatamente como estava.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============================ 10 ============================ -->
+<section id="s10">
+<h2><span class="n">10.</span>Dicionário de campos</h2>
+<table>
+  <tr><th>Campo</th><th>O que registra</th><th>Comportamento</th></tr>
+  <tr><td>Tipo</td><td>Sigla (PL, PLC, PEC, RDI, VT, VP, RAP, REQSUB, RELSUB, REQ)</td><td>Seleção fixa; VT/VP identificam-se pelo número do projeto vetado</td></tr>
+  <tr><td>Número / Ano</td><td>Identificação da proposição</td><td>Obrigatórios; a ordem nas colunas é ano → número</td></tr>
+  <tr><td>Proponente</td><td>Autor (sem o título “Deputado(a)”) ou órgão (Poder Executivo, Tribunal de Contas, subcomissão)</td><td>Obrigatório; o contador “+N” registra coautores</td></tr>
+  <tr><td>Ementa / Assunto</td><td>Texto descritivo</td><td>Obrigatório; textos entre parênteses (SEI, prazos, tramitação conjunta) são preservados</td></tr>
+  <tr><td>Etapa</td><td>Coluna atual</td><td>Alterada por arrasto ou “Mover para”; tudo registrado no histórico</td></tr>
+  <tr><td>Data de recebimento</td><td>Chegada na comissão</td><td>Hoje no cadastro; sempre editável</td></tr>
+  <tr><td>Distribuição</td><td>Designação de relator</td><td>Automática na 1ª entrada em Aguardando Relatório; depois, só manual</td></tr>
+  <tr><td>Em pauta desde</td><td>Inclusão na Ordem do Dia</td><td>Automática na 1ª entrada em Ordem/Preferências; depois, só manual</td></tr>
+  <tr><td>Apreciação</td><td>Votação/leitura final na comissão</td><td>Automática na 1ª entrada em Apreciadas; depois, só manual</td></tr>
+  <tr><td>Relator / Parecer</td><td>Relatoria e sua conclusão (favorável, favorável com emenda(s), contrário)</td><td>Livres; desaparecem do cartão durante a fase conclusiva (permanecem no painel)</td></tr>
+  <tr><td>Relatório lido</td><td>Data da leitura em reunião</td><td>Só manual — é evento de reunião; mantida ao mover de coluna</td></tr>
+  <tr><td>Tramitação conclusiva</td><td>Se a matéria é votada só na comissão</td><td>Detetável pelo texto da ementa; desmarcar limpa a data da fase</td></tr>
+  <tr><td>Votação conclusiva desde</td><td>Fase da 2ª votação (após parecer aprovado)</td><td>Botão no painel marca hoje; o aging passa a contar desta data</td></tr>
+  <tr><td>Indicada por</td><td>Responsável pela preferência (CCJ)</td><td>Preencha após mover — aparece no cartão em Preferências e na pauta</td></tr>
+  <tr><td>Pedidos de vista</td><td>Partido/bancada + data de cada pedido</td><td>Acumulativo; cada partido pede uma vez — após reexame, remova manualmente</td></tr>
+  <tr><td>Resultado / Obs.</td><td>Aprovada (unanimidade/maioria), rejeitada, outro</td><td>Habilitado em Apreciadas</td></tr>
+  <tr><td>Convidados / Local</td><td>Dados de audiência pública</td><td>Exibidos para RAP; sempre saem na pauta</td></tr>
+  <tr><td>Notas</td><td>Uso interno, sem exibição no quadro</td><td>Aparecem no relatório impresso</td></tr>
+  <tr><td>Histórico</td><td>Toda a tramitação com data e hora</td><td>Automático, apenas leitura — a auditoria da proposição</td></tr>
+</table>
+</section>
+
+<!-- ============================ 11 ============================ -->
+<section id="s11">
+<h2><span class="n">11.</span>Configurações</h2>
+<table>
+  <tr><th>Opção</th><th>Efeito</th></tr>
+  <tr><td>Título do quadro</td><td>Aparece no topo, nos relatórios e no nome dos backups</td></tr>
+  <tr><td>Usar coluna “Preferências”</td><td>Ativa o modo CCJ (6ª coluna; botões “enviar lidas” e “recolher preferências”). Desativar devolve as preferências à Ordem do Dia</td></tr>
+  <tr><td>Sinalizar parada após (dias)</td><td>Limiar do aging que acende os avisos âmbar</td></tr>
+  <tr><td>Estilo dos cards</td><td>Padrão (completo) ou compacto (uma linha) — também alterna no cabeçalho</td></tr>
+</table>
+<h3>Zona de perigo</h3>
+<p><strong>Apagar todas as proposições</strong> — limpa o quadro mantendo configurações; backup automático baixado antes. <strong>Restaurar configurações padrão</strong> — reverte as quatro opções acima, mantendo as proposições.</p>
+</section>
+
+<!-- ============================ 12 ============================ -->
+<section id="s12">
+<h2><span class="n">12.</span>Problemas frequentes</h2>
+<h3>Abri em outro computador e o quadro está vazio</h3>
+<p>É o esperado: os dados vivem no navegador de cada máquina. Exporte um JSON no computador de origem e importe no destino (seção 9).</p>
+<h3>O interpretar não reconheceu o texto</h3>
+<p>O texto precisa trazer o cabeçalho com tipo, número e ano (ex.: “Projeto de Lei n.º 308/2024”). Verifique se a linha não veio colada junto com outra. Em caso de dúvida, preencha manualmente — sempre funciona — e guarde o texto para reportar ao mantenedor.</p>
+<h3>Apaguei uma data e ela “voltou”</h3>
+<p>Não volta — desde a atualização de formato de dados, campo vazio é respeitado. O que pode ter acontecido: a data foi preenchida automaticamente na <em>primeira entrada</em> na etapa (comportamento normal); se precisar dela vazia, limpe no painel.</p>
+<h3>Movi uma matéria para Apreciadas e surgiu um aviso de tramitação conclusiva</h3>
+<p>O sistema apenas lembra que matérias conclusivas normalmente seguem para a 2ª votação na própria comissão. O movimento foi concluído normalmente — se foi engano, é só arrastar de volta.</p>
+<h3>Fechei sem salvar e perdi tudo?</h3>
+<p>Não existe “sem salvar”: tudo é gravado automaticamente. Se você viu a faixa âmbar de armazenamento indisponível, estava numa janela privada — nesse caso os dados iam embora ao fechar; exporte imediatamente se ainda estiver aberta.</p>
+<h3>Funciona na janela anônima?</h3>
+<p>Funciona para consulta e uso rápido, mas nada persiste ao fechar. Não é recomendado para o uso diário.</p>
+<h3>Posso usar no celular?</h3>
+<p>A leitura funciona, mas o sistema foi projetado para desktop com mouse — arrastar cartões não funciona em toque.</p>
+</section>
+
+</main>
+</div>
+
+<script>
+function voltar(){
+  window.close();
+  setTimeout(function(){ document.getElementById('voltarAviso').hidden = false; }, 250);
+}
+</script>
+</body>
+</html>

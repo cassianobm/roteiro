@@ -223,6 +223,8 @@ footer{
   justify-content:space-between; gap:16px; flex-wrap:wrap;
   font:400 11px var(--sans); color:var(--tinta-3);
 }
+.link-manual{ color:var(--tinta-3); text-decoration:underline; }
+.link-manual:hover{ color:var(--tinta); }
 
 /* ============ Drawer ============ */
 .drawer-scrim{
@@ -482,6 +484,7 @@ footer{
     <button id="btnConfig" class="btn btn-icone" title="Configurações do quadro" aria-label="Configurações do quadro">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h4M13 7h6M5 12h8M17 12h2M5 17h2M11 17h8"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg>
     </button>
+	<button id="btnAjuda" class="btn btn-icone" title="Como usar — abre o manual (manual.html)" aria-label="Ajuda — manual do sistema"><span style="font:600 15px/1 var(--serifada);">?</span></button>
   </div>
 </header>
 
@@ -494,6 +497,7 @@ footer{
 <footer>
   <span id="rodapeInfo"></span>
   <span id="rodapeBackup"></span>
+  <a href="manual.html" target="_blank" rel="noopener" class="link-manual">Como usar — manual</a>
 </footer>
 
 <!-- ============ Drawer de edição ============ -->
@@ -2881,6 +2885,7 @@ document.querySelectorAll('.modal-fundo').forEach(f=>{
    Botões do cabeçalho
    ================================================================ */
  $('btnNova').addEventListener('click', ()=>abrirModalNova('recebidas'));
+ $('btnAjuda').addEventListener('click', ()=>window.open('manual.html','_blank'));
  $('btnEstilo').addEventListener('click', ()=>{
   data.config.estiloCards = (data.config.estiloCards==='compacto') ? 'padrao' : 'compacto';
   salvar(); aplicarEstilo(); renderBoard();
