@@ -1390,10 +1390,39 @@ function visivel(p){
   }
   return true;
 }
+/* Ordem oficial de pauta: identificação da proposição, não aging do quadro. */
 function comparar(a,b){ return a.ano-b.ano || a.numero-b.numero || a.tipo.localeCompare(b.tipo,'pt'); }
+function momentoValido(valor){
+  const t = Date.parse(valor || '');
+  return isNaN(t) ? null : t;
+}
+function ultimoMomentoHistorico(p){
+  for(let i=p.historico.length-1; i>=0; i--){
+    const t = momentoValido(p.historico[i] && p.historico[i].quando);
+    if(t!==null) return t;
+  }
+  return momentoValido(p.criadoEm) ?? 0;
+}
+function momentoDaEtapa(p, etapa){
+  let dataEtapa = null;
+  switch(etapa){
+    case 'recebidas': dataEtapa = p.dataRecebimento; break;
+    case 'aguardando': dataEtapa = p.dataDistribuicao; break;
+    case 'ordem':
+    case 'preferencias':
+      dataEtapa = emFaseConclusiva(p) ? p.dataVotacaoConclusiva : p.dataOrdemDia;
+      break;
+    case 'apreciadas': dataEtapa = p.dataApreciacao; break;
+    /* Para Distribuição não tem marco próprio: usa a última movimentação. */
+  }
+  return momentoValido(dataEtapa) ?? ultimoMomentoHistorico(p);
+}
+function compararNaEtapa(etapa, a, b){
+  return momentoDaEtapa(a, etapa)-momentoDaEtapa(b, etapa) || comparar(a,b);
+}
 function dirComparar(etapa){
   const s = (data.config.ordenacao && data.config.ordenacao[etapa]==='desc') ? -1 : 1;
-  return (a,b)=> s*comparar(a,b);
+  return (a,b)=> s*compararNaEtapa(etapa, a, b);
 }
 
 function chipMarco(p){
@@ -1403,7 +1432,7 @@ function chipMarco(p){
     return '';
   }
   const dias = m.comAging ? diasNaEtapa(p) : null;
-  let txt = fmtDataCurta(m.data);
+  let txt = fmtData(m.data);
   if(m.comAging && dias>=1) txt += (txt ? ' · ' : '') + dias + 'd';
   const ativo = m.comAging && agingAtivo(p);
   const title = m.rotuloLong + (m.data ? ' ' + fmtData(m.data) : '')
@@ -1438,7 +1467,7 @@ function cardHTML(p){
   const chips = [];
   const mc = chipMarco(p);
   if(mc) chips.push(mc);
-  if(p.relatorioLidoEm) chips.push('<span class="chip chip-lida" title="Relatório lido em '+fmtData(p.relatorioLidoEm)+'"><span class="chip-k">Lida</span>'+esc(fmtDataCurta(p.relatorioLidoEm))+'</span>');
+  if(p.relatorioLidoEm) chips.push('<span class="chip chip-lida" title="Relatório lido em '+fmtData(p.relatorioLidoEm)+'"><span class="chip-k">Lida</span>'+esc(fmtData(p.relatorioLidoEm))+'</span>');
   if(p.pedidosVista.length){
     const lista = p.pedidosVista.map(v=>v.partido+' ('+fmtDataCurta(v.data)+')').join(', ');
     chips.push('<span class="chip chip-vista" title="Pedidos de vista: '+esc(lista)+'"><span class="chip-k">Vista</span>'+esc(p.pedidosVista.map(v=>v.partido).join(', '))+'</span>');

@@ -239,9 +239,9 @@ td:first-child{ font-weight:500; white-space:nowrap; }
 <p>Clicar no cartão abre o <strong>painel de detalhes</strong>, com todos os campos editáveis e o histórico de tramitação. Arrastar move a proposição de coluna. No estilo compacto, o cartão vira uma linha — ementa e detalhes ficam na dica flutuante (posicione o mouse) e no painel.</p>
 <table>
   <tr><th>Chip</th><th>Quando aparece</th><th>O que significa</th></tr>
-  <tr><td>Recebida / Distribuída / Em pauta desde / Apreciada <em>data · Nd</em></td><td>Conforme a coluna</td><td>A data de entrada naquela etapa e há quantos dias está nela (aging). Fica âmbar ao cruzar o limite</td></tr>
-  <tr><td>Conclusiva <em>data · Nd</em></td><td>Proposição conclusiva em fase de 2ª votação</td><td>Aguarda a votação conclusiva na comissão; relator e parecer saem do cartão porque o parecer já foi aprovado</td></tr>
-  <tr><td>Lida <em>data</em></td><td>Leitura do relatório registrada</td><td>“Engessado”: relatório lido em reunião, ainda não votado</td></tr>
+  <tr><td>Recebida / Distribuída / Em pauta desde / Apreciada <em>DD/MM/AAAA · Nd</em></td><td>Conforme a coluna</td><td>A data de entrada naquela etapa e há quantos dias está nela (aging). Fica âmbar ao cruzar o limite</td></tr>
+  <tr><td>Conclusiva <em>DD/MM/AAAA · Nd</em></td><td>Proposição conclusiva em fase de 2ª votação</td><td>Aguarda a votação conclusiva na comissão; relator e parecer saem do cartão porque o parecer já foi aprovado</td></tr>
+  <tr><td>Lida <em>DD/MM/AAAA</em></td><td>Leitura do relatório registrada</td><td>“Engessado”: relatório lido em reunião, ainda não votado</td></tr>
   <tr><td>Vista <em>siglas</em></td><td>Pedidos de vista registrados</td><td>Partidos/bancadas que já pediram vista (a data de cada um vai na dica flutuante)</td></tr>
   <tr><td>Rel. <em>nome</em></td><td>Relator designado</td><td>Relator da proposição</td></tr>
   <tr><td>Parecer (verde-oliva / vinho)</td><td>Parecer lançado</td><td>Oliva = favorável; vinho = contrário</td></tr>
@@ -304,7 +304,7 @@ td:first-child{ font-weight:500; white-space:nowrap; }
 <h3>Envelhecimento (aging)</h3>
 <p>O “<em>data · Nd</em>” do cartão e do contador âmbar da coluna mostra há quantos dias a proposição está naquela etapa. O limite que acende o âmbar é configurável (padrão: 30 dias).</p>
 <h3>Ordenar, buscar, filtrar</h3>
-<p>Cada coluna tem seu botão de ordenação (mais antigas no topo por padrão; a preferência fica memorizada por coluna). A busca e os filtros do cabeçalho combinam entre si, e vale lembrar o atalho <span class="ui">Sem parecer</span>: um retrato instantâneo do que ainda falta relatório.</p>
+<p>Cada coluna tem seu botão de ordenação (mais antigas no topo por padrão; a preferência fica memorizada por coluna). A ordem usa a data relevante da etapa: recebimento, última movimentação para distribuição, distribuição, entrada em pauta (ou votação conclusiva) e apreciação. Em empate, usa número/ano apenas para estabilizar a lista. A busca e os filtros do cabeçalho combinam entre si, e vale lembrar o atalho <span class="ui">Sem parecer</span>: um retrato instantâneo do que ainda falta relatório.</p>
 <div class="exp">
   <p class="t">Experimente</p>
   <ol>
@@ -428,7 +428,7 @@ td:first-child{ font-weight:500; white-space:nowrap; }
 <table>
   <tr><th>Campo</th><th>O que registra</th><th>Comportamento</th></tr>
   <tr><td>Tipo</td><td>Sigla (PL, PLC, PEC, RDI, VT, VP, RAP, REQSUB, RELSUB, REQ)</td><td>Seleção fixa; VT/VP identificam-se pelo número do projeto vetado</td></tr>
-  <tr><td>Número / Ano</td><td>Identificação da proposição</td><td>Obrigatórios; a ordem nas colunas é ano → número</td></tr>
+  <tr><td>Número / Ano</td><td>Identificação da proposição</td><td>Obrigatórios; usados como desempate na ordem das colunas. A pauta oficial segue sua própria ordem por ano/número</td></tr>
   <tr><td>Proponente</td><td>Autor (sem o título “Deputado(a)”) ou órgão (Poder Executivo, Tribunal de Contas, subcomissão)</td><td>Obrigatório; o contador “+N” registra coautores</td></tr>
   <tr><td>Ementa / Assunto</td><td>Texto descritivo</td><td>Obrigatório; textos entre parênteses (SEI, prazos, tramitação conjunta) são preservados</td></tr>
   <tr><td>Etapa</td><td>Coluna atual</td><td>Alterada por arrasto ou “Mover para”; tudo registrado no histórico</td></tr>
