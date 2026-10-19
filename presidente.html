@@ -304,10 +304,19 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             <!-- SEÇÃO I - ATAS -->
             <div class="caixa-secao">APROVAÇÃO DE ATAS ANTERIORES</div>
             <p v-if="pauta.aprovacao_atas.atas.length === 0">Não há atas a serem aprovadas.</p>
-            <div v-for="(ata, idx) in pauta.aprovacao_atas.atas" :key="'ata'+idx" class="item-texto">
-                <div v-if="ata.texto_livre" style="white-space: pre-line;">{{ ata.texto_livre }}</div>
-                <template v-else>Declaro aprovada a <strong>ata {{ ata.numero }}</strong>, da {{ ata.tipo_reuniao ? ata.tipo_reuniao.toLowerCase() : 'reunião ordinária' }} de {{ formatarDataExtenso(ata.reuniao_referencia) }}, ressalvado aos parlamentares o direito de retificá-la, por escrito.</template>
+            <template v-if="atasEstruturadas.length === 1">
+                <div v-for="(ata, idx) in atasEstruturadas" :key="'ata-unica-'+idx" class="item-texto">
+                    Declaro aprovada a <strong>ata {{ ata.numero }}</strong>, da {{ ata.tipo_reuniao ? ata.tipo_reuniao.toLowerCase() : 'reunião ordinária' }} de {{ formatarDataExtenso(ata.reuniao_referencia) }}, ressalvado aos parlamentares o direito de retificá-la, por escrito.
+                </div>
+            </template>
+            <div v-else-if="atasEstruturadas.length > 1" class="item-texto">
+                <div>Declaro aprovadas as seguintes atas:</div>
+                <div v-for="(ata, idx) in atasEstruturadas" :key="'ata-est-'+idx" style="margin-left: 15px; margin-top: 4px;">
+                    - <strong>Ata {{ ata.numero }}</strong>, da {{ ata.tipo_reuniao ? ata.tipo_reuniao.toLowerCase() : 'reunião ordinária' }} de {{ formatarDataExtenso(ata.reuniao_referencia) }}{{ idx < atasEstruturadas.length - 1 ? ';' : ',' }}
+                </div>
+                <div style="margin-top: 4px;">ressalvado aos parlamentares o direito de retificá-las, por escrito.</div>
             </div>
+            <div v-for="(ata, idx) in atasTextoLivre" :key="'ata-livre-'+idx" class="item-texto" style="white-space: pre-line;">{{ ata.texto_livre }}</div>
 
             <!-- SEÇÃO II - EXPEDIENTE -->
             <div class="caixa-secao">LEITURA DO EXPEDIENTE</div>
@@ -328,7 +337,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                 <div v-for="(item, idx) in pauta.leitura_expediente.proposicoes_recebidas" :key="'rec'+idx" class="item-texto">
                     {{ idx + 1 }}. <strong>{{ item.tipo }} n.º {{ item.numero }}/{{ item.ano }}</strong><br>
                     Proponente: {{ item.proponente_principal?.nome || item.proponente_cru }}<br>
-                    Ementa: {{ item.ementa }} <span v-if="item.votacao_conclusiva" style="text-decoration: underline;">(Tramitação Conclusiva)</span>.
+                    Ementa: {{ item.ementa }} <span v-if="item.votacao_conclusiva" style="text-decoration: underline;">({{ item.texto_conclusiva || 'Tramitação Conclusiva' }})</span>.
                 </div>
                 <div v-if="pauta.leitura_expediente.proposicoes_recebidas.some(i => i.sujeita_emendas)" style="text-align: center; font-weight: bold; text-transform: uppercase; margin-top: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
                     INFORMO PRAZO DE 7 DIAS PARA RECEBIMENTO DE EMENDAS CONFORME REGIMENTO INTERNO.
@@ -340,7 +349,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                 <div v-for="(item, idx) in pauta.leitura_expediente.proposicoes_distribuidas" :key="'pdist'+idx" class="item-texto">
                     {{ idx + 1 }}. <strong>{{ item.tipo }} n.º {{ item.numero }}/{{ item.ano }}</strong><br>
                     Proponente: {{ item.proponente_principal?.nome || item.proponente_cru }}<br>
-                    Ementa: {{ item.ementa }}<br>
+                    Ementa: {{ item.ementa }} <span v-if="item.votacao_conclusiva" style="text-decoration: underline;">({{ item.texto_conclusiva || 'Tramitação Conclusiva' }})</span><br>
                     Relator: {{ item.relator?.nome || item.relator_cru || '_________' }}<br>
                     Data de Distribuição: {{ formatarData(item.data_distribuicao) || '_________________' }}
                 </div>
@@ -352,7 +361,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                 <div v-for="(item, idx) in pauta.leitura_expediente.materias_a_distribuir" :key="'dist'+idx" class="item-texto" style="margin-bottom: 35px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;">
                     {{ idx + 1 }}. <strong>{{ item.tipo }} n.º {{ item.numero }}/{{ item.ano }}</strong><br>
                     Proponente: {{ item.proponente_principal?.nome || item.proponente_cru }}<br>
-                    Ementa: {{ item.ementa }}<br><br>
+                    Ementa: {{ item.ementa }} <span v-if="item.votacao_conclusiva" style="text-decoration: underline;">({{ item.texto_conclusiva || 'Tramitação Conclusiva' }})</span><br><br>
                     
                     <div class="distribuicao-container">
                         <div class="distribuicao-tabela-box">
@@ -362,7 +371,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                                     <tr v-for="dep in titularesApenasOrdemAlfabetica" :key="dep.id" 
                                         :class="{'linha-destaque': preparo.relatores_grade[item.id] === dep.id, 'linha-impedida': item.bancada_impedida && dep.partido === item.bancada_impedida}">
                                         <td>{{ dep.nome }}</td>
-                                        <td style="text-align: center;">{{ dep.partido }}</td>
+                                        <td style="text-align: center;">{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -854,6 +863,8 @@ createApp({
             ordem_do_dia: [], assuntos_gerais: { itens: [], proxima_reuniao: null, proxima_reuniao_custom: '' }
         });
         const snapshotMembros = reactive({ presidente_id: null, vice_presidente_id: null, titulares: [], suplentes: [] });
+        const atasEstruturadas = computed(() => pauta.aprovacao_atas.atas.filter(ata => !ata.texto_livre));
+        const atasTextoLivre = computed(() => pauta.aprovacao_atas.atas.filter(ata => !!ata.texto_livre));
         const preparo = reactive({ relatores_grade: {}, historico: {}, ao_vivo: criarAoVivo() });
         const modoPresidente = ref('aovivo');
         const aoVivoLocal = ref(criarAoVivo());
@@ -1211,6 +1222,7 @@ createApp({
             comissoes, comissaoSelecionada, listaReunioes, reuniaoSelecionadaId, carregando, roteiroCarregado,
             carregarReunioesDaComissao, carregarRoteiroEspecifico,
             pauta, preparo, nomeComissaoCompleto, tabelaMembros, formatarNomeMembro,
+            atasEstruturadas, atasTextoLivre,
             titularesApenasOrdemAlfabetica, bancadasComissao, temConhecimento,
             ehFaseB, elegivelNovoRelator, gerarResumoPareceresFaseB, bancadaJaPediuVista, getListaNomesImpedidos, getNomeRelator,
             formatarData, formatarDataMesExtensoCurto, formatarHoraRoteiro, formatarDataExtenso, formatarParecer, formatarStringEmenda,
