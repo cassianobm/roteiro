@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Painel da Comissão — ALRS</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; color: #f1f5f9; background: #0f172a; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+[v-cloak] { display: none; }
+button, select { font: inherit; border: 1px solid #64748b; border-radius: 6px; padding: 8px 10px; background: #1e293b; color: #f8fafc; }
+button { cursor: pointer; }
+button:hover { background: #334155; }
+button:focus-visible, select:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; }
+button:disabled { opacity: .5; cursor: default; }
+.mesa { min-height: 100vh; display: flex; flex-direction: column; padding: 20px; gap: 16px; }
+.cabecalho { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; border-bottom: 1px solid #334155; padding-bottom: 14px; }
+.identidade { flex: 1; min-width: 240px; }
+.assinatura { color: #7dd3fc; text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: bold; }
+.identidade h1 { font-size: clamp(22px, 2vw, 32px); line-height: 1.2; margin: 6px 0; }
+.subtitulo { color: #cbd5e1; font-size: 16px; margin: 0; }
+.ferramentas { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.conexao { color: #fde68a; background: #422006; border-radius: 30px; padding: 7px 12px; }
+.conexao.conectado { background: #064e3b; color: #a7f3d0; }
+.relogio { font-size: 30px; font-variant-numeric: tabular-nums; padding-left: 8px; }
+.seletores { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; font-size: 14px; }
+.seletores label { display: grid; gap: 5px; flex: 1; min-width: 220px; }
+.seletores select { width: 100%; min-width: 0; text-overflow: ellipsis; }
+.erro, .vista { background: #451a03; color: #fef3c7; border: 1px solid #f59e0b; padding: 16px; border-radius: 10px; }
+.erro { font-size: 16px; margin: 0; }
+.tempo-mesa { display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid #155e75; border-radius: 12px; padding: 18px 28px; background: #082f49; }
+.tempo-mesa .legenda { color: inherit; opacity: .9; }
+.tempo-mesa h2 { margin: 6px 0; font-size: clamp(24px, 2.5vw, 42px); overflow-wrap: anywhere; }
+.tempo-mesa strong { font-size: clamp(70px, 7vw, 132px); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.04em; white-space: nowrap; }
+.tempo-normal { color: #67e8f9; }
+.tempo-alerta { background: #422006; border-color: #f59e0b; color: #fde68a; }
+.tempo-critico { background: #7f1d1d; border-color: #f87171; color: #fee2e2; animation: pulso 1.2s infinite; }
+@keyframes pulso { 50% { background-color: #991b1b; } }
+.grade-mesa { display: grid; grid-template-columns: minmax(300px, 32fr) minmax(0, 68fr); gap: 16px; flex: 1; min-height: 0; }
+.cartao { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 22px; min-width: 0; }
+.presencas, .pauta-mesa { overflow-y: auto; scrollbar-color: #64748b #1e293b; }
+.legenda { color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; font-weight: bold; margin: 0 0 8px; }
+.total-presentes { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.total-presentes strong { font-size: 64px; line-height: 1; color: #f8fafc; font-variant-numeric: tabular-nums; }
+.total-presentes span { font-size: 18px; color: #cbd5e1; }
+.quorum { border-bottom: 1px solid #475569; padding-bottom: 14px; display: grid; gap: 8px; font-size: 15px; }
+.atingido { color: #6ee7b7; }
+.aguardando { color: #fde68a; }
+.membros { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.membros h3 { font-size: 14px; color: #cbd5e1; margin: 0 0 10px; }
+.membros ul { list-style: none; margin: 0; padding: 0; }
+.membros li { display: flex; align-items: start; gap: 7px; font-size: clamp(15px, 1vw, 20px); line-height: 1.15; padding: 4px 0; border-bottom: 1px solid #334155; opacity: .55; overflow-wrap: anywhere; }
+.membros li.presente { opacity: 1; }
+.selo-presenca { flex: 0 0 20px; text-align: center; color: #94a3b8; }
+.presente .selo-presenca { color: #6ee7b7; font-weight: bold; }
+.membros small { display: block; font-size: 10px; color: #cbd5e1; margin-top: 2px; }
+.pauta-mesa h2 { font-size: clamp(30px, 3vw, 54px); line-height: 1.1; margin: 8px 0 20px; overflow-wrap: anywhere; }
+.ementa { font-size: clamp(23px, 2vw, 34px); line-height: 1.45; margin: 18px 0; white-space: pre-line; }
+.dados-item { display: grid; gap: 10px; font-size: clamp(18px, 1.35vw, 25px); line-height: 1.4; }
+.dados-item p { margin: 0; }
+.dados-item b { color: #94a3b8; }
+.badges { display: flex; flex-wrap: wrap; gap: 7px; }
+.badge { display: inline-block; padding: 5px 9px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; font-size: 14px; color: #bae6fd; }
+.vista { font-size: clamp(22px, 2vw, 32px); line-height: 1.4; margin: 20px 0; font-weight: bold; }
+.designado { padding: 22px; border-left: 5px solid #38bdf8; background: #0f172a; border-radius: 6px; margin-top: 24px; }
+.designado strong { display: block; font-size: clamp(28px, 2.5vw, 44px); margin-top: 8px; }
+.votacao { margin-top: 24px; border-top: 1px solid #475569; padding-top: 20px; }
+.placar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.placar > div { border-radius: 8px; background: #0f172a; padding: 16px; font-size: 15px; text-transform: uppercase; }
+.placar strong { display: block; font-size: clamp(42px, 4vw, 70px); line-height: 1.1; }
+.favoravel { color: #6ee7b7; } .contrario { color: #fca5a5; }
+.resultado { font-size: clamp(20px, 1.7vw, 30px); font-weight: bold; margin: 14px 0; }
+.nominais { display: flex; gap: 8px; flex-wrap: wrap; font-size: 16px; }
+.nominais span { background: #0f172a; border: 1px solid #475569; border-radius: 6px; padding: 8px; }
+.emendas { display: grid; gap: 12px; margin-top: 18px; }
+.emenda { padding: 14px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; }
+.emenda h3 { margin: 0 0 10px; font-size: 20px; }
+.emenda .resultado { font-size: 18px; }
+.resumo-secoes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.item-secao { padding: 18px 0; border-bottom: 1px solid #475569; }
+.item-secao h3 { color: #e0f2fe; font-size: 24px; margin: 0 0 8px; }
+.item-secao p { white-space: pre-line; font-size: clamp(20px, 1.6vw, 28px); line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
+.vazio { text-align: center; margin: auto; padding: 50px 20px; color: #cbd5e1; }
+.vazio h2 { color: #f8fafc; font-size: 32px; }
+@media (min-width: 1100px) { .mesa { height: 100vh; overflow: hidden; } }
+@media (max-width: 1099px) { .grade-mesa { grid-template-columns: 1fr; } .presencas { order: 2; } }
+@media (max-width: 600px) { .mesa { padding: 10px; } .tempo-mesa { flex-direction: column; align-items: start; padding: 18px; } .cartao { padding: 16px; } .membros { gap: 16px; } .relogio { margin-left: auto; } }
+@media (prefers-reduced-motion: reduce) { .tempo-critico { animation: none; } }
+@media print { .ferramentas, .seletores { display: none; } .mesa { height: auto; overflow: visible; } .grade-mesa { display: block; } .cartao { margin-bottom: 20px; overflow: visible; break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div id="app" v-cloak class="mesa">
+    <header class="cabecalho">
+        <div class="identidade">
+            <div class="assinatura">ALRS / Painel da Comissão</div>
+            <h1>{{ comissaoSelecionada }} · {{ nomeComissao }}</h1>
+            <p class="subtitulo" v-if="roteiroCarregado">{{ formatarData(pauta.metadados.data) }} · {{ pauta.metadados.hora_inicio }} · Reunião {{ pauta.metadados.tipo_reuniao }}</p>
+        </div>
+        <div class="ferramentas">
+            <span class="conexao" :class="{ conectado: conexaoRealtime === 'SUBSCRIBED' }" role="status">{{ statusRealtime }}</span>
+            <button type="button" :aria-expanded="seletoresAbertos" aria-controls="seletores" @click="seletoresAbertos = !seletoresAbertos">☰ Reunião</button>
+            <button type="button" @click="reuniaoSelecionadaId ? carregarRoteiroEspecifico() : carregarReunioesDaComissao()" :disabled="carregando">↻ Atualizar</button>
+            <button type="button" @click="telaCheia">⛶ {{ emTelaCheia ? 'Sair da tela cheia' : 'Tela Cheia' }}</button>
+            <time class="relogio">{{ horaAtual }}</time>
+        </div>
+    </header>
+    <div id="seletores" v-show="seletoresAbertos" class="seletores">
+        <label>COMISSÃO<select v-model="comissaoSelecionada" @change="carregarReunioesDaComissao"><option v-for="c in comissoes" :key="c.sigla" :value="c.sigla">{{ c.sigla }} — {{ c.nome }}</option></select></label>
+        <label>REUNIÃO<select v-model="reuniaoSelecionadaId" @change="carregarRoteiroEspecifico"><option v-if="!listaReunioes.length" :value="null">Nenhuma reunião publicada</option><option v-for="r in listaReunioes" :key="r.id" :value="r.id">{{ formatarData(r.data_reuniao) }} · {{ r.hora_inicio }} · {{ r.tipo_reuniao }}</option></select></label>
+    </div>
+    <p class="erro" v-if="erroCarregamento || erroTelaCheia" role="alert">{{ erroCarregamento || erroTelaCheia }}</p>
+    <template v-if="roteiroCarregado">
+        <section v-if="aoVivo.cronometro.status !== 'parado'" class="tempo-mesa" :class="visor.classe" aria-label="Tempo de manifestação">
+            <div><p class="legenda">Tempo de manifestação · {{ aoVivo.cronometro.modo === 'progressivo' ? 'Progressivo ↑' : 'Regressivo' }} · {{ aoVivo.cronometro.status }}</p><h2>{{ aoVivo.cronometro.orador || 'Palavra em curso' }}</h2></div>
+            <strong>{{ visor.texto }}</strong>
+        </section>
+        <div class="grade-mesa">
+            <aside class="cartao presencas">
+                <p class="legenda">Presenças · {{ fasePresenca === 'pres_deliberacao' ? 'Deliberação' : 'Abertura' }}</p>
+                <div class="total-presentes"><strong>{{ presentes }}</strong><span>PRESENTES</span></div>
+                <div class="quorum">
+                    <div :class="presentes >= 3 ? 'atingido' : 'aguardando'">Quórum de Abertura (3): {{ presentes >= 3 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
+                    <div :class="presentes >= 7 ? 'atingido' : 'aguardando'">Quórum de Deliberação (7): {{ presentes >= 7 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
+                </div>
+                <div class="membros">
+                    <section v-for="grupo in gruposMembros" :key="grupo.titulo"><h3>{{ grupo.titulo }}</h3>
+                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo[fasePresenca][dep.id] }">
+                            <span class="selo-presenca">{{ aoVivo[fasePresenca][dep.id] ? '✓' : '—' }}</span>
+                            <div>{{ dep.nome }}<small>{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}{{ String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Presidente' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice-presidente' : '' }}</small></div>
+                        </li></ul>
+                    </section>
+                </div>
+            </aside>
+            <main class="cartao pauta-mesa" ref="areaPauta">
+                <template v-if="itemFoco">
+                    <p class="legenda">{{ foco.secao === 'ordem_do_dia' ? 'Ordem do Dia' : 'Matérias a Distribuir' }} — Item {{ indiceFoco + 1 }} de {{ listaFoco.length }}</p>
+                    <h2>{{ tituloItem(itemFoco) }}</h2>
+                    <div class="badges">
+                        <span v-if="ehFaseB(itemFoco)" class="badge">Votação Conclusiva · Fase B</span>
+                        <span v-else-if="itemFoco.votacao_conclusiva" class="badge">{{ itemFoco.texto_conclusiva || 'Tramitação Conclusiva' }}</span>
+                        <span v-if="historicoFoco.is_relatorio_lido" class="badge">Relatório já lido {{ historicoFoco.relatorio_lido_data }}</span>
+                        <span v-for="(vista, idx) in historicoFoco.vistas_detalhadas || []" :key="idx" class="badge">Vista anterior: {{ vista.bancada }} · {{ vista.deputado }}</span>
+                    </div>
+                    <div class="dados-item"><p><b>Proponente</b> {{ itemFoco.proponente_principal?.nome || itemFoco.proponente_cru || 'Não informado' }}</p></div>
+                    <p class="ementa">{{ itemFoco.ementa || 'Ementa não informada.' }}</p>
+                    <template v-if="foco.secao === 'distribuicao'">
+                        <div class="dados-item"><p><b>Bancada impedida · Art. 61-A</b> {{ itemFoco.bancada_impedida || (itemFoco.proponente_principal?.is_deputado === false ? 'Autor externo — sem bancada impedida' : 'Não informada') }}</p></div>
+                        <div class="designado"><p class="legenda">{{ aoVivo.relatores_escolhidos[itemFoco.id] ? 'Relator designado por acordo / interesse' : 'Relator indicado pela grade' }}</p><strong>{{ nomeMembro(aoVivo.relatores_escolhidos[itemFoco.id] || preparo.relatores_grade[itemFoco.id]) || 'Aguardando indicação' }}</strong></div>
+                    </template>
+                    <template v-else>
+                        <div class="dados-item">
+                            <p v-if="ehFaseB(itemFoco)">{{ historicoFoco.resumo_pareceres_custom || gerarResumoPareceresFaseB(itemFoco) || 'Pareceres anteriores não informados.' }}</p>
+                            <template v-else><p><b>Relator</b> {{ itemFoco.relator?.nome || itemFoco.relator_cru || 'Não informado' }}</p><p><b>Parecer</b> {{ formatarParecer(itemFoco.parecer) }}</p></template>
+                        </div>
+                        <div v-if="aoVivo.vista_em_sessao[itemFoco.id]" class="vista">✋ PEDIDO DE VISTA CONCEDIDO EM SESSÃO: {{ aoVivo.vista_em_sessao[itemFoco.id] }}<br>Matéria retirada de votação nesta reunião.</div>
+                        <section v-else class="votacao">
+                            <p class="legenda">Votação nominal · {{ ehFaseB(itemFoco) ? 'Proposição principal' : 'Parecer / proposição' }}</p>
+                            <div class="placar"><div class="favoravel"><strong>{{ contarVotos(itemFoco.id, 'F') }}</strong>Favoráveis</div><div class="contrario"><strong>{{ contarVotos(itemFoco.id, 'C') }}</strong>Contrários</div></div>
+                            <p class="resultado" :class="classeResultado(aoVivo.resultado_votacao[itemFoco.id])">{{ textoResultado(aoVivo.resultado_votacao[itemFoco.id]) }}</p>
+                            <div class="nominais"><span v-for="voto in votosNominais(itemFoco.id)" :key="voto.id" :class="voto.sentido === 'F' ? 'favoravel' : 'contrario'">{{ voto.nome }}: <b>[{{ voto.sentido }}]</b></span></div>
+                            <p v-if="!votosNominais(itemFoco.id).length" class="subtitulo">Nenhum voto registrado.</p>
+                            <div v-if="itemFoco.eleicao && aoVivo.eleitos[itemFoco.id]" class="designado">Eleito<strong>{{ nomeMembro(aoVivo.eleitos[itemFoco.id]) }}</strong></div>
+                            <p v-if="aoVivo.resultado_votacao[itemFoco.id] === 'rejeitado' && aoVivo.novo_relator_art67[itemFoco.id]" class="resultado">Novo relator · Art. 67: {{ nomeMembro(aoVivo.novo_relator_art67[itemFoco.id]) }}</p>
+                            <div v-if="ehFaseB(itemFoco)" class="emendas">
+                                <article v-for="n in emendasFoco" :key="n" class="emenda">
+                                    <h3>Emenda {{ n }} <span class="favoravel">· F: {{ contarVotos(itemFoco.id, 'F', n) }}</span> <span class="contrario">· C: {{ contarVotos(itemFoco.id, 'C', n) }}</span></h3>
+                                    <p class="resultado" :class="classeResultado(aoVivo.resultado_emendas[itemFoco.id]?.[n])">{{ textoResultado(aoVivo.resultado_emendas[itemFoco.id]?.[n]) }}</p>
+                                    <div class="nominais"><span v-for="voto in votosNominais(itemFoco.id, n)" :key="voto.id" :class="voto.sentido === 'F' ? 'favoravel' : 'contrario'">{{ voto.nome }}: <b>[{{ voto.sentido }}]</b></span></div>
+                                </article>
+                            </div>
+                        </section>
+                    </template>
+                </template>
+                <template v-else>
+                    <p class="legenda">{{ foco ? 'Em pauta agora' : 'Pauta do dia' }}</p>
+                    <h2>{{ tituloSecao }}</h2>
+                    <p v-if="foco?.item_id" class="erro">O item destacado não está mais nesta pauta. Aguardando novo foco do Secretário.</p>
+                    <div v-if="!foco" class="resumo-secoes"><span class="badge" v-for="resumo in resumoSecoes" :key="resumo">{{ resumo }}</span></div>
+                    <article class="item-secao" v-for="(cartao, idx) in cartoesSecao" :key="idx"><h3>{{ cartao.titulo }}</h3><p>{{ cartao.texto }}</p></article>
+                    <p v-if="!cartoesSecao.length" class="subtitulo">Nenhum item registrado nesta seção.</p>
+                </template>
+            </main>
+        </div>
+    </template>
+    <div v-else class="vazio"><p class="assinatura">Assembleia Legislativa do Rio Grande do Sul</p><h2>{{ carregando ? 'Carregando reunião…' : 'Aguardando reunião' }}</h2><p>Selecione a comissão e a reunião. A condução será atualizada automaticamente.</p></div>
+</div>
+<script>
+const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_cfCVWR24Jq4NripFuSo4xA_GFixfQGk';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+// Contrato compartilhado: manter idêntico nos três HTMLs.
+function criarAoVivo(origem = {}) {
+    const objeto = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+    const dados = objeto(origem);
+    const estado = {
+        pres_abertura: {}, pres_deliberacao: {}, status_quorum: null,
+        relatores_escolhidos: {}, res_info: {}, res_delib: {}, votos: {},
+        resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {},
+        eleitos: {}, novo_relator_art67: {}, vista_em_sessao: {}, foco_pauta: null, cronometro: {}
+    };
+    const resultado = v => ['aprovado', 'rejeitado'].includes(v);
+    const voto = v => ['F', 'C'].includes(v);
+    const id = v => (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'string';
+    function mapa(valor, valido) {
+        return Object.fromEntries(Object.entries(objeto(valor)).filter(([k,v]) => !['__proto__','constructor','prototype'].includes(k) && valido(v)));
+    }
+    for (const campo of ['pres_abertura','pres_deliberacao','res_info','res_delib']) estado[campo] = mapa(dados[campo], v => v === true);
+    for (const campo of ['relatores_escolhidos','eleitos','novo_relator_art67']) estado[campo] = mapa(dados[campo], id);
+    estado.status_quorum = ['sim','nao'].includes(dados.status_quorum) ? dados.status_quorum : null;
+    estado.vista_em_sessao = mapa(dados.vista_em_sessao, v => typeof v === 'string');
+    estado.resultado_votacao = mapa(dados.resultado_votacao, resultado);
+    for (const [chave, valor] of Object.entries(mapa(dados.votos, v => objeto(v) === v))) estado.votos[chave] = mapa(valor, voto);
+    for (const [chave, valor] of Object.entries(mapa(dados.resultado_emendas, v => objeto(v) === v))) estado.resultado_emendas[chave] = mapa(valor, resultado);
+    for (const [chave, valor] of Object.entries(mapa(dados.votos_emendas, v => objeto(v) === v))) {
+        estado.votos_emendas[chave] = {};
+        for (const [n, votos] of Object.entries(mapa(valor, v => objeto(v) === v))) estado.votos_emendas[chave][n] = mapa(votos, voto);
+    }
+    const foco = objeto(dados.foco_pauta);
+    if (['abertura','atas','expediente','distribuicao','conhecimento','quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.secao)) {
+        estado.foco_pauta = { secao: foco.secao, rotulo: typeof foco.rotulo === 'string' ? foco.rotulo : '' };
+        if (typeof foco.item_id === 'string' && foco.item_id) estado.foco_pauta.item_id = foco.item_id;
+    }
+    const c = objeto(dados.cronometro);
+    const positivo = v => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+    estado.cronometro = {
+        modo: c.modo === 'progressivo' ? 'progressivo' : 'regressivo',
+        status: ['parado','rodando','pausado'].includes(c.status) ? c.status : 'parado',
+        duracao_seg: positivo(c.duracao_seg) && Number.isSafeInteger(c.duracao_seg) ? c.duracao_seg : 300,
+        acumulado_seg: positivo(c.acumulado_seg) ? c.acumulado_seg : 0,
+        iniciado_em_ms: positivo(c.iniciado_em_ms) && c.iniciado_em_ms > 0 ? c.iniciado_em_ms : null,
+        orador: typeof c.orador === 'string' ? c.orador : ''
+    };
+    // Um estado rodando sem instante válido não pode avançar de forma confiável.
+    if (estado.cronometro.status === 'rodando' && !estado.cronometro.iniciado_em_ms) estado.cronometro.status = 'pausado';
+    if (estado.cronometro.status !== 'rodando') estado.cronometro.iniciado_em_ms = null;
+    return estado;
+}
+
+// Tempo calculado localmente: nenhum tick altera o estado persistido.
+function tempoDecorrido(c, agora = Date.now()) {
+    return c.acumulado_seg + (c.status === 'rodando' && c.iniciado_em_ms
+        ? Math.max(0, Math.floor((agora - c.iniciado_em_ms) / 1000)) : 0);
+}
+function visorCronometro(c, agora = Date.now()) {
+    const decorrido = tempoDecorrido(c, agora);
+    const valor = c.modo === 'progressivo' ? decorrido : c.duracao_seg - decorrido;
+    const absoluto = Math.floor(Math.abs(valor));
+    return {
+        texto: (valor < 0 ? '-' : '') + String(Math.floor(absoluto / 60)).padStart(2, '0') + ':' + String(absoluto % 60).padStart(2, '0'),
+        classe: c.modo === 'regressivo' && valor < 0 ? 'tempo-critico'
+            : c.modo === 'regressivo' && valor <= 30 && c.status === 'rodando' ? 'tempo-alerta' : 'tempo-normal'
+    };
+}
+
+const { createApp, ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
+createApp({
+    setup() {
+        const comissoes = ref([]);
+        const comissaoSelecionada = ref('CEDST');
+        const listaReunioes = ref([]);
+        const reuniaoSelecionadaId = ref(null);
+        const carregando = ref(false);
+        const roteiroCarregado = ref(false);
+
+        const pauta = reactive({
+            metadados: {}, aprovacao_atas: { atas: [] },
+            leitura_expediente: { correspondencias_recebidas: [], proposicoes_recebidas: [], proposicoes_distribuidas: [], materias_a_distribuir: [] },
+            conhecimento_materias: { informativos: [], requerimentos_conhecimento: [], deliberativos_administrativos: [], audiencias_agendadas: [] },
+            ordem_do_dia: [], assuntos_gerais: { itens: [], proxima_reuniao: null, proxima_reuniao_custom: '' }
+        });
+        const snapshotMembros = reactive({ presidente_id: null, vice_presidente_id: null, titulares: [], suplentes: [] });
+        const preparo = reactive({ relatores_grade: {}, historico: {}, ao_vivo: criarAoVivo() });
+
+        const erroCarregamento = ref('');
+        const seletoresAbertos = ref(true), areaPauta = ref(null);
+        const agora = ref(Date.now()), emTelaCheia = ref(false), erroTelaCheia = ref('');
+        let intervaloRelogio;
+        const atualizarTelaCheia = () => { emTelaCheia.value = !!document.fullscreenElement; };
+        onMounted(() => {
+            intervaloRelogio = setInterval(() => { agora.value = Date.now(); }, 250);
+            document.addEventListener('fullscreenchange', atualizarTelaCheia);
+        });
+        onBeforeUnmount(() => {
+            clearInterval(intervaloRelogio);
+            document.removeEventListener('fullscreenchange', atualizarTelaCheia);
+        });
+        async function telaCheia() {
+            erroTelaCheia.value = '';
+            try {
+                if (document.fullscreenElement) await document.exitFullscreen();
+                else await document.documentElement.requestFullscreen();
+            } catch { erroTelaCheia.value = 'O navegador não permitiu tela cheia. Use o comando de tela cheia do navegador.'; }
+        }
+        const horaAtual = computed(() => new Date(agora.value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+        const aoVivo = computed(() => preparo.ao_vivo);
+        const visor = computed(() => visorCronometro(aoVivo.value.cronometro, agora.value));
+        onMounted(async () => {
+            try {
+                const { data, error } = await sb.from('comissoes').select('sigla, nome').order('sigla');
+                if (error) throw error;
+                comissoes.value = data || [];
+                if (!comissoes.value.some(c => c.sigla === comissaoSelecionada.value) && comissoes.value.length) comissaoSelecionada.value = comissoes.value[0].sigla;
+                await carregarReunioesDaComissao();
+            } catch { erroCarregamento.value = 'Não foi possível carregar as comissões. Recarregue a página para tentar novamente.'; }
+        });
+
+        const conexaoRealtime = ref('CLOSED');
+        const statusRealtime = computed(() => ({
+            SUBSCRIBED: '✓ Ao Vivo Conectado', CONNECTING: '⚡ Conectando ao vivo...',
+            CHANNEL_ERROR: '⚠️ Ao Vivo desconectado — tentando reconectar',
+            TIMED_OUT: '⚠️ Conexão ao vivo expirou — tentando reconectar',
+            CLOSED: '○ Ao Vivo desconectado'
+        }[conexaoRealtime.value] || '○ Ao Vivo desconectado'));
+        let canalRealtime = null;
+        let geracaoCanal = 0;
+        let pedidoLista = 0;
+        let pedidoRoteiro = 0;
+        let versaoRecebida = 0;
+        let ultimoUpdatedAt = '';
+        function encerrarRealtime() {
+            ++geracaoCanal;
+            if (canalRealtime) { const canal = canalRealtime; canalRealtime = null; sb.removeChannel(canal); }
+            conexaoRealtime.value = 'CLOSED';
+        }
+        watch(reuniaoSelecionadaId, () => {
+            encerrarRealtime();
+            ++pedidoRoteiro;
+            roteiroCarregado.value = false;
+            ultimoUpdatedAt = '';
+        }, { flush: 'sync' });
+        onBeforeUnmount(encerrarRealtime);
+        async function aplicarRegistro(data, preservarScroll = false) {
+            if (data.id !== reuniaoSelecionadaId.value) return;
+            if (data.updated_at && ultimoUpdatedAt && data.updated_at < ultimoUpdatedAt) return;
+            const focoAnterior = JSON.stringify(preparo.ao_vivo.foco_pauta);
+
+            Object.assign(pauta, data.pauta_json);
+            Object.assign(snapshotMembros, { presidente_id: null, vice_presidente_id: null, titulares: [], suplentes: [] }, data.snapshot_membros);
+            preparo.relatores_grade = data.preparo_json?.relatores_grade || {};
+            preparo.historico = data.preparo_json?.historico || {};
+            preparo.ao_vivo = criarAoVivo(data.preparo_json?.ao_vivo);
+            ultimoUpdatedAt = data.updated_at || '';
+            roteiroCarregado.value = true;
+            const focoAtual = JSON.stringify(preparo.ao_vivo.foco_pauta);
+            await nextTick();
+            if (data.id !== reuniaoSelecionadaId.value) return;
+            if (focoAtual !== focoAnterior && areaPauta.value) areaPauta.value.scrollTop = 0;
+        }
+        function assinarRealtime(id) {
+            encerrarRealtime();
+            const geracao = geracaoCanal;
+            conexaoRealtime.value = 'CONNECTING';
+            canalRealtime = sb.channel(`reuniao:${id}:${geracao}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reunioes', filter: `id=eq.${id}` }, payload => {
+                    if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
+                    ++versaoRecebida;
+                    aplicarRegistro(payload.new, true);
+                })
+                .subscribe(async status => {
+                    if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
+                    conexaoRealtime.value = status;
+                    // Recupera também alterações ocorridas entre o SELECT e a assinatura/reconexão.
+                    if (status === 'SUBSCRIBED') {
+                        const versao = versaoRecebida;
+                        try {
+                            const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                            if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value || versao !== versaoRecebida) return;
+                            if (error) erroCarregamento.value = 'Não foi possível conferir a atualização. Use Atualizar.';
+                            else if (data) { erroCarregamento.value = ''; aplicarRegistro(data, true); }
+                        } catch { if (geracao === geracaoCanal) erroCarregamento.value = 'Sem conexão para conferir a atualização.'; }
+                    }
+                });
+        }
+        async function carregarReunioesDaComissao() {
+            const pedido = ++pedidoLista;
+            reuniaoSelecionadaId.value = null;
+            encerrarRealtime();
+            carregando.value = true;
+            roteiroCarregado.value = false;
+            listaReunioes.value = [];
+            erroCarregamento.value = '';
+            try {
+                const { data, error } = await sb.from('reunioes')
+                    .select('id, data_reuniao, hora_inicio, tipo_reuniao')
+                    .eq('comissao_sigla', comissaoSelecionada.value)
+                    .order('data_reuniao', { ascending: false });
+                if (pedido !== pedidoLista) return;
+                if (error) throw error;
+                listaReunioes.value = data || [];
+                if (listaReunioes.value.length) {
+                    reuniaoSelecionadaId.value = listaReunioes.value[0].id;
+                    await carregarRoteiroEspecifico();
+                }
+            } catch { if (pedido === pedidoLista) erroCarregamento.value = 'Não foi possível carregar a lista de reuniões.'; }
+            finally { if (pedido === pedidoLista) carregando.value = false; }
+        }
+        async function carregarRoteiroEspecifico() {
+            const id = reuniaoSelecionadaId.value;
+            if (!id) return;
+            const pedido = ++pedidoRoteiro;
+            const versao = versaoRecebida;
+            carregando.value = !roteiroCarregado.value;
+            erroCarregamento.value = '';
+            try {
+                const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                if (pedido !== pedidoRoteiro || id !== reuniaoSelecionadaId.value) return;
+                if (error || !data) throw error || new Error('Reunião não encontrada');
+                if (versao === versaoRecebida) await aplicarRegistro(data, roteiroCarregado.value);
+                if (!canalRealtime) assinarRealtime(id);
+            } catch { if (pedido === pedidoRoteiro) erroCarregamento.value = 'Não foi possível carregar o roteiro. Use Atualizar para tentar novamente.'; }
+            finally { if (pedido === pedidoRoteiro) carregando.value = false; }
+        }
+
+        function ehFaseB(it) { return !!it._fase_b || (it.votacao_conclusiva && !it.relator && !it.parecer); }
+
+        function gerarResumoPareceresFaseB(it) {
+            if (!it.pareceres_anteriores || it.pareceres_anteriores.length === 0) return '';
+            const partes = it.pareceres_anteriores.map(pa => {
+                const sentido = pa.parecer === 'favoravel_com_emendas' ? 'favorável com emenda' : (pa.parecer === 'contrario' ? 'contrário' : 'favorável');
+                const ehCCJ = /Constitui[çc][ãa]o\s+e\s+Justi[çc]a/i.test(pa.comissao);
+                const local = ehCCJ ? 'na CCJ' : 'nesta comissão';
+                return `${sentido} ${local}, relator(a) Deputado(a) ${pa.relator}`;
+            });
+            return `Projeto recebeu parecer ${partes.join(', e ')}.`;
+        }
+        function formatarData(isoData) {
+            if (!isoData) return '';
+            const p = isoData.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : isoData;
+        }
+        function formatarParecer(parecer) {
+            if (!parecer) return '_________';
+            if (parecer === 'favoravel') return 'Favorável';
+            if (parecer === 'favoravel_com_emendas') return 'Favorável com emendas';
+            return 'Contrário';
+        }
+        const nomeComissao = computed(() => comissoes.value.find(c => c.sigla === comissaoSelecionada.value)?.nome || pauta.metadados.comissao || 'Selecione a comissão');
+        const normalizarMembros = lista => (lista || []).filter(Boolean).map(d => ({ ...d, id: d.id_assembleia ?? d.id })).filter(d => d.id != null);
+        const titulares = computed(() => normalizarMembros(snapshotMembros.titulares).sort((a,b) => {
+            const ap = String(a.id) === String(snapshotMembros.presidente_id), bp = String(b.id) === String(snapshotMembros.presidente_id);
+            return Number(bp) - Number(ap) || a.nome.localeCompare(b.nome, 'pt-BR');
+        }));
+        const suplentes = computed(() => normalizarMembros(snapshotMembros.suplentes).sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR')));
+        const membros = computed(() => Array.from(new Map([...titulares.value, ...suplentes.value].map(d => [String(d.id), d])).values()));
+        const gruposMembros = computed(() => [{ titulo: 'TITULARES', membros: titulares.value }, { titulo: 'SUPLENTES', membros: suplentes.value }]);
+        const foco = computed(() => aoVivo.value.foco_pauta);
+        const fasePresenca = computed(() => membros.value.some(d => aoVivo.value.pres_deliberacao[d.id]) ||
+            ['quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.value?.secao) ? 'pres_deliberacao' : 'pres_abertura');
+        const presentes = computed(() => membros.value.filter(d => aoVivo.value[fasePresenca.value][d.id]).length);
+        function nomeMembro(id) { const d = membros.value.find(d => String(d.id) === String(id)); return d ? `${d.nome} (${d.partido})` : ''; }
+        const listaFoco = computed(() => foco.value?.secao === 'distribuicao' ? pauta.leitura_expediente.materias_a_distribuir
+            : foco.value?.secao === 'ordem_do_dia' ? pauta.ordem_do_dia : []);
+        const indiceFoco = computed(() => foco.value?.item_id ? listaFoco.value.findIndex(it => String(it.id) === foco.value.item_id) : -1);
+        const itemFoco = computed(() => listaFoco.value[indiceFoco.value] || null);
+        const historicoFoco = computed(() => preparo.historico[itemFoco.value?.id] || {});
+        const emendasFoco = computed(() => {
+            const id = itemFoco.value?.id;
+            const quantidade = Number(historicoFoco.value.num_emendas);
+            const numeros = new Set(Number.isSafeInteger(quantidade) && quantidade > 0 ? Array.from({ length: Math.min(quantidade, 1000) }, (_,i) => i + 1) : []);
+            for (const n of [...Object.keys(aoVivo.value.votos_emendas[id] || {}), ...Object.keys(aoVivo.value.resultado_emendas[id] || {})]) {
+                if (Number.isSafeInteger(Number(n)) && Number(n) > 0) numeros.add(Number(n));
+            }
+            return [...numeros].sort((a,b) => a-b);
+        });
+        function votosNominais(id, n = null) {
+            const votos = n === null ? aoVivo.value.votos[id] || {} : aoVivo.value.votos_emendas[id]?.[n] || {};
+            return membros.value.filter(d => ['F','C'].includes(votos[d.id])).map(d => ({ ...d, sentido: votos[d.id] }));
+        }
+        function contarVotos(id, sentido, n = null) { return votosNominais(id, n).filter(d => d.sentido === sentido).length; }
+        const textoResultado = valor => valor === 'aprovado' ? '✅ APROVADO' : valor === 'rejeitado' ? '❌ REJEITADO' : 'EM VOTAÇÃO / DISCUSSÃO';
+        const classeResultado = valor => valor === 'aprovado' ? 'favoravel' : valor === 'rejeitado' ? 'contrario' : '';
+        const tituloItem = it => `${it.tipo_extenso || it.tipo || 'Proposição'} n.º ${it.numero || '—'}/${it.ano || '—'}`;
+        const titulos = { abertura: 'Abertura', atas: 'Aprovação de Atas', expediente: 'Leitura do Expediente', distribuicao: 'Matérias a Distribuir',
+            conhecimento: 'Conhecimento de Matérias', quorum: 'Verificação de Quórum', ordem_do_dia: 'Ordem do Dia', assuntos_gerais: 'Assuntos Gerais', encerramento: 'Encerramento' };
+        const tituloSecao = computed(() => titulos[foco.value?.secao] || 'Visão geral da reunião');
+        const resumoSecoes = computed(() => [
+            `${pauta.aprovacao_atas.atas.length} ata(s)`,
+            `${pauta.leitura_expediente.correspondencias_recebidas.length} correspondência(s)`,
+            `${pauta.leitura_expediente.materias_a_distribuir.length} matéria(s) a distribuir`,
+            `${pauta.ordem_do_dia.length} item(ns) na Ordem do Dia`
+        ]);
+        const cartoesSecao = computed(() => {
+            const secao = foco.value?.secao, exp = pauta.leitura_expediente, con = pauta.conhecimento_materias;
+            const proposicoes = lista => lista.map((it, idx) => ({ titulo: `${idx + 1}. ${tituloItem(it)}`, texto: it.ementa || 'Ementa não informada.' }));
+            if (!secao || secao === 'ordem_do_dia') return proposicoes(pauta.ordem_do_dia);
+            if (secao === 'distribuicao') return proposicoes(exp.materias_a_distribuir);
+            if (secao === 'abertura') return [{ titulo: 'Registro de presenças', texto: 'Abertura da reunião com presença mínima de 3 deputados.' }, { titulo: 'Local', texto: [pauta.metadados.local, pauta.metadados.modalidade].filter(Boolean).join(' · ') }];
+            if (secao === 'quorum') return [{ titulo: 'Ordem do Dia', texto: 'Verificação da presença mínima de 7 parlamentares para deliberação.' }];
+            if (secao === 'atas') return pauta.aprovacao_atas.atas.map(a => ({ titulo: a.texto_livre ? 'Registro em ata' : `Ata ${a.numero}`, texto: a.texto_livre || `${a.tipo_reuniao || 'Reunião ordinária'} de ${formatarData(a.reuniao_referencia)}` }));
+            if (secao === 'expediente') return [
+                ...exp.correspondencias_recebidas.map(c => ({ titulo: c.remetente || 'Correspondência', texto: c.mensagem })),
+                ...proposicoes(exp.proposicoes_recebidas).map(c => ({ ...c, titulo: 'Recebida · ' + c.titulo })),
+                ...proposicoes(exp.proposicoes_distribuidas).map(c => ({ ...c, titulo: 'Distribuída · ' + c.titulo }))
+            ];
+            if (secao === 'conhecimento') return [
+                ...(con.informativos || []).map((c,i) => ({ titulo: 'Comunicado' + (aoVivo.value.res_info[i] ? ' · APROVADO' : ''), texto: c.texto })),
+                ...(con.deliberativos_administrativos || []).map((c,i) => ({ titulo: 'Deliberação administrativa' + (aoVivo.value.res_delib[i] ? ' · APROVADO' : ''), texto: c.texto })),
+                ...(con.audiencias_agendadas || []).map(c => ({ titulo: `Audiência pública · ${formatarData(c.data)} ${c.hora || ''}`, texto: [c.pauta, c.local, c.proponente?.nome || c.proponente_cru].filter(Boolean).join('\n') })),
+                ...(con.requerimentos_conhecimento || []).map(c => ({ titulo: tituloItem(c), texto: c.texto + (c.origem ? ` (${c.origem})` : '') }))
+            ];
+            if (secao === 'assuntos_gerais') return pauta.assuntos_gerais.itens.map(c => ({ titulo: 'Assunto geral', texto: typeof c === 'string' ? c : c.texto }));
+            if (secao === 'encerramento') return [{ titulo: 'Próxima reunião', texto: pauta.assuntos_gerais.proxima_reuniao_custom || pauta.assuntos_gerais.proxima_reuniao || 'A confirmar' }, { titulo: 'Encerramento', texto: 'Agradecemos a presença de todos.' }];
+            return [];
+        });
+        return { comissoes, comissaoSelecionada, listaReunioes, reuniaoSelecionadaId, carregando, roteiroCarregado,
+            pauta, preparo, snapshotMembros, erroCarregamento, seletoresAbertos, areaPauta, emTelaCheia, erroTelaCheia, telaCheia,
+            horaAtual, aoVivo, visor, conexaoRealtime, statusRealtime, carregarReunioesDaComissao, carregarRoteiroEspecifico,
+            nomeComissao, gruposMembros, foco, fasePresenca, presentes, nomeMembro, listaFoco, indiceFoco, itemFoco, historicoFoco, emendasFoco,
+            votosNominais, contarVotos, textoResultado, classeResultado, tituloItem, tituloSecao, resumoSecoes, cartoesSecao,
+            ehFaseB, gerarResumoPareceresFaseB, formatarData, formatarParecer };
+    }
+}).mount('#app');
+
+</script>
+</body>
+</html>
