@@ -205,7 +205,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 .tempo-controles label { display: grid; gap: 4px; font-size: 11px; }
 .tempo-controles select, .tempo-controles input { width: 100%; min-width: 0; color: white; background: #1e293b; border: 1px solid #64748b; padding: 5px; border-radius: 4px; }
 .tempo-botoes { display: flex; flex-wrap: wrap; gap: 4px; }
-.tempo-personalizado { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 4px; }
+.tempo-modos { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.widget-cronometro .tempo-modos [aria-pressed="true"] { background: #0369a1; color: #fff; outline: 1px solid #7dd3fc; }
 .tempo-leitura { padding: 6px; font-size: 11px; color: #cbd5e1; }
 .navegacao-foco { font: 12px/1.4 Arial, sans-serif; padding: 6px; background: #0f172a; color: #e2e8f0; border-radius: 6px; }
 .navegacao-foco .tempo-botoes { margin-top: 5px; }
@@ -215,7 +216,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 @media screen {
     .app-presidente > .painel-comandos { flex-wrap: wrap; }
     .folha-a4 .em-pauta-foco { box-shadow: inset 4px 0 #2563eb; outline: 1px solid #93c5fd; }
-    .folha-a4 [id^="sec-"], .folha-a4 [id^="mad-"], .folha-a4 [id^="od-"] { scroll-margin-top: 220px; }
+    .folha-a4 [id] { scroll-margin-top: 220px; }
     .foco-botao, .foco-selo { display: inline-block; margin: 4px 6px; padding: 3px 7px; border-radius: 4px; font: bold 10px/1.4 Arial, sans-serif; text-transform: none; background: #dbeafe; color: #1e40af; vertical-align: middle; }
     .foco-botao[aria-pressed="true"], .foco-selo { background: #1d4ed8; color: white; }
 }
@@ -367,7 +368,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             
             <div v-if="pauta.leitura_expediente.correspondencias_recebidas.length > 0">
                 <strong v-if="pauta.leitura_expediente.correspondencias_recebidas.length > 0">COMUNICO CORRESPONDÊNCIA RECEBIDA:</strong>
-                <div v-for="(item, idx) in pauta.leitura_expediente.correspondencias_recebidas" :key="'corr'+idx" class="item-texto" style="margin-top: 6px;">
+                <div v-for="(item, idx) in pauta.leitura_expediente.correspondencias_recebidas" :key="'corr'+idx" class="item-texto" style="margin-top: 6px;" :id="'corr-' + idx" :class="{ 'em-pauta-foco': focoAtivo('expediente', idFocoItem('corr', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('expediente', idFocoItem('corr', idx))" @click="destacarFoco('expediente', idFocoItem('corr', idx), idx)">{{ focoAtivo('expediente', idFocoItem('corr', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('expediente', idFocoItem('corr', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                     
                         {{ idx + 1 }}. <strong v-if="item.remetente">{{ item.remetente }}:</strong> {{ item.mensagem }}
                     
@@ -378,7 +380,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 
             <div v-if="pauta.leitura_expediente.proposicoes_recebidas.length > 0" style="margin-top: 15px;">
                 <strong>COMUNICO PROPOSIÇÃO RECEBIDA:</strong><br><br>
-                <div v-for="(item, idx) in pauta.leitura_expediente.proposicoes_recebidas" :key="'rec'+idx" :id="'rec-' + idx" class="item-texto">
+                <div v-for="(item, idx) in pauta.leitura_expediente.proposicoes_recebidas" :key="'rec'+idx" :id="'rec-' + idx" class="item-texto" :class="{ 'em-pauta-foco': focoAtivo('expediente', idFocoItem('rec', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('expediente', idFocoItem('rec', idx))" @click="destacarFoco('expediente', idFocoItem('rec', idx), idx)">{{ focoAtivo('expediente', idFocoItem('rec', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('expediente', idFocoItem('rec', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                     {{ idx + 1 }}. <strong>{{ item.tipo }} n.º {{ item.numero }}/{{ item.ano }}</strong><br>
                     Proponente: {{ item.proponente_principal?.nome || item.proponente_cru }}<br>
                     Ementa: {{ item.ementa }} <span v-if="item.votacao_conclusiva" style="text-decoration: underline;">({{ item.texto_conclusiva || 'Tramitação Conclusiva' }})</span>.
@@ -390,7 +393,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 
             <div v-if="pauta.leitura_expediente.proposicoes_distribuidas.length > 0" style="margin-top: 15px;">
                 <strong>COMUNICO PROPOSIÇÕES DISTRIBUÍDAS:</strong><br><br>
-                <div v-for="(item, idx) in pauta.leitura_expediente.proposicoes_distribuidas" :key="'pdist'+idx" :id="'dist-' + idx" class="item-texto">
+                <div v-for="(item, idx) in pauta.leitura_expediente.proposicoes_distribuidas" :key="'pdist'+idx" :id="'dist-' + idx" class="item-texto" :class="{ 'em-pauta-foco': focoAtivo('expediente', idFocoItem('dist', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('expediente', idFocoItem('dist', idx))" @click="destacarFoco('expediente', idFocoItem('dist', idx), idx)">{{ focoAtivo('expediente', idFocoItem('dist', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('expediente', idFocoItem('dist', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                     {{ idx + 1 }}. <strong>{{ item.tipo }} n.º {{ item.numero }}/{{ item.ano }}</strong><br>
                     Proponente: {{ item.proponente_principal?.nome || item.proponente_cru }}<br>
                     Ementa: {{ item.ementa }} <span v-if="item.votacao_conclusiva" style="text-decoration: underline;">({{ item.texto_conclusiva || 'Tramitação Conclusiva' }})</span><br>
@@ -462,7 +466,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             <p v-if="!temConhecimento">Nada consta.</p>
             
             <!-- Lista de Informativos / Comunicados Manuais -->
-            <div v-for="(item, idx) in pauta.conhecimento_materias.informativos" :key="'inf'+idx" class="item-texto">
+            <div v-for="(item, idx) in pauta.conhecimento_materias.informativos" :key="'inf'+idx" class="item-texto" :id="'inf-' + idx" :class="{ 'em-pauta-foco': focoAtivo('conhecimento', idFocoItem('inf', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('conhecimento', idFocoItem('inf', idx))" @click="destacarFoco('conhecimento', idFocoItem('inf', idx), idx)">{{ focoAtivo('conhecimento', idFocoItem('inf', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('conhecimento', idFocoItem('inf', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                 
                     {{ idx + 1 }}. {{ item.texto }}
                     <div v-if="item.requer_deliberacao" style="text-align: center; font-weight: bold; margin-top: 8px;">
@@ -473,7 +478,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             </div>
 
             <!-- Deliberativos Administrativos vindos da Agenda -->
-            <div v-for="(item, idx) in pauta.conhecimento_materias.deliberativos_administrativos" :key="'deladm'+idx" class="item-texto">
+            <div v-for="(item, idx) in pauta.conhecimento_materias.deliberativos_administrativos" :key="'deladm'+idx" class="item-texto" :id="'deladm-' + idx" :class="{ 'em-pauta-foco': focoAtivo('conhecimento', idFocoItem('deladm', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('conhecimento', idFocoItem('deladm', idx))" @click="destacarFoco('conhecimento', idFocoItem('deladm', idx), idx)">{{ focoAtivo('conhecimento', idFocoItem('deladm', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('conhecimento', idFocoItem('deladm', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                 - {{ item.texto }}
                 <div style="text-align: center; font-weight: bold; margin-top: 8px;">
                     OS PARLAMENTARES CONCORDAM? <button type="button" class="marca-opcao" :disabled="!podeInteragir" :aria-pressed="!!(aoVivoExibido.res_delib[idx])" @click="alternarMarca('res_delib', idx)">(<span class="marcacao ok">{{ aoVivoExibido.res_delib[idx] ? 'X' : '\u00a0' }}</span>) APROVADO.</button>
@@ -484,7 +490,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             
 
             <div v-if="pauta.conhecimento_materias.audiencias_agendadas.length > 0" style="margin-top: 15px;">
-                <div v-for="(aud, idx) in pauta.conhecimento_materias.audiencias_agendadas" :key="'aud'+idx" class="item-texto">
+                <div v-for="(aud, idx) in pauta.conhecimento_materias.audiencias_agendadas" :key="'aud'+idx" class="item-texto" :id="'aud-' + idx" :class="{ 'em-pauta-foco': focoAtivo('conhecimento', idFocoItem('aud', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('conhecimento', idFocoItem('aud', idx))" @click="destacarFoco('conhecimento', idFocoItem('aud', idx), idx)">{{ focoAtivo('conhecimento', idFocoItem('aud', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('conhecimento', idFocoItem('aud', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                     - <strong>Audiência Pública Agendada:</strong><br>
                     Data: {{ formatarData(aud.data) }} {{ aud.hora ? ' – ' + aud.hora : '' }} | Local: {{ aud.local }}<br>
                     Proponente: {{ aud.proponente?.nome || aud.proponente_cru }}<br>
@@ -494,7 +501,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 
             <div v-if="pauta.conhecimento_materias.requerimentos_conhecimento.length > 0" style="margin-top: 15px;">
                 <div style="font-weight: bold;">Requerimentos para conhecimento:</div>
-                <div v-for="(req, idx) in pauta.conhecimento_materias.requerimentos_conhecimento" :key="'req'+idx" class="item-texto">
+                <div v-for="(req, idx) in pauta.conhecimento_materias.requerimentos_conhecimento" :key="'req'+idx" class="item-texto" :id="'req-' + idx" :class="{ 'em-pauta-foco': focoAtivo('conhecimento', idFocoItem('req', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('conhecimento', idFocoItem('req', idx))" @click="destacarFoco('conhecimento', idFocoItem('req', idx), idx)">{{ focoAtivo('conhecimento', idFocoItem('req', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('conhecimento', idFocoItem('req', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                     {{ idx + 1 }}) {{ req.tipo }} n.º {{ req.numero }}/{{ req.ano }} - {{ req.texto }}<span v-if="req.origem"> ({{ req.origem }})</span>
                 </div>
             </div>
@@ -801,7 +809,8 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             <div id="sec-assuntos-gerais" :class="{ 'em-pauta-foco': focoAtivo('assuntos_gerais') }" class="caixa-secao" style="page-break-before: always;">ASSUNTOS GERAIS <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('assuntos_gerais')" @click="destacarFoco('assuntos_gerais')">{{ focoAtivo('assuntos_gerais') ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar em Pauta' }}</button><span v-else-if="focoAtivo('assuntos_gerais')" class="foco-selo no-print">📍 EM PAUTA AGORA</span></div>
             <p style="font-weight: bold; margin-bottom: 10px;">COLOCO A PALAVRA À DISPOSIÇÃO DOS PARLAMENTARES.</p>
             
-            <div v-for="(ag, idx) in pauta.assuntos_gerais.itens" :key="'ag'+idx" class="item-texto">
+            <div v-for="(ag, idx) in pauta.assuntos_gerais.itens" :key="'ag'+idx" class="item-texto" :id="'ag-' + idx" :class="{ 'em-pauta-foco': focoAtivo('assuntos_gerais', idFocoItem('ag', idx)) }">
+                <button v-if="podeInteragir" type="button" class="foco-botao no-print" :aria-pressed="focoAtivo('assuntos_gerais', idFocoItem('ag', idx))" @click="destacarFoco('assuntos_gerais', idFocoItem('ag', idx), idx)">{{ focoAtivo('assuntos_gerais', idFocoItem('ag', idx)) ? '📍 EM PAUTA AGORA (Remover)' : '📍 Destacar' }}</button><span v-else-if="focoAtivo('assuntos_gerais', idFocoItem('ag', idx))" class="foco-selo no-print">📍 EM PAUTA AGORA</span>
                 
                     {{ idx + 1 }}. {{ ag.texto }}
                 
@@ -917,7 +926,9 @@ const WidgetCronometro = {
     props: ['estado', 'permitido', 'membros'],
     emits: ['alterar'],
     setup(props, { emit }) {
-        const aberto = ref(false), agora = ref(Date.now()), minutos = ref(5), segundos = ref(0);
+        const aberto = ref(false), agora = ref(Date.now());
+        const oradorTexto = ref(props.estado.orador || '');
+        watch(() => props.estado.orador, v => { if (v !== oradorTexto.value) oradorTexto.value = v || ''; });
         let intervalo;
         onMounted(() => { intervalo = setInterval(() => { agora.value = Date.now(); }, 250); });
         onBeforeUnmount(() => clearInterval(intervalo));
@@ -939,16 +950,14 @@ const WidgetCronometro = {
                 if (tipo === 'modo') c.modo = valor === 'progressivo' ? 'progressivo' : 'regressivo';
                 c.status = 'parado'; c.acumulado_seg = 0; c.iniciado_em_ms = null;
             } else if (tipo === 'mais') {
-                if (c.modo !== 'regressivo' || !Number.isSafeInteger(c.duracao_seg + 60)) return;
-                c.duracao_seg += 60;
-            } else if (tipo === 'orador') c.orador = String(valor);
+                const acrescimo = valor === 300 ? 300 : 60;
+                if (c.modo !== 'regressivo' || !Number.isSafeInteger(c.duracao_seg + acrescimo)) return;
+                c.duracao_seg += acrescimo;
+            } else if (tipo === 'orador') { oradorTexto.value = String(valor || ''); c.orador = oradorTexto.value; }
             else return;
             emit('alterar', c);
         }
-        const tempoValido = computed(() => Number.isInteger(minutos.value) && minutos.value >= 0 &&
-            Number.isInteger(segundos.value) && segundos.value >= 0 && segundos.value < 60 &&
-            Number.isSafeInteger(minutos.value * 60 + segundos.value));
-        return { aberto, minutos, segundos, visor, acao, tempoValido };
+        return { aberto, oradorTexto, visor, acao };
     },
     template: `<section class="widget-cronometro no-print" aria-label="Tempo de manifestação">
         <button type="button" class="tempo-toggle" :aria-expanded="aberto" @click="aberto = !aberto">⏱️ Cronômetro / Tempo {{ aberto ? '▴' : '▾' }}</button>
@@ -957,70 +966,107 @@ const WidgetCronometro = {
             <span v-if="estado.orador" class="tempo-orador">{{ estado.orador }}</span>
         </div>
         <div v-if="aberto && permitido" class="tempo-controles">
-            <label>Modo <select :value="estado.modo" @change="acao('modo', $event.target.value)">
-                <option value="regressivo">⏳ Regressivo</option><option value="progressivo">⏱️ Cronômetro Crescente (00:00 ↑)</option>
-            </select></label>
-            <div class="tempo-botoes"><button v-for="m in [1,3,5,10]" :key="m" type="button" @click="acao('definir', m * 60)" :title="'Carregar ' + m + ' minutos; use Iniciar'">{{ m }}m</button></div>
-            <div class="tempo-personalizado"><label>Min <input type="number" min="0" step="1" v-model.number="minutos"></label><label>Seg <input type="number" min="0" max="59" step="1" v-model.number="segundos"></label>
-                <button type="button" :disabled="!tempoValido" @click="acao('definir', minutos * 60 + segundos)">Definir</button></div>
+            <div class="tempo-modos" role="group" aria-label="Modo do cronômetro">
+                <button type="button" :aria-pressed="estado.modo === 'regressivo'" @click="acao('modo', 'regressivo')">⏳ Regressivo</button>
+                <button type="button" :aria-pressed="estado.modo === 'progressivo'" @click="acao('modo', 'progressivo')">⏱️ Crescente 00:00 ↑</button>
+            </div>
+            <div class="tempo-botoes"><button v-for="m in [1,3,5,10,15,20]" :key="m" type="button" @click="acao('definir', m * 60)" :title="'Carregar ' + m + ' minutos; use Iniciar'">{{ m }}m</button></div>
             <div class="tempo-botoes">
                 <button type="button" :disabled="estado.status === 'rodando'" @click="acao('iniciar')">▶ Iniciar / Retomar</button>
                 <button type="button" :disabled="estado.status !== 'rodando'" @click="acao('pausar')">⏸ Pausar</button>
                 <button type="button" :disabled="estado.modo !== 'regressivo'" @click="acao('mais')">+1m</button>
+                <button type="button" :disabled="estado.modo !== 'regressivo'" @click="acao('mais', 300)">+5m</button>
                 <button type="button" @click="acao('zerar')">Zerar</button>
             </div>
             <label>Orador <select :value="estado.orador" @change="acao('orador', $event.target.value)">
-                <option value="">Sem orador / limpar</option>
+                <option value="">— Limpar —</option>
                 <option v-if="estado.orador && !membros.some(d => d.nome === estado.orador)" :value="estado.orador">{{ estado.orador }}</option>
                 <option v-for="d in membros" :key="d.id" :value="d.nome">{{ d.nome }} ({{ d.partido }})</option>
             </select></label>
-            <label>Convidado / nome livre <input :value="estado.orador" @change="acao('orador', $event.target.value)" placeholder="Nome de quem está com a palavra"></label>
+            <label>Convidado / nome livre <input type="text" v-model="oradorTexto" @input="acao('orador', $event.target.value)" placeholder="Nome de quem está com a palavra"></label>
         </div>
         <p v-else-if="aberto" class="tempo-leitura">Controlado pelo Secretário · somente leitura</p>
     </section>`
 };
 
+// Foco individual: manter idêntico nos três HTMLs. Não modifica a pauta.
+function itensFocoPauta(pauta) {
+    const e = pauta.leitura_expediente || {}, c = pauta.conhecimento_materias || {};
+    const grupos = [
+        ['expediente', 'corr', 'Leitura do Expediente', 'Correspondência', e.correspondencias_recebidas],
+        ['expediente', 'rec', 'Leitura do Expediente', 'Proposição recebida', e.proposicoes_recebidas],
+        ['expediente', 'dist', 'Leitura do Expediente', 'Proposição distribuída', e.proposicoes_distribuidas],
+        ['distribuicao', 'mad', 'Matérias a Distribuir', 'Item', e.materias_a_distribuir],
+        ['conhecimento', 'inf', 'Conhecimento de Matérias', 'Informativo', c.informativos],
+        ['conhecimento', 'deladm', 'Conhecimento de Matérias', 'Deliberação', c.deliberativos_administrativos],
+        ['conhecimento', 'aud', 'Conhecimento de Matérias', 'Audiência', c.audiencias_agendadas],
+        ['conhecimento', 'req', 'Conhecimento de Matérias', 'Requerimento', c.requerimentos_conhecimento],
+        ['ordem_do_dia', 'od', 'Ordem do Dia', 'Item', pauta.ordem_do_dia],
+        ['assuntos_gerais', 'ag', 'Assuntos Gerais', 'Item', pauta.assuntos_gerais?.itens]
+    ];
+    const itens = grupos.flatMap(([secao, grupo, titulo, especie, lista]) => (lista || []).map((item, indice) => ({
+        secao, grupo, item, indice, total: lista.length, ancora: `${grupo}-${indice}`,
+        item_id: ['rec','dist','mad','req','od'].includes(grupo) && item?.id ? String(item.id) : `${grupo}-${indice}`,
+        rotulo: `${titulo} — ${especie} ${indice + 1} de ${lista.length}` + (item?.tipo ? `: ${item.tipo} ${item.numero || ''}/${item.ano || ''}` : '')
+    })));
+    // Uma proposição pode aparecer em duas alíneas do mesmo Expediente.
+    // Nessa colisão, a âncora da alínea desambigua o foco sem alterar IDs legislativos.
+    const contagens = new Map();
+    for (const it of itens) { const chave = `${it.secao}:${it.item_id}`; contagens.set(chave, (contagens.get(chave) || 0) + 1); }
+    return itens.map(it => contagens.get(`${it.secao}:${it.item_id}`) > 1 ? { ...it, item_id: it.ancora } : it);
+}
+
 function usarFocoPauta(pauta, exibido, edicao, permitido, mostrar) {
     const titulos = { abertura: 'Abertura', atas: 'Aprovação de Atas', expediente: 'Expediente', distribuicao: 'Matérias a Distribuir',
         conhecimento: 'Conhecimento de Matérias', quorum: 'Verificação de Quórum', ordem_do_dia: 'Ordem do Dia',
         assuntos_gerais: 'Assuntos Gerais', encerramento: 'Encerramento' };
+    const itens = computed(() => itensFocoPauta(pauta));
+    const idDoFoco = item => typeof item === 'string' ? item : item?.id != null ? String(item.id) : '';
     const focoIgual = (a, b) => !!a && !!b && a.secao === b.secao && (a.item_id || '') === (b.item_id || '');
-    function focoAtivo(secao, item = null) { return mostrar.value && focoIgual(exibido.value.foco_pauta, { secao, item_id: item?.id }); }
+    function idFocoItem(grupo, idx) { return itens.value.find(it => it.grupo === grupo && it.indice === idx)?.item_id || `${grupo}-${idx}`; }
+    function focoAtivo(secao, item = null) { return mostrar.value && focoIgual(exibido.value.foco_pauta, { secao, item_id: idDoFoco(item) }); }
     function criarFoco(secao, item = null, idx = 0) {
-        return { secao, ...(item?.id ? { item_id: String(item.id) } : {}),
-            rotulo: titulos[secao] + (item ? ` — Item ${idx + 1}: ${item.tipo || ''} ${item.numero || ''}/${item.ano || ''}` : '') };
+        const id = idDoFoco(item), descritor = itens.value.find(it => it.secao === secao && it.item_id === id);
+        return { secao, ...(id ? { item_id: id } : {}),
+            rotulo: descritor?.rotulo || titulos[secao] + (id ? ` — Item ${idx + 1}` : '') };
     }
     function destacarFoco(secao, item = null, idx = 0) {
         if (!permitido.value) return;
         const foco = criarFoco(secao, item, idx);
         edicao.value.foco_pauta = focoIgual(edicao.value.foco_pauta, foco) ? null : foco;
     }
-    const sequenciaFoco = computed(() => [
-        criarFoco('abertura'), criarFoco('atas'), criarFoco('expediente'),
-        ...(pauta.leitura_expediente.materias_a_distribuir || []).map((it, idx) => criarFoco('distribuicao', it, idx)),
-        criarFoco('conhecimento'), criarFoco('quorum'),
-        ...(pauta.ordem_do_dia || []).map((it, idx) => criarFoco('ordem_do_dia', it, idx)),
-        criarFoco('assuntos_gerais'), criarFoco('encerramento')
-    ]);
-    function avancarFoco(delta) {
+    const sequenciaFoco = computed(() => ['abertura','atas','expediente','distribuicao','conhecimento','quorum','ordem_do_dia','assuntos_gerais','encerramento'].flatMap(secao => {
+        const daSecao = itens.value.filter(it => it.secao === secao).map(it => criarFoco(secao, it.item_id, it.indice));
+        // Distribuição e OD mantêm o avanço direto por matéria; títulos continuam selecionáveis.
+        return ['distribuicao','ordem_do_dia'].includes(secao) ? daSecao : [criarFoco(secao), ...daSecao];
+    }));
+    async function avancarFoco(delta) {
         if (!permitido.value) return;
-        const lista = sequenciaFoco.value;
-        const idx = lista.findIndex(f => focoIgual(f, edicao.value.foco_pauta));
-        edicao.value.foco_pauta = { ...lista[idx < 0 ? (delta > 0 ? 0 : lista.length - 1) : Math.max(0, Math.min(lista.length - 1, idx + delta))] };
+        const lista = sequenciaFoco.value, atual = edicao.value.foco_pauta;
+        let idx = lista.findIndex(f => focoIgual(f, atual));
+        // Um título selecionado diretamente entra antes do primeiro item daquela seção.
+        if (idx < 0 && atual && !atual.item_id) {
+            const primeiro = lista.findIndex(f => f.secao === atual.secao);
+            if (primeiro >= 0) idx = delta > 0 ? primeiro - 1 : primeiro;
+        }
+        const foco = { ...lista[idx < 0 ? (delta > 0 ? 0 : lista.length - 1) : Math.max(0, Math.min(lista.length - 1, idx + delta))] };
+        edicao.value.foco_pauta = foco;
+        await nextTick();
+        if (permitido.value && focoIgual(edicao.value.foco_pauta, foco))
+            document.getElementById(ancoraFoco(foco))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     function ancoraFoco(foco) {
         if (!foco) return null;
-        if (foco.item_id && ['distribuicao','ordem_do_dia'].includes(foco.secao)) {
-            const lista = foco.secao === 'distribuicao' ? pauta.leitura_expediente.materias_a_distribuir : pauta.ordem_do_dia;
-            const idx = lista.findIndex(it => String(it.id) === foco.item_id);
-            if (idx >= 0) return (foco.secao === 'distribuicao' ? 'mad-' : 'od-') + idx;
+        if (foco.item_id) {
+            const item = itens.value.find(it => it.secao === foco.secao && it.item_id === foco.item_id);
+            if (item) return item.ancora;
         }
         return 'sec-' + foco.secao.replaceAll('_', '-');
     }
     function atualizarCronometro(c) {
         if (permitido.value) edicao.value.cronometro = criarAoVivo({ cronometro: c }).cronometro;
     }
-    return { focoAtivo, destacarFoco, avancarFoco, ancoraFoco, atualizarCronometro };
+    return { focoAtivo, destacarFoco, avancarFoco, ancoraFoco, atualizarCronometro, idFocoItem };
 }
 
 createApp({
@@ -1097,7 +1143,7 @@ createApp({
             if (!podeInteragir.value) return;
             if (confirm('Limpar todas as marcações locais desta reunião neste navegador?')) aoVivoLocal.value = criarAoVivo();
         }
-        const { focoAtivo, destacarFoco, avancarFoco, ancoraFoco, atualizarCronometro } =
+        const { focoAtivo, destacarFoco, avancarFoco, ancoraFoco, atualizarCronometro, idFocoItem } =
             usarFocoPauta(pauta, aoVivoExibido, aoVivoEdicao, podeInteragir, mostrarMarcacoes);
         // Interação compartilhada: todas as escritas passam pelo modo habilitado.
         const membrosConducao = computed(() => Array.from(new Map(todosMembrosSnapshot.value.filter(d => d.id != null).map(d => [String(d.id), d])).values()));
@@ -1418,7 +1464,7 @@ createApp({
 
         return {
             uiLayout, erroUiLayout,
-            focoAtivo, destacarFoco, avancarFoco, atualizarCronometro,
+            focoAtivo, destacarFoco, avancarFoco, atualizarCronometro, idFocoItem,
             podeInteragir, mostrarMarcacoes, aoVivoExibido, membrosConducao, contarPresentes, alternarPresenca,
             copiarPresentesAbertura, alternarMarca, definirCampo, votosDoItem, contarVotos, alternarVoto, marcarResultado,
             seguirFocoSecretario, modoPresidente, aoVivoLocal, erroLocal, erroCarregamento, statusRealtime, limparMarcacoesLocais,

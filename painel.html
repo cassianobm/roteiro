@@ -40,12 +40,12 @@ button:disabled { opacity: .5; cursor: default; }
 .tempo-alerta { background: #422006; border-color: #f59e0b; color: #fde68a; }
 .tempo-critico { background: #7f1d1d; border-color: #f87171; color: #fee2e2; animation: pulso 1.2s infinite; }
 @keyframes pulso { 50% { background-color: #991b1b; } }
-.grade-mesa { display: grid; grid-template-columns: minmax(300px, 32fr) minmax(0, 68fr); gap: 16px; flex: 1; min-height: 0; }
+
 .cartao { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 22px; min-width: 0; }
 .presencas, .pauta-mesa { overflow-y: auto; scrollbar-color: #64748b #1e293b; }
 .legenda { color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; font-weight: bold; margin: 0 0 8px; }
 .total-presentes { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
-.total-presentes strong { font-size: 64px; line-height: 1; color: #f8fafc; font-variant-numeric: tabular-nums; }
+.total-presentes strong { font-size: 56px; line-height: 1; color: #f8fafc; font-variant-numeric: tabular-nums; }
 .total-presentes span { font-size: 18px; color: #cbd5e1; }
 .quorum { border-bottom: 1px solid #475569; padding-bottom: 14px; display: grid; gap: 8px; font-size: 15px; }
 .atingido { color: #6ee7b7; }
@@ -53,7 +53,7 @@ button:disabled { opacity: .5; cursor: default; }
 .membros { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
 .membros h3 { font-size: 14px; color: #cbd5e1; margin: 0 0 10px; }
 .membros ul { list-style: none; margin: 0; padding: 0; }
-.membros li { display: flex; align-items: start; gap: 7px; font-size: clamp(15px, 1vw, 20px); line-height: 1.15; padding: 4px 0; border-bottom: 1px solid #334155; opacity: .55; overflow-wrap: anywhere; }
+.membros li { display: flex; align-items: start; gap: 7px; font-size: clamp(15px, 1vw, 18px); line-height: 1.15; padding: 3px 0; border-bottom: 1px solid #334155; opacity: .55; overflow-wrap: anywhere; }
 .membros li.presente { opacity: 1; }
 .selo-presenca { flex: 0 0 20px; text-align: center; color: #94a3b8; }
 .presente .selo-presenca { color: #6ee7b7; font-weight: bold; }
@@ -86,15 +86,71 @@ button:disabled { opacity: .5; cursor: default; }
 .item-secao p { white-space: pre-line; font-size: clamp(20px, 1.6vw, 28px); line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
 .vazio { text-align: center; margin: auto; padding: 50px 20px; color: #cbd5e1; }
 .vazio h2 { color: #f8fafc; font-size: 32px; }
-@media (min-width: 1100px) { .mesa { height: 100vh; overflow: hidden; } }
-@media (max-width: 1099px) { .grade-mesa { grid-template-columns: 1fr; } .presencas { order: 2; } }
+
+
 @media (max-width: 600px) { .mesa { padding: 10px; } .tempo-mesa { flex-direction: column; align-items: start; padding: 18px; } .cartao { padding: 16px; } .membros { gap: 16px; } .relogio { margin-left: auto; } }
 @media (prefers-reduced-motion: reduce) { .tempo-critico { animation: none; } }
 @media print { .ferramentas, .seletores { display: none; } .mesa { height: auto; overflow: visible; } .grade-mesa { display: block; } .cartao { margin-bottom: 20px; overflow: visible; break-inside: avoid; } }
+
+.coluna-direita-mesa { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
+.coluna-direita-mesa > .pauta-mesa { flex: 1; min-height: 0; }
+.membros { display: flex; flex-direction: column; gap: 18px; }
+.membros section + section { border-top: 1px solid #475569; padding-top: 16px; }
+.membros ul { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 12px; }
+.membros li > div { min-width: 0; }
+.item-foco-amplo .ementa { font-size: clamp(24px, 2.1vw, 38px); line-height: 1.4; overflow-wrap: anywhere; }
+.item-foco-amplo.texto-extenso .ementa { font-size: clamp(20px, 1.5vw, 28px); }
+@media screen and (min-width: 1100px) {
+    .mesa { display: grid; grid-template-columns: minmax(340px, 34fr) minmax(0, 66fr); height: 100vh; padding: 0; gap: 0; overflow: hidden; }
+    .mesa.sem-reuniao { grid-template-columns: 1fr; }
+    .presencas { height: 100%; border-radius: 0; padding: clamp(14px, 1.3vw, 24px); }
+    .coluna-direita-mesa { height: 100%; padding: 18px; }
+    .cabecalho { gap: 8px; padding-bottom: 10px; }
+    .identidade h1 { font-size: clamp(20px, 1.5vw, 28px); }
+    .tempo-mesa { padding: 12px 20px; }
+    .tempo-mesa strong { font-size: clamp(58px, 6vw, 110px); }
+    .tempo-mesa h2 { font-size: clamp(22px, 2vw, 34px); }
+    .membros li { font-size: clamp(15px, 1.1vw, 21px); }
+}
+@media screen and (min-width: 1100px) and (max-height: 850px) {
+    .presencas { padding: 14px; }
+    .total-presentes { margin-bottom: 8px; }
+    .total-presentes strong { font-size: 40px; }
+    .quorum { font-size: 13px; gap: 5px; padding-bottom: 8px; }
+    .membros { gap: 10px; margin-top: 10px; }
+    .membros section + section { padding-top: 10px; }
+    .membros h3 { margin-bottom: 6px; }
+    .membros ul { gap: 4px 10px; }
+    .membros li { font-size: 15px; padding: 2px 0; }
+    .coluna-direita-mesa { padding: 12px; gap: 10px; }
+    .pauta-mesa { padding: 18px; }
+    .pauta-mesa h2 { font-size: 28px; margin-bottom: 12px; }
+    .item-foco-amplo .ementa { font-size: 25px; margin: 12px 0; }
+    .item-foco-amplo.texto-extenso .ementa { font-size: 20px; }
+}
+@media screen and (max-width: 1099px) { .presencas { order: 2; } }
+@media print { .coluna-direita-mesa { display: block; height: auto; } }
 </style>
 </head>
 <body>
-<div id="app" v-cloak class="mesa">
+<div id="app" v-cloak class="mesa" :class="{ 'sem-reuniao': !roteiroCarregado }">
+            <aside v-if="roteiroCarregado" class="cartao presencas">
+                <p class="legenda">Presenças · {{ fasePresenca === 'pres_deliberacao' ? 'Deliberação' : 'Abertura' }}</p>
+                <div class="total-presentes"><strong>{{ presentes }}</strong><span>PRESENTES</span></div>
+                <div class="quorum">
+                    <div :class="presentes >= 3 ? 'atingido' : 'aguardando'">Quórum de Abertura (3): {{ presentes >= 3 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
+                    <div :class="presentes >= 7 ? 'atingido' : 'aguardando'">Quórum de Deliberação (7): {{ presentes >= 7 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
+                </div>
+                <div class="membros">
+                    <section v-for="grupo in gruposMembros" :key="grupo.titulo"><h3>{{ grupo.titulo }}</h3>
+                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo[fasePresenca][dep.id] }">
+                            <span class="selo-presenca">{{ aoVivo[fasePresenca][dep.id] ? '✓' : '—' }}</span>
+                            <div>{{ dep.nome }}<small>{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}{{ String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Presidente' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice-presidente' : '' }}</small></div>
+                        </li></ul>
+                    </section>
+                </div>
+            </aside>
+    <div class="coluna-direita-mesa">
     <header class="cabecalho">
         <div class="identidade">
             <div class="assinatura">ALRS / Painel da Comissão</div>
@@ -119,23 +175,8 @@ button:disabled { opacity: .5; cursor: default; }
             <div><p class="legenda">Tempo de manifestação · {{ aoVivo.cronometro.modo === 'progressivo' ? 'Progressivo ↑' : 'Regressivo' }} · {{ aoVivo.cronometro.status }}</p><h2>{{ aoVivo.cronometro.orador || 'Palavra em curso' }}</h2></div>
             <strong>{{ visor.texto }}</strong>
         </section>
-        <div class="grade-mesa">
-            <aside class="cartao presencas">
-                <p class="legenda">Presenças · {{ fasePresenca === 'pres_deliberacao' ? 'Deliberação' : 'Abertura' }}</p>
-                <div class="total-presentes"><strong>{{ presentes }}</strong><span>PRESENTES</span></div>
-                <div class="quorum">
-                    <div :class="presentes >= 3 ? 'atingido' : 'aguardando'">Quórum de Abertura (3): {{ presentes >= 3 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
-                    <div :class="presentes >= 7 ? 'atingido' : 'aguardando'">Quórum de Deliberação (7): {{ presentes >= 7 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
-                </div>
-                <div class="membros">
-                    <section v-for="grupo in gruposMembros" :key="grupo.titulo"><h3>{{ grupo.titulo }}</h3>
-                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo[fasePresenca][dep.id] }">
-                            <span class="selo-presenca">{{ aoVivo[fasePresenca][dep.id] ? '✓' : '—' }}</span>
-                            <div>{{ dep.nome }}<small>{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}{{ String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Presidente' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice-presidente' : '' }}</small></div>
-                        </li></ul>
-                    </section>
-                </div>
-            </aside>
+
+
             <main class="cartao pauta-mesa" ref="areaPauta">
                 <template v-if="itemFoco">
                     <p class="legenda">{{ foco.secao === 'ordem_do_dia' ? 'Ordem do Dia' : 'Matérias a Distribuir' }} — Item {{ indiceFoco + 1 }} de {{ listaFoco.length }}</p>
@@ -146,7 +187,7 @@ button:disabled { opacity: .5; cursor: default; }
                         <span v-if="historicoFoco.is_relatorio_lido" class="badge">Relatório já lido {{ historicoFoco.relatorio_lido_data }}</span>
                         <span v-for="(vista, idx) in historicoFoco.vistas_detalhadas || []" :key="idx" class="badge">Vista anterior: {{ vista.bancada }} · {{ vista.deputado }}</span>
                     </div>
-                    <div class="dados-item"><p><b>Proponente</b> {{ itemFoco.proponente_principal?.nome || itemFoco.proponente_cru || 'Não informado' }}</p></div>
+                    <div class="dados-item"><p><b>Proponente</b> {{ formatarAutorRelator(itemFoco.proponente_principal, itemFoco.proponente_cru) }}</p></div>
                     <p class="ementa">{{ itemFoco.ementa || 'Ementa não informada.' }}</p>
                     <template v-if="foco.secao === 'distribuicao'">
                         <div class="dados-item"><p><b>Bancada impedida · Art. 61-A</b> {{ itemFoco.bancada_impedida || (itemFoco.proponente_principal?.is_deputado === false ? 'Autor externo — sem bancada impedida' : 'Não informada') }}</p></div>
@@ -155,7 +196,7 @@ button:disabled { opacity: .5; cursor: default; }
                     <template v-else>
                         <div class="dados-item">
                             <p v-if="ehFaseB(itemFoco)">{{ historicoFoco.resumo_pareceres_custom || gerarResumoPareceresFaseB(itemFoco) || 'Pareceres anteriores não informados.' }}</p>
-                            <template v-else><p><b>Relator</b> {{ itemFoco.relator?.nome || itemFoco.relator_cru || 'Não informado' }}</p><p><b>Parecer</b> {{ formatarParecer(itemFoco.parecer) }}</p></template>
+                            <template v-else><p><b>Relator</b> {{ formatarAutorRelator(itemFoco.relator, itemFoco.relator_cru) }}</p><p><b>Parecer</b> {{ formatarParecer(itemFoco.parecer) }}</p></template>
                         </div>
                         <div v-if="aoVivo.vista_em_sessao[itemFoco.id]" class="vista">✋ PEDIDO DE VISTA CONCEDIDO EM SESSÃO: {{ aoVivo.vista_em_sessao[itemFoco.id] }}<br>Matéria retirada de votação nesta reunião.</div>
                         <section v-else class="votacao">
@@ -176,6 +217,17 @@ button:disabled { opacity: .5; cursor: default; }
                         </section>
                     </template>
                 </template>
+                <article v-else-if="cartaoFoco" class="item-foco-amplo" :class="{ 'texto-extenso': (cartaoFoco.texto || '').length > 700 }">
+                    <p class="legenda">{{ descritorFoco.rotulo }}</p>
+                    <h2>{{ cartaoFoco.titulo }}</h2>
+                    <p v-if="cartaoFoco.conclusiva" class="badge">{{ cartaoFoco.conclusiva }}</p>
+                    <div class="dados-item">
+                        <p v-if="cartaoFoco.detalhe">{{ cartaoFoco.detalhe }}</p>
+                        <p v-if="cartaoFoco.proponente"><b>Proponente</b> {{ cartaoFoco.proponente }}</p>
+                        <p v-if="cartaoFoco.relator"><b>Relator</b> {{ cartaoFoco.relator }}</p>
+                    </div>
+                    <p class="ementa">{{ cartaoFoco.texto }}</p>
+                </article>
                 <template v-else>
                     <p class="legenda">{{ foco ? 'Em pauta agora' : 'Pauta do dia' }}</p>
                     <h2>{{ tituloSecao }}</h2>
@@ -185,9 +237,9 @@ button:disabled { opacity: .5; cursor: default; }
                     <p v-if="!cartoesSecao.length" class="subtitulo">Nenhum item registrado nesta seção.</p>
                 </template>
             </main>
-        </div>
     </template>
     <div v-else class="vazio"><p class="assinatura">Assembleia Legislativa do Rio Grande do Sul</p><h2>{{ carregando ? 'Carregando reunião…' : 'Aguardando reunião' }}</h2><p>Selecione a comissão e a reunião. A condução será atualizada automaticamente.</p></div>
+    </div>
 </div>
 <script>
 const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
@@ -257,6 +309,33 @@ function visorCronometro(c, agora = Date.now()) {
     };
 }
 
+// Foco individual: manter idêntico nos três HTMLs. Não modifica a pauta.
+function itensFocoPauta(pauta) {
+    const e = pauta.leitura_expediente || {}, c = pauta.conhecimento_materias || {};
+    const grupos = [
+        ['expediente', 'corr', 'Leitura do Expediente', 'Correspondência', e.correspondencias_recebidas],
+        ['expediente', 'rec', 'Leitura do Expediente', 'Proposição recebida', e.proposicoes_recebidas],
+        ['expediente', 'dist', 'Leitura do Expediente', 'Proposição distribuída', e.proposicoes_distribuidas],
+        ['distribuicao', 'mad', 'Matérias a Distribuir', 'Item', e.materias_a_distribuir],
+        ['conhecimento', 'inf', 'Conhecimento de Matérias', 'Informativo', c.informativos],
+        ['conhecimento', 'deladm', 'Conhecimento de Matérias', 'Deliberação', c.deliberativos_administrativos],
+        ['conhecimento', 'aud', 'Conhecimento de Matérias', 'Audiência', c.audiencias_agendadas],
+        ['conhecimento', 'req', 'Conhecimento de Matérias', 'Requerimento', c.requerimentos_conhecimento],
+        ['ordem_do_dia', 'od', 'Ordem do Dia', 'Item', pauta.ordem_do_dia],
+        ['assuntos_gerais', 'ag', 'Assuntos Gerais', 'Item', pauta.assuntos_gerais?.itens]
+    ];
+    const itens = grupos.flatMap(([secao, grupo, titulo, especie, lista]) => (lista || []).map((item, indice) => ({
+        secao, grupo, item, indice, total: lista.length, ancora: `${grupo}-${indice}`,
+        item_id: ['rec','dist','mad','req','od'].includes(grupo) && item?.id ? String(item.id) : `${grupo}-${indice}`,
+        rotulo: `${titulo} — ${especie} ${indice + 1} de ${lista.length}` + (item?.tipo ? `: ${item.tipo} ${item.numero || ''}/${item.ano || ''}` : '')
+    })));
+    // Uma proposição pode aparecer em duas alíneas do mesmo Expediente.
+    // Nessa colisão, a âncora da alínea desambigua o foco sem alterar IDs legislativos.
+    const contagens = new Map();
+    for (const it of itens) { const chave = `${it.secao}:${it.item_id}`; contagens.set(chave, (contagens.get(chave) || 0) + 1); }
+    return itens.map(it => contagens.get(`${it.secao}:${it.item_id}`) > 1 ? { ...it, item_id: it.ancora } : it);
+}
+
 const { createApp, ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
 createApp({
     setup() {
@@ -280,7 +359,7 @@ createApp({
         const seletoresAbertos = ref(true), areaPauta = ref(null);
         const agora = ref(Date.now()), emTelaCheia = ref(false), erroTelaCheia = ref('');
         let intervaloRelogio;
-        const atualizarTelaCheia = () => { emTelaCheia.value = !!document.fullscreenElement; };
+        const atualizarTelaCheia = () => { emTelaCheia.value = !!document.fullscreenElement; if (emTelaCheia.value) seletoresAbertos.value = false; };
         onMounted(() => {
             intervaloRelogio = setInterval(() => { agora.value = Date.now(); }, 250);
             document.addEventListener('fullscreenchange', atualizarTelaCheia);
@@ -293,7 +372,7 @@ createApp({
             erroTelaCheia.value = '';
             try {
                 if (document.fullscreenElement) await document.exitFullscreen();
-                else await document.documentElement.requestFullscreen();
+                else { await document.documentElement.requestFullscreen(); seletoresAbertos.value = false; }
             } catch { erroTelaCheia.value = 'O navegador não permitiu tela cheia. Use o comando de tela cheia do navegador.'; }
         }
         const horaAtual = computed(() => new Date(agora.value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
@@ -412,6 +491,7 @@ createApp({
                 if (error || !data) throw error || new Error('Reunião não encontrada');
                 if (versao === versaoRecebida) await aplicarRegistro(data, roteiroCarregado.value);
                 if (!canalRealtime) assinarRealtime(id);
+                seletoresAbertos.value = false;
             } catch { if (pedido === pedidoRoteiro) erroCarregamento.value = 'Não foi possível carregar o roteiro. Use Atualizar para tentar novamente.'; }
             finally { if (pedido === pedidoRoteiro) carregando.value = false; }
         }
@@ -453,9 +533,31 @@ createApp({
             ['quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.value?.secao) ? 'pres_deliberacao' : 'pres_abertura');
         const presentes = computed(() => membros.value.filter(d => aoVivo.value[fasePresenca.value][d.id]).length);
         function nomeMembro(id) { const d = membros.value.find(d => String(d.id) === String(id)); return d ? `${d.nome} (${d.partido})` : ''; }
+        function formatarAutorRelator(obj, cru) {
+            if (obj?.nome) return `${obj.is_deputado === false ? '' : 'Deputado(a) '}${obj.nome}${obj.partido ? ' (' + (obj.partido === 'REPUBLICANOS' ? 'REPUB' : obj.partido) + ')' : ''}`;
+            return cru || 'Não informado';
+        }
+        const descritoresFoco = computed(() => itensFocoPauta(pauta));
+        const descritorFoco = computed(() => descritoresFoco.value.find(it => it.secao === foco.value?.secao && it.item_id === foco.value?.item_id) || null);
+        function cartaoDoItem(d) {
+            const c = d.item, i = d.indice;
+            if (d.grupo === 'corr') return { titulo: c.remetente || 'Correspondência recebida', texto: c.mensagem };
+            if (['rec','dist'].includes(d.grupo)) return { titulo: tituloItem(c), texto: c.ementa || 'Ementa não informada.',
+                proponente: formatarAutorRelator(c.proponente_principal, c.proponente_cru),
+                relator: d.grupo === 'dist' ? formatarAutorRelator(c.relator, c.relator_cru) : '',
+                conclusiva: c.votacao_conclusiva ? c.texto_conclusiva || 'Tramitação Conclusiva' : '' };
+            if (d.grupo === 'inf') return { titulo: 'Comunicado' + (aoVivo.value.res_info[i] ? ' · APROVADO' : ''), texto: c.texto };
+            if (d.grupo === 'deladm') return { titulo: 'Deliberação administrativa' + (aoVivo.value.res_delib[i] ? ' · APROVADO' : ''), texto: c.texto };
+            if (d.grupo === 'aud') return { titulo: 'Audiência pública agendada', texto: c.pauta,
+                detalhe: `${formatarData(c.data)} ${c.hora || ''} · ${c.local || 'Local não informado'}`,
+                proponente: formatarAutorRelator(c.proponente, c.proponente_cru) };
+            if (d.grupo === 'req') return { titulo: tituloItem(c), texto: (c.texto || '') + (c.origem ? ` (${c.origem})` : '') };
+            return { titulo: 'Assunto geral', texto: typeof c === 'string' ? c : c.texto };
+        }
+        const cartaoFoco = computed(() => descritorFoco.value && !['mad','od'].includes(descritorFoco.value.grupo) ? cartaoDoItem(descritorFoco.value) : null);
         const listaFoco = computed(() => foco.value?.secao === 'distribuicao' ? pauta.leitura_expediente.materias_a_distribuir
             : foco.value?.secao === 'ordem_do_dia' ? pauta.ordem_do_dia : []);
-        const indiceFoco = computed(() => foco.value?.item_id ? listaFoco.value.findIndex(it => String(it.id) === foco.value.item_id) : -1);
+        const indiceFoco = computed(() => ['mad','od'].includes(descritorFoco.value?.grupo) ? descritorFoco.value.indice : -1);
         const itemFoco = computed(() => listaFoco.value[indiceFoco.value] || null);
         const historicoFoco = computed(() => preparo.historico[itemFoco.value?.id] || {});
         const emendasFoco = computed(() => {
@@ -485,6 +587,7 @@ createApp({
             `${pauta.ordem_do_dia.length} item(ns) na Ordem do Dia`
         ]);
         const cartoesSecao = computed(() => {
+            if (foco.value?.item_id) return []; // Nunca exibir outra matéria no lugar de um foco removido.
             const secao = foco.value?.secao, exp = pauta.leitura_expediente, con = pauta.conhecimento_materias;
             const proposicoes = lista => lista.map((it, idx) => ({ titulo: `${idx + 1}. ${tituloItem(it)}`, texto: it.ementa || 'Ementa não informada.' }));
             if (!secao || secao === 'ordem_do_dia') return proposicoes(pauta.ordem_do_dia);
@@ -512,7 +615,7 @@ createApp({
             horaAtual, aoVivo, visor, conexaoRealtime, statusRealtime, carregarReunioesDaComissao, carregarRoteiroEspecifico,
             nomeComissao, gruposMembros, foco, fasePresenca, presentes, nomeMembro, listaFoco, indiceFoco, itemFoco, historicoFoco, emendasFoco,
             votosNominais, contarVotos, textoResultado, classeResultado, tituloItem, tituloSecao, resumoSecoes, cartoesSecao,
-            ehFaseB, gerarResumoPareceresFaseB, formatarData, formatarParecer };
+            ehFaseB, gerarResumoPareceresFaseB, formatarData, formatarParecer, formatarAutorRelator, descritorFoco, cartaoFoco };
     }
 }).mount('#app');
 
