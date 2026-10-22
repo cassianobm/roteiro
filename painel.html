@@ -130,21 +130,32 @@ button:disabled { opacity: .5; cursor: default; }
 }
 @media screen and (max-width: 1099px) { .presencas { order: 2; } }
 @media print { .coluna-direita-mesa { display: block; height: auto; } }
+/* Indicadores de duração: sem alteração da geometria A4. */
+.sessao-normal { color: #16a34a; }
+.sessao-alerta { color: #d97706; }
+.sessao-limite { color: #dc2626; font-weight: bold; }
+.widget-sessao { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 12px; }
+.widget-sessao button { padding: 4px 6px; font-size: 12px; }
+.sessao-badge { font-size: 13px; border: 1px solid currentColor; border-radius: 5px; padding: 5px; }
+.sessao-normal { color: #86efac; } .sessao-alerta { color: #fcd34d; } .sessao-limite { color: #fca5a5; }
+.quorum [role="alert"] { background: #78350f; color: #fef3c7; border: 1px solid #fbbf24; font-weight: bold; }
 </style>
 </head>
 <body>
 <div id="app" v-cloak class="mesa" :class="{ 'sem-reuniao': !roteiroCarregado }">
             <aside v-if="roteiroCarregado" class="cartao presencas">
-                <p class="legenda">Presenças · {{ fasePresenca === 'pres_deliberacao' ? 'Deliberação' : 'Abertura' }}</p>
+                <p class="legenda">Presenças · Na sala agora</p>
                 <div class="total-presentes"><strong>{{ presentes }}</strong><span>PRESENTES</span></div>
                 <div class="quorum">
-                    <div :class="presentes >= 3 ? 'atingido' : 'aguardando'">Quórum de Abertura (3): {{ presentes >= 3 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
-                    <div :class="presentes >= 7 ? 'atingido' : 'aguardando'">Quórum de Deliberação (7): {{ presentes >= 7 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
+                    <div :class="aberturaAtingida || presentes >= 3 ? 'atingido' : 'aguardando'">Quórum de Abertura (3): {{ aberturaAtingida ? 'ATINGIDO ✓ (' + presentesAbertura + ' na abertura)' : presentes >= 3 ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</div>
+                    <div :class="odConcluida || presentes >= 7 ? 'atingido' : 'aguardando'" :role="alertaSala ? 'alert' : null">
+                        {{ odConcluida ? 'Ordem do Dia: CONCLUÍDA ✓' : alertaSala ? '⚠️ ATENÇÃO NA SALA: ' + presentes + ' PRESENTES (Mín. 7 p/ votar)' : 'Quórum de Deliberação (7): ' + (presentes >= 7 ? 'ATINGIDO ✓' : 'AGUARDANDO') }}
+                    </div>
                 </div>
                 <div class="membros">
                     <section v-for="grupo in gruposMembros" :key="grupo.titulo"><h3>{{ grupo.titulo }}</h3>
-                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo[fasePresenca][dep.id] }">
-                            <span class="selo-presenca">{{ aoVivo[fasePresenca][dep.id] ? '✓' : '—' }}</span>
+                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo.pres_atual[dep.id] }">
+                            <span class="selo-presenca">{{ aoVivo.pres_atual[dep.id] ? '✓' : '—' }}</span>
                             <div>{{ dep.nome }}<small>{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}{{ String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Presidente' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice-presidente' : '' }}</small></div>
                         </li></ul>
                     </section>
@@ -162,6 +173,7 @@ button:disabled { opacity: .5; cursor: default; }
             <button type="button" :aria-expanded="seletoresAbertos" aria-controls="seletores" @click="seletoresAbertos = !seletoresAbertos">☰ Reunião</button>
             <button type="button" @click="reuniaoSelecionadaId ? carregarRoteiroEspecifico() : carregarReunioesDaComissao()" :disabled="carregando">↻ Atualizar</button>
             <button type="button" @click="telaCheia">⛶ {{ emTelaCheia ? 'Sair da tela cheia' : 'Tela Cheia' }}</button>
+            <span v-if="aoVivo.sessao_duracao.status !== 'parado'" class="sessao-badge" :class="sessaoVisor.classe">Sessão: {{ sessaoVisor.texto }}{{ aoVivo.sessao_duracao.status === 'pausado' ? ' (pausada)' : '' }}</span>
             <time class="relogio">{{ horaAtual }}</time>
         </div>
     </header>
@@ -199,7 +211,8 @@ button:disabled { opacity: .5; cursor: default; }
                             <template v-else><p><b>Relator</b> {{ formatarAutorRelator(itemFoco.relator, itemFoco.relator_cru) }}</p><p><b>Parecer</b> {{ formatarParecer(itemFoco.parecer) }}</p></template>
                         </div>
                         <div v-if="aoVivo.vista_em_sessao[itemFoco.id]" class="vista">✋ PEDIDO DE VISTA CONCEDIDO EM SESSÃO: {{ aoVivo.vista_em_sessao[itemFoco.id] }}<br>Matéria retirada de votação nesta reunião.</div>
-                        <section v-else class="votacao">
+                        <div v-if="aoVivo.ocorrencia_od[itemFoco.id]" class="vista">{{ aoVivo.ocorrencia_od[itemFoco.id].texto }}</div>
+                        <section v-if="!aoVivo.vista_em_sessao[itemFoco.id] && !aoVivo.ocorrencia_od[itemFoco.id]" class="votacao">
                             <p class="legenda">Votação nominal · {{ ehFaseB(itemFoco) ? 'Proposição principal' : 'Parecer / proposição' }}</p>
                             <div class="placar"><div class="favoravel"><strong>{{ contarVotos(itemFoco.id, 'F') }}</strong>Favoráveis</div><div class="contrario"><strong>{{ contarVotos(itemFoco.id, 'C') }}</strong>Contrários</div></div>
                             <p class="resultado" :class="classeResultado(aoVivo.resultado_votacao[itemFoco.id])">{{ textoResultado(aoVivo.resultado_votacao[itemFoco.id]) }}</p>
@@ -246,11 +259,18 @@ const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cfCVWR24Jq4NripFuSo4xA_GFixfQGk';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 // Contrato compartilhado: manter idêntico nos três HTMLs.
+const OCORRENCIAS_OD = Object.freeze({
+    relator_ausente: { rotulo: '⏸️ Adiado — Relator Ausente (próxima reunião)', texto: '⏸️ MATÉRIA ADIADA NESTA SESSÃO: RELATOR AUSENTE — LEITURA/VOTAÇÃO FICA PARA A PRÓXIMA REUNIÃO.' },
+    reexame: { rotulo: '↩️ Retirado para Reexame pelo Relator', texto: '↩️ MATÉRIA RETIRADA PARA REEXAME PELO RELATOR NESTA SESSÃO.' },
+    retirada_pauta: { rotulo: 'Retirado de Pauta', texto: 'MATÉRIA RETIRADA DE PAUTA NESTA SESSÃO.' },
+    sobrestado: { rotulo: '⏳ Sobrestado / Apreciar posteriormente', texto: '⏳ MATÉRIA SOBRESTADA — APRECIAÇÃO POSTERIOR.' }
+});
 function criarAoVivo(origem = {}) {
     const objeto = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
     const dados = objeto(origem);
     const estado = {
-        pres_abertura: {}, pres_deliberacao: {}, status_quorum: null,
+        pres_abertura: {}, pres_deliberacao: {}, pres_atual: {}, pres_atual_inicializada: false,
+        trava_abertura: false, trava_deliberacao: false, ocorrencia_od: {}, sessao_duracao: {}, status_quorum: null,
         relatores_escolhidos: {}, res_info: {}, res_delib: {}, votos: {},
         resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {},
         eleitos: {}, novo_relator_art67: {}, vista_em_sessao: {}, foco_pauta: null, cronometro: {}
@@ -261,8 +281,20 @@ function criarAoVivo(origem = {}) {
     function mapa(valor, valido) {
         return Object.fromEntries(Object.entries(objeto(valor)).filter(([k,v]) => !['__proto__','constructor','prototype'].includes(k) && valido(v)));
     }
-    for (const campo of ['pres_abertura','pres_deliberacao','res_info','res_delib']) estado[campo] = mapa(dados[campo], v => v === true);
+    for (const campo of ['pres_abertura','pres_deliberacao','pres_atual','res_info','res_delib']) estado[campo] = mapa(dados[campo], v => v === true);
     for (const campo of ['relatores_escolhidos','eleitos','novo_relator_art67']) estado[campo] = mapa(dados[campo], id);
+    // O marcador distingue sala vazia deliberadamente de dados legados sem presença atual.
+    estado.pres_atual_inicializada = dados.pres_atual_inicializada === true || Object.keys(estado.pres_atual).length > 0;
+    if (!estado.pres_atual_inicializada) {
+        const fotografia = Object.keys(estado.pres_deliberacao).length ? estado.pres_deliberacao : estado.pres_abertura;
+        estado.pres_atual = { ...fotografia };
+        estado.pres_atual_inicializada = Object.keys(fotografia).length > 0;
+    }
+    estado.trava_abertura = dados.trava_abertura === true;
+    estado.trava_deliberacao = dados.trava_deliberacao === true;
+    for (const [chave, valor] of Object.entries(mapa(dados.ocorrencia_od, v => objeto(v) === v && Object.hasOwn(OCORRENCIAS_OD, v.tipo)))) {
+        estado.ocorrencia_od[chave] = { tipo: valor.tipo, texto: typeof valor.texto === 'string' && valor.texto.trim() ? valor.texto : OCORRENCIAS_OD[valor.tipo].texto };
+    }
     estado.status_quorum = ['sim','nao'].includes(dados.status_quorum) ? dados.status_quorum : null;
     estado.vista_em_sessao = mapa(dados.vista_em_sessao, v => typeof v === 'string');
     estado.resultado_votacao = mapa(dados.resultado_votacao, resultado);
@@ -290,6 +322,14 @@ function criarAoVivo(origem = {}) {
     // Um estado rodando sem instante válido não pode avançar de forma confiável.
     if (estado.cronometro.status === 'rodando' && !estado.cronometro.iniciado_em_ms) estado.cronometro.status = 'pausado';
     if (estado.cronometro.status !== 'rodando') estado.cronometro.iniciado_em_ms = null;
+    const sessao = objeto(dados.sessao_duracao);
+    estado.sessao_duracao = {
+        status: ['parado','rodando','pausado'].includes(sessao.status) ? sessao.status : 'parado',
+        acumulado_seg: positivo(sessao.acumulado_seg) ? sessao.acumulado_seg : 0,
+        iniciado_em_ms: positivo(sessao.iniciado_em_ms) && sessao.iniciado_em_ms > 0 ? sessao.iniciado_em_ms : null
+    };
+    if (estado.sessao_duracao.status === 'rodando' && !estado.sessao_duracao.iniciado_em_ms) estado.sessao_duracao.status = 'pausado';
+    if (estado.sessao_duracao.status !== 'rodando') estado.sessao_duracao.iniciado_em_ms = null;
     return estado;
 }
 
@@ -336,6 +376,12 @@ function itensFocoPauta(pauta) {
     return itens.map(it => contagens.get(`${it.secao}:${it.item_id}`) > 1 ? { ...it, item_id: it.ancora } : it);
 }
 
+function visorSessao(c, agora = Date.now()) {
+    const minutos = Math.floor(tempoDecorrido(c, agora) / 60);
+    return { texto: String(Math.floor(minutos / 60)).padStart(2, '0') + ':' + String(minutos % 60).padStart(2, '0'),
+        classe: minutos >= 120 ? 'sessao-limite' : minutos >= 105 ? 'sessao-alerta' : 'sessao-normal' };
+}
+
 const { createApp, ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
 createApp({
     setup() {
@@ -377,6 +423,7 @@ createApp({
         }
         const horaAtual = computed(() => new Date(agora.value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
         const aoVivo = computed(() => preparo.ao_vivo);
+        const sessaoVisor = computed(() => visorSessao(aoVivo.value.sessao_duracao, agora.value));
         const visor = computed(() => visorCronometro(aoVivo.value.cronometro, agora.value));
         onMounted(async () => {
             try {
@@ -401,6 +448,8 @@ createApp({
         let pedidoRoteiro = 0;
         let versaoRecebida = 0;
         let ultimoUpdatedAt = '';
+        let recuperacaoSnapshot = null;
+        const pautaInicial = JSON.stringify(pauta);
         function encerrarRealtime() {
             ++geracaoCanal;
             if (canalRealtime) { const canal = canalRealtime; canalRealtime = null; sb.removeChannel(canal); }
@@ -411,19 +460,52 @@ createApp({
             ++pedidoRoteiro;
             roteiroCarregado.value = false;
             ultimoUpdatedAt = '';
+            Object.keys(pauta).forEach(k => delete pauta[k]);
+            Object.assign(pauta, JSON.parse(pautaInicial));
+            Object.assign(snapshotMembros, { presidente_id: null, vice_presidente_id: null, titulares: [], suplentes: [] });
+            preparo.relatores_grade = {}; preparo.historico = {}; preparo.ao_vivo = criarAoVivo();
         }, { flush: 'sync' });
         onBeforeUnmount(encerrarRealtime);
+        function aplicarSnapshotValido(snapshot) {
+            if (!snapshot || !Array.isArray(snapshot.titulares) || !snapshot.titulares.length) return;
+            snapshotMembros.titulares = snapshot.titulares;
+            if (Array.isArray(snapshot.suplentes)) snapshotMembros.suplentes = snapshot.suplentes;
+            for (const campo of ['presidente_id', 'vice_presidente_id']) {
+                if (Object.hasOwn(snapshot, campo)) snapshotMembros[campo] = snapshot[campo];
+            }
+        }
+        async function restaurarSnapshot(id, geracao) {
+            if (recuperacaoSnapshot?.id === id && recuperacaoSnapshot.geracao === geracao) return;
+            const pedido = { id, geracao }, versao = versaoRecebida;
+            recuperacaoSnapshot = pedido;
+            try {
+                const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
+                if (error || !data || data.id !== id) throw error || new Error('Registro ausente');
+                if (versao === versaoRecebida) await aplicarRegistro(data, true);
+                if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
+                // Um SELECT em voo nunca reverte votos/foco recebidos depois dele.
+                if (!snapshotMembros.titulares.length) aplicarSnapshotValido(data.snapshot_membros);
+                if (!snapshotMembros.titulares.length) throw new Error('Snapshot incompleto');
+                erroCarregamento.value = '';
+            } catch {
+                if (geracao === geracaoCanal && id === reuniaoSelecionadaId.value) erroCarregamento.value = 'Não foi possível restaurar os membros. Use Atualizar.';
+            } finally { if (recuperacaoSnapshot === pedido) recuperacaoSnapshot = null; }
+        }
         async function aplicarRegistro(data, preservarScroll = false) {
             if (data.id !== reuniaoSelecionadaId.value) return;
             if (data.updated_at && ultimoUpdatedAt && data.updated_at < ultimoUpdatedAt) return;
             const focoAnterior = JSON.stringify(preparo.ao_vivo.foco_pauta);
 
-            Object.assign(pauta, data.pauta_json);
-            Object.assign(snapshotMembros, { presidente_id: null, vice_presidente_id: null, titulares: [], suplentes: [] }, data.snapshot_membros);
-            preparo.relatores_grade = data.preparo_json?.relatores_grade || {};
-            preparo.historico = data.preparo_json?.historico || {};
-            preparo.ao_vivo = criarAoVivo(data.preparo_json?.ao_vivo);
-            ultimoUpdatedAt = data.updated_at || '';
+            if (data.pauta_json && typeof data.pauta_json === 'object' && !Array.isArray(data.pauta_json) && Object.keys(data.pauta_json).length) Object.assign(pauta, data.pauta_json);
+            aplicarSnapshotValido(data.snapshot_membros);
+            const recebido = data.preparo_json;
+            if (recebido && typeof recebido === 'object' && !Array.isArray(recebido)) {
+                if (recebido.relatores_grade && typeof recebido.relatores_grade === 'object') preparo.relatores_grade = recebido.relatores_grade;
+                if (recebido.historico && typeof recebido.historico === 'object') preparo.historico = recebido.historico;
+                if (recebido.ao_vivo && typeof recebido.ao_vivo === 'object') preparo.ao_vivo = criarAoVivo({ ...preparo.ao_vivo, ...recebido.ao_vivo });
+            }
+            ultimoUpdatedAt = data.updated_at || ultimoUpdatedAt;
             roteiroCarregado.value = true;
             const focoAtual = JSON.stringify(preparo.ao_vivo.foco_pauta);
             await nextTick();
@@ -439,6 +521,7 @@ createApp({
                     if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
                     ++versaoRecebida;
                     aplicarRegistro(payload.new, true);
+                    if (!snapshotMembros.titulares.length) restaurarSnapshot(id, geracao);
                 })
                 .subscribe(async status => {
                     if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
@@ -529,9 +612,11 @@ createApp({
         const membros = computed(() => Array.from(new Map([...titulares.value, ...suplentes.value].map(d => [String(d.id), d])).values()));
         const gruposMembros = computed(() => [{ titulo: 'TITULARES', membros: titulares.value }, { titulo: 'SUPLENTES', membros: suplentes.value }]);
         const foco = computed(() => aoVivo.value.foco_pauta);
-        const fasePresenca = computed(() => membros.value.some(d => aoVivo.value.pres_deliberacao[d.id]) ||
-            ['quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.value?.secao) ? 'pres_deliberacao' : 'pres_abertura');
-        const presentes = computed(() => membros.value.filter(d => aoVivo.value[fasePresenca.value][d.id]).length);
+        const presentes = computed(() => membros.value.filter(d => aoVivo.value.pres_atual[d.id]).length);
+        const presentesAbertura = computed(() => membros.value.filter(d => aoVivo.value.pres_abertura[d.id]).length);
+        const aberturaAtingida = computed(() => aoVivo.value.trava_abertura || presentesAbertura.value >= 3 || !!foco.value && foco.value.secao !== 'abertura');
+        const odConcluida = computed(() => ['assuntos_gerais','encerramento'].includes(foco.value?.secao) && (aoVivo.value.status_quorum === 'sim' || aoVivo.value.trava_deliberacao));
+        const alertaSala = computed(() => !odConcluida.value && (foco.value?.secao === 'ordem_do_dia' || aoVivo.value.status_quorum === 'sim') && presentes.value < 7);
         function nomeMembro(id) { const d = membros.value.find(d => String(d.id) === String(id)); return d ? `${d.nome} (${d.partido})` : ''; }
         function formatarAutorRelator(obj, cru) {
             if (obj?.nome) return `${obj.is_deputado === false ? '' : 'Deputado(a) '}${obj.nome}${obj.partido ? ' (' + (obj.partido === 'REPUBLICANOS' ? 'REPUB' : obj.partido) + ')' : ''}`;
@@ -613,7 +698,7 @@ createApp({
         return { comissoes, comissaoSelecionada, listaReunioes, reuniaoSelecionadaId, carregando, roteiroCarregado,
             pauta, preparo, snapshotMembros, erroCarregamento, seletoresAbertos, areaPauta, emTelaCheia, erroTelaCheia, telaCheia,
             horaAtual, aoVivo, visor, conexaoRealtime, statusRealtime, carregarReunioesDaComissao, carregarRoteiroEspecifico,
-            nomeComissao, gruposMembros, foco, fasePresenca, presentes, nomeMembro, listaFoco, indiceFoco, itemFoco, historicoFoco, emendasFoco,
+            nomeComissao, gruposMembros, foco, presentes, presentesAbertura, aberturaAtingida, odConcluida, alertaSala, sessaoVisor, nomeMembro, listaFoco, indiceFoco, itemFoco, historicoFoco, emendasFoco,
             votosNominais, contarVotos, textoResultado, classeResultado, tituloItem, tituloSecao, resumoSecoes, cartoesSecao,
             ehFaseB, gerarResumoPareceresFaseB, formatarData, formatarParecer, formatarAutorRelator, descritorFoco, cartaoFoco };
     }
