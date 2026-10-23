@@ -24,7 +24,8 @@ body { background-color: var(--bg-app); font-family: Arial, Helvetica, sans-seri
 .seletores-box label { font-size: 12px; font-weight: bold; color: #94a3b8; }
 .seletores-box select { padding: 8px 12px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; font-weight: bold; cursor: pointer; }
 .acoes-box { display: flex; gap: 8px; }
-button { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase; transition: 0.15s; }
+button { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: none; transition: 0.15s; }
+:where(.painel-comandos) button { background: #334155; color: #f8fafc; border: 1px solid #475569; text-transform: none; font-size: 12px; border-radius: 5px; padding: 6px 10px; }
 .btn-refresh { background: #3b82f6; color: white; } .btn-refresh:hover { background: #2563eb; }
 .btn-print { background: #10b981; color: white; } .btn-print:hover { background: #059669; }
 
@@ -221,13 +222,12 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 @media screen {
     .app-presidente > .painel-comandos { flex-wrap: wrap; }
     .folha-a4 .em-pauta-foco { box-shadow: inset 4px 0 #2563eb; outline: 1px solid #93c5fd; }
-    .folha-a4 [id] { scroll-margin-top: 220px; }
+    .folha-a4 [id] { scroll-margin-top: calc(var(--altura-painel-topo, 120px) + 16px); }
     .foco-botao, .foco-selo { display: inline-block; margin: 4px 6px; padding: 3px 7px; border-radius: 4px; font: bold 10px/1.4 Arial, sans-serif; text-transform: none; background: #dbeafe; color: #1e40af; vertical-align: middle; }
     .foco-botao[aria-pressed="true"], .foco-selo { background: #1d4ed8; color: white; }
 }
 @media screen and (min-width: 960px) {
     .layout-lateral .conducao-presidente { padding: 8px; }
-    .layout-lateral .folha-a4 [id] { scroll-margin-top: 20px; }
 }
 @keyframes tempo-pulso { 50% { background-color: #991b1b; } }
 @media (prefers-reduced-motion: reduce) { .tempo-critico { animation: none; } }
@@ -238,13 +238,27 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 .sessao-limite { color: #dc2626; font-weight: bold; }
 .widget-sessao { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 12px; }
 .widget-sessao button { padding: 4px 6px; font-size: 12px; }
+
+/* Controles auxiliares espelhados; nenhuma mudança na geometria de impressão. */
+@media screen {
+    .folha-a4 .btn-trava-foto { padding: 6px 10px; margin: 6px 0; font: 12px/1.4 Arial, sans-serif; border: 1px solid #94a3b8; border-radius: 5px; background: #f1f5f9; color: #1e293b; text-transform: none; }
+    .folha-a4 .btn-trava-foto[aria-pressed="true"] { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+}
+.app-layout { --altura-painel-topo: 120px; }
+.navegacao-foco .tempo-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.navegacao-foco .tempo-botoes button { min-width: 0; align-self: start; }
+.widget-sessao { flex-direction: column; align-items: stretch; padding: 6px; border: 1px solid #475569; border-radius: 6px; background: #0f172a; color: #e2e8f0; min-width: 0; }
+.rotulo-relogio { font: bold 12px/1.4 Arial, sans-serif; color: #cbd5e1; }
+.sessao-acoes { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; min-height: 30px; }
+.sessao-acoes strong { font-variant-numeric: tabular-nums; }
+
 </style>
 </head>
 <body>
 
 <div id="app">
 <div class="app-layout app-presidente" :class="['layout-' + uiLayout.posicao, { 'painel-recolhido': uiLayout.recolhido }]">
-    <aside class="painel-comandos no-print" aria-label="Painel de comandos">
+    <aside ref="painelComandos" class="painel-comandos no-print" aria-label="Painel de comandos">
     <div class="layout-tools" role="group" aria-label="Posição e visibilidade do painel">
             <button type="button" class="btn-layout" @click="uiLayout.posicao = uiLayout.posicao === 'topo' ? 'lateral' : 'topo'" :title="uiLayout.posicao === 'topo' ? 'Fixar na Lateral (desktop)' : 'Fixar no Topo'" :aria-label="uiLayout.posicao === 'topo' ? 'Fixar na Lateral' : 'Fixar no Topo'">
                 <span aria-hidden="true">{{ uiLayout.posicao === 'topo' ? '⬅️' : '⬆️' }}</span><span class="rotulo-layout">{{ uiLayout.posicao === 'topo' ? 'Fixar na Lateral' : 'Fixar no Topo' }}</span>
@@ -336,7 +350,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                 Presidente nomina cada um dos Parlamentares presentes, solicitando manifestação ao microfone para registro documental
             </div>
 
-            <button v-if="podeInteragir" type="button" class="no-print" :aria-pressed="aoVivoExibido.trava_abertura" @click="alternarTrava('trava_abertura')">{{ aoVivoExibido.trava_abertura ? '🔒 Fotografia Travada (Destravar)' : '🔓 Travar Fotografia de Abertura' }}</button>
+            <button v-if="podeInteragir" type="button" class="btn-trava-foto no-print" :aria-pressed="aoVivoExibido.trava_abertura" @click="alternarTrava('trava_abertura')">{{ aoVivoExibido.trava_abertura ? '🔒 Fotografia Travada (Destravar)' : '🔓 Travar Fotografia de Abertura' }}</button>
             <div v-if="mostrarMarcacoes" class="placar-quorum">Presentes: {{ contarPresentes('pres_abertura') }} | Quórum de Abertura (3): {{ contarPresentes('pres_abertura') >= 3 ? 'ATINGIDO ✅' : 'AGUARDANDO ⏳' }}</div>
             <!-- TABELA DE PRESENÇA (ABERTURA) -->
             <table class="tabela-roteiro tabela-membros">
@@ -534,7 +548,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
             <div v-if="mostrarMarcacoes" class="placar-quorum">Presentes: {{ contarPresentes('pres_deliberacao') }} | Quórum de Ordem do Dia (7): {{ contarPresentes('pres_deliberacao') >= 7 ? 'ATINGIDO ✅' : 'AGUARDANDO ⏳' }}</div>
             <button v-if="podeInteragir && !aoVivoExibido.trava_deliberacao" type="button" class="preencher-quorum btn-primary no-print" @click="puxarPresentesDaSala">👥 Puxar Presentes na Sala Agora ({{ contarPresentes('pres_atual') }})</button>
             <button v-if="podeInteragir && !aoVivoExibido.trava_deliberacao" type="button" class="preencher-quorum btn-secundary no-print" @click="copiarPresentesAbertura">📋 Copiar da Abertura ({{ contarPresentes('pres_abertura') }})</button>
-            <button v-if="podeInteragir" type="button" class="no-print" :aria-pressed="aoVivoExibido.trava_deliberacao" @click="alternarTrava('trava_deliberacao')">{{ aoVivoExibido.trava_deliberacao ? '🔒 Fotografia Travada (Destravar)' : '🔓 Travar Fotografia de Quórum' }}</button>
+            <button v-if="podeInteragir" type="button" class="btn-trava-foto no-print" :aria-pressed="aoVivoExibido.trava_deliberacao" @click="alternarTrava('trava_deliberacao')">{{ aoVivoExibido.trava_deliberacao ? '🔒 Fotografia Travada (Destravar)' : '🔓 Travar Fotografia de Quórum' }}</button>
             <!-- TABELA DE PRESENÇA (DELIBERAÇÃO) -->
             <table class="tabela-roteiro tabela-membros">
                 <thead>
@@ -884,6 +898,24 @@ const OCORRENCIAS_OD = Object.freeze({
     retirada_pauta: { rotulo: 'Retirado de Pauta', texto: 'MATÉRIA RETIRADA DE PAUTA NESTA SESSÃO.' },
     sobrestado: { rotulo: '⏳ Sobrestado / Apreciar posteriormente', texto: '⏳ MATÉRIA SOBRESTADA — APRECIAÇÃO POSTERIOR.' }
 });
+function extrairIdYoutube(input) {
+    if (typeof input !== 'string') return '';
+    const texto = input.trim(), valido = v => /^[A-Za-z0-9_-]{11}$/.test(v || '');
+    if (valido(texto)) return texto;
+    try {
+        const url = new URL(/^(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\//i.test(texto) ? 'https://' + texto : texto);
+        if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.port) return '';
+        const host = url.hostname.toLowerCase(), partes = url.pathname.split('/').filter(Boolean);
+        let id = '';
+        if (['youtu.be', 'www.youtu.be'].includes(host) && partes.length === 1) id = partes[0];
+        else if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+            if (url.pathname === '/watch') id = url.searchParams.get('v');
+            else if (partes.length === 2 && ['live', 'embed', 'shorts'].includes(partes[0])) id = partes[1];
+        }
+        return valido(id) ? id : '';
+    } catch { return ''; }
+}
+
 function criarAoVivo(origem = {}) {
     const objeto = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
     const dados = objeto(origem);
@@ -923,6 +955,13 @@ function criarAoVivo(origem = {}) {
         estado.votos_emendas[chave] = {};
         for (const [n, votos] of Object.entries(mapa(valor, v => objeto(v) === v))) estado.votos_emendas[chave][n] = mapa(votos, voto);
     }
+    const transmissao = objeto(dados.transmissao);
+    const videoId = typeof transmissao.video_id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(transmissao.video_id) ? transmissao.video_id : '';
+    estado.transmissao = {
+        url: typeof transmissao.url === 'string' ? transmissao.url : '',
+        video_id: videoId,
+        modo: videoId && ['oculto', 'coluna_esq', 'flutuante', 'ampliado'].includes(transmissao.modo) ? transmissao.modo : 'oculto'
+    };
     const foco = objeto(dados.foco_pauta);
     if (['abertura','atas','expediente','distribuicao','conhecimento','quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.secao)) {
         estado.foco_pauta = { secao: foco.secao, rotulo: typeof foco.rotulo === 'string' ? foco.rotulo : '' };
@@ -997,11 +1036,15 @@ const WidgetSessao = {
         return { visor, acao };
     },
     template: `<div class="widget-sessao no-print" aria-label="Duração da sessão">
-        <button v-if="estado.status === 'parado' && permitido" type="button" @click="acao('iniciar')">▶ Iniciar Tempo da Sessão (2h)</button>
+        <span class="rotulo-relogio">◷ Duração da Sessão (2h)</span>
+        <div class="sessao-acoes">
+        <button v-if="estado.status === 'parado' && permitido" type="button" @click="acao('iniciar')">▶ Iniciar Sessão (2h)</button>
         <template v-if="estado.status !== 'parado'">
             <strong :class="visor.classe" :title="estado.status + ' · limite regimental: 2h'">Sessão: {{ visor.texto }}{{ estado.status === 'pausado' ? ' (pausada)' : '' }}</strong>
             <template v-if="permitido"><button type="button" v-if="estado.status === 'rodando'" @click="acao('pausar')" aria-label="Pausar sessão">⏸</button><button type="button" v-else @click="acao('iniciar')" aria-label="Retomar sessão">▶</button><button type="button" @click="acao('zerar')" aria-label="Zerar duração da sessão">↺</button></template>
         </template>
+        <span v-if="estado.status === 'parado' && !permitido">Aguardando início</span>
+        </div>
     </div>`
 };
 
@@ -1042,8 +1085,8 @@ const WidgetCronometro = {
         }
         return { aberto, oradorTexto, visor, acao };
     },
-    template: `<section class="widget-cronometro no-print" aria-label="Tempo de manifestação">
-        <button type="button" v-if="!rapido" class="tempo-toggle" :aria-expanded="aberto" @click="aberto = !aberto">⏱️ Cronômetro / Tempo {{ aberto ? '▴' : '▾' }}</button>
+    template: `<section class="widget-cronometro no-print" aria-label="Tempo de fala">
+        <button type="button" v-if="!rapido" class="tempo-toggle" :aria-expanded="aberto" @click="aberto = !aberto">🎙️ Tempo de Fala {{ aberto ? '▴' : '▾' }}</button>
         <div v-if="estado.status !== 'parado' || aberto" class="tempo-visor" :class="visor.classe">
             <strong>{{ visor.texto }}</strong><span>{{ estado.modo === 'progressivo' ? 'Progressivo ↑' : 'Regressivo' }} · {{ estado.status }}</span>
             <span v-if="estado.orador" class="tempo-orador">{{ estado.orador }}</span>
@@ -1152,12 +1195,42 @@ function usarFocoPauta(pauta, exibido, edicao, permitido, mostrar) {
     return { focoAtivo, destacarFoco, avancarFoco, ancoraFoco, atualizarCronometro, idFocoItem };
 }
 
+// Altura da barra usada por foco e linter; nunca persiste dados da reunião.
+function usarAlturaPainel(painel, uiLayout) {
+    let observador, frame;
+    function medir() {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+            const elemento = painel.value, layout = elemento?.closest('.app-layout');
+            if (!layout) return;
+            const lateral = uiLayout.posicao === 'lateral' && window.matchMedia('(min-width: 960px)').matches;
+            const altura = lateral ? 0 : Math.ceil(elemento.getBoundingClientRect().height);
+            layout.style.setProperty('--altura-painel-topo', `${altura}px`);
+        });
+    }
+    onMounted(() => {
+        if (typeof ResizeObserver !== 'undefined' && painel.value) {
+            observador = new ResizeObserver(medir);
+            observador.observe(painel.value);
+        }
+        window.addEventListener('resize', medir);
+        medir();
+    });
+    watch(() => uiLayout.posicao, () => nextTick(medir));
+    onBeforeUnmount(() => {
+        observador?.disconnect(); cancelAnimationFrame(frame);
+        window.removeEventListener('resize', medir);
+    });
+}
+
 createApp({
     components: { WidgetCronometro, WidgetSessao },
     setup() {
         // Preferência de interface, separada do preparo e das marcações locais.
         const chaveUiLayout = 'alrs:presidente:ui_layout:v1';
         const uiLayout = reactive({ posicao: 'topo', recolhido: false });
+        const painelComandos = ref(null);
+        usarAlturaPainel(painelComandos, uiLayout);
         const erroUiLayout = ref('');
         try {
             const salvo = JSON.parse(localStorage.getItem(chaveUiLayout) || 'null');
@@ -1616,7 +1689,7 @@ createApp({
         function imprimir() { window.print(); }
 
         return {
-            uiLayout, erroUiLayout,
+            uiLayout, erroUiLayout, painelComandos,
             focoAtivo, destacarFoco, avancarFoco, atualizarCronometro, idFocoItem,
             podeInteragir, mostrarMarcacoes, aoVivoExibido, membrosConducao, contarPresentes, alternarPresenca,
             OCORRENCIAS_OD, alternarTrava, definirOcorrencia, atualizarSessao,

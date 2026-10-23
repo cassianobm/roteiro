@@ -139,11 +139,35 @@ button:disabled { opacity: .5; cursor: default; }
 .sessao-badge { font-size: 13px; border: 1px solid currentColor; border-radius: 5px; padding: 5px; }
 .sessao-normal { color: #86efac; } .sessao-alerta { color: #fcd34d; } .sessao-limite { color: #fca5a5; }
 .quorum [role="alert"] { background: #78350f; color: #fef3c7; border: 1px solid #fbbf24; font-weight: bold; }
+
+/* Um único player fixo é alinhado às reservas medidas, sem mudar de pai no DOM. */
+@media screen {
+    .presencas.com-transmissao { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+    .com-transmissao .presencas-lista { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: #64748b #1e293b; }
+    .reserva-youtube { width: 100%; aspect-ratio: 16 / 9; flex-shrink: 0; }
+    .reserva-esquerda { margin-top: auto; }
+    .reserva-ampliada { max-height: 56vh; }
+    .player-transmissao { position: fixed; z-index: 100; background: #000; overflow: hidden; border-radius: 10px; border: 1px solid #475569; }
+    .player-transmissao iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .player-transmissao.modo-coluna-esq, .player-transmissao.modo-ampliado { left: var(--yt-x, 0px); top: var(--yt-y, 0px); width: var(--yt-w, 0px); height: var(--yt-h, 0px); }
+    .player-transmissao.modo-ampliado { border-radius: 12px; border-color: #38bdf8; }
+    .player-transmissao.modo-flutuante { bottom: 20px; right: 20px; width: clamp(280px, 24vw, 380px); max-width: calc(100vw - 40px); aspect-ratio: 16 / 9; z-index: 900; border: 2px solid #38bdf8; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+    .player-transmissao.modo-oculto { transform: translateY(260px); opacity: 0; pointer-events: none; bottom: 20px; right: 20px; width: 1px; height: 1px; }
+    .minimizar-youtube { position: absolute; top: 6px; right: 6px; border-radius: 50%; width: 28px; height: 28px; padding: 0; background: #0f172acc; font-size: 20px; }
+    @media (min-width: 1100px) {
+        .reserva-ampliada { max-height: 56vh; min-height: 120px; flex-shrink: 1; }
+        .coluna-direita-mesa.com-video-ampliado > .pauta-mesa { min-height: 160px; }
+        .coluna-direita-mesa.com-video-ampliado { overflow-y: auto; }
+        .com-transmissao .presencas-lista { margin-bottom: 10px; }
+    }
+}
+@media print { .player-transmissao, .reserva-youtube { display: none !important; } }
 </style>
 </head>
 <body>
 <div id="app" v-cloak class="mesa" :class="{ 'sem-reuniao': !roteiroCarregado }">
-            <aside v-if="roteiroCarregado" class="cartao presencas">
+            <aside v-if="roteiroCarregado" class="cartao presencas" :class="{ 'com-transmissao': modoPlayer === 'coluna_esq' }">
+                <div class="presencas-lista">
                 <p class="legenda">Presenças · Na sala agora</p>
                 <div class="total-presentes"><strong>{{ presentes }}</strong><span>PRESENTES</span></div>
                 <div class="quorum">
@@ -160,8 +184,10 @@ button:disabled { opacity: .5; cursor: default; }
                         </li></ul>
                     </section>
                 </div>
+                </div>
+                <div ref="slotYoutubeEsquerda" v-show="modoPlayer === 'coluna_esq'" class="reserva-youtube reserva-esquerda no-print" aria-hidden="true"></div>
             </aside>
-    <div class="coluna-direita-mesa">
+    <div class="coluna-direita-mesa" :class="{ 'com-video-ampliado': modoPlayer === 'ampliado' }">
     <header class="cabecalho">
         <div class="identidade">
             <div class="assinatura">ALRS / Painel da Comissão</div>
@@ -174,6 +200,7 @@ button:disabled { opacity: .5; cursor: default; }
             <button type="button" @click="reuniaoSelecionadaId ? carregarRoteiroEspecifico() : carregarReunioesDaComissao()" :disabled="carregando">↻ Atualizar</button>
             <button type="button" @click="telaCheia">⛶ {{ emTelaCheia ? 'Sair da tela cheia' : 'Tela Cheia' }}</button>
             <span v-if="aoVivo.sessao_duracao.status !== 'parado'" class="sessao-badge" :class="sessaoVisor.classe">Sessão: {{ sessaoVisor.texto }}{{ aoVivo.sessao_duracao.status === 'pausado' ? ' (pausada)' : '' }}</span>
+            <button v-if="youtubeMinimizado && aoVivo.transmissao.video_id && aoVivo.transmissao.modo !== 'oculto'" type="button" @click="youtubeMinimizado = false">▶ Mostrar transmissão</button>
             <time class="relogio">{{ horaAtual }}</time>
         </div>
     </header>
@@ -189,6 +216,7 @@ button:disabled { opacity: .5; cursor: default; }
         </section>
 
 
+            <div ref="slotYoutubeAmpliado" v-show="modoPlayer === 'ampliado'" class="reserva-youtube reserva-ampliada no-print" aria-hidden="true"></div>
             <main class="cartao pauta-mesa" ref="areaPauta">
                 <template v-if="itemFoco">
                     <p class="legenda">{{ foco.secao === 'ordem_do_dia' ? 'Ordem do Dia' : 'Matérias a Distribuir' }} — Item {{ indiceFoco + 1 }} de {{ listaFoco.length }}</p>
@@ -253,6 +281,11 @@ button:disabled { opacity: .5; cursor: default; }
     </template>
     <div v-else class="vazio"><p class="assinatura">Assembleia Legislativa do Rio Grande do Sul</p><h2>{{ carregando ? 'Carregando reunião…' : 'Aguardando reunião' }}</h2><p>Selecione a comissão e a reunião. A condução será atualizada automaticamente.</p></div>
     </div>
+    <!-- Pai fixo e iframe único: modos mudam somente CSS, nunca a árvore do player. -->
+    <section class="player-transmissao no-print" :class="'modo-' + modoPlayer.replace('_', '-')" :style="posicaoPlayer" :inert="modoPlayer === 'oculto'" :aria-hidden="modoPlayer === 'oculto'" aria-label="Transmissão da reunião">
+        <iframe v-if="aoVivo.transmissao.video_id" id="player-youtube-mesa" :src="urlYoutube" title="Transmissão ao vivo da comissão no YouTube" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <button type="button" class="minimizar-youtube" @click="youtubeMinimizado = true" title="Ocultar somente neste painel" aria-label="Minimizar transmissão neste painel">−</button>
+    </section>
 </div>
 <script>
 const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
@@ -265,6 +298,24 @@ const OCORRENCIAS_OD = Object.freeze({
     retirada_pauta: { rotulo: 'Retirado de Pauta', texto: 'MATÉRIA RETIRADA DE PAUTA NESTA SESSÃO.' },
     sobrestado: { rotulo: '⏳ Sobrestado / Apreciar posteriormente', texto: '⏳ MATÉRIA SOBRESTADA — APRECIAÇÃO POSTERIOR.' }
 });
+function extrairIdYoutube(input) {
+    if (typeof input !== 'string') return '';
+    const texto = input.trim(), valido = v => /^[A-Za-z0-9_-]{11}$/.test(v || '');
+    if (valido(texto)) return texto;
+    try {
+        const url = new URL(/^(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\//i.test(texto) ? 'https://' + texto : texto);
+        if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.port) return '';
+        const host = url.hostname.toLowerCase(), partes = url.pathname.split('/').filter(Boolean);
+        let id = '';
+        if (['youtu.be', 'www.youtu.be'].includes(host) && partes.length === 1) id = partes[0];
+        else if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+            if (url.pathname === '/watch') id = url.searchParams.get('v');
+            else if (partes.length === 2 && ['live', 'embed', 'shorts'].includes(partes[0])) id = partes[1];
+        }
+        return valido(id) ? id : '';
+    } catch { return ''; }
+}
+
 function criarAoVivo(origem = {}) {
     const objeto = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
     const dados = objeto(origem);
@@ -304,6 +355,13 @@ function criarAoVivo(origem = {}) {
         estado.votos_emendas[chave] = {};
         for (const [n, votos] of Object.entries(mapa(valor, v => objeto(v) === v))) estado.votos_emendas[chave][n] = mapa(votos, voto);
     }
+    const transmissao = objeto(dados.transmissao);
+    const videoId = typeof transmissao.video_id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(transmissao.video_id) ? transmissao.video_id : '';
+    estado.transmissao = {
+        url: typeof transmissao.url === 'string' ? transmissao.url : '',
+        video_id: videoId,
+        modo: videoId && ['oculto', 'coluna_esq', 'flutuante', 'ampliado'].includes(transmissao.modo) ? transmissao.modo : 'oculto'
+    };
     const foco = objeto(dados.foco_pauta);
     if (['abertura','atas','expediente','distribuicao','conhecimento','quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.secao)) {
         estado.foco_pauta = { secao: foco.secao, rotulo: typeof foco.rotulo === 'string' ? foco.rotulo : '' };
@@ -401,6 +459,41 @@ createApp({
         const snapshotMembros = reactive({ presidente_id: null, vice_presidente_id: null, titulares: [], suplentes: [] });
         const preparo = reactive({ relatores_grade: {}, historico: {}, ao_vivo: criarAoVivo() });
 
+        const slotYoutubeEsquerda = ref(null), slotYoutubeAmpliado = ref(null);
+        const youtubeMinimizado = ref(false), posicaoPlayer = ref({});
+        const modoPlayer = computed(() => !roteiroCarregado.value || youtubeMinimizado.value || !preparo.ao_vivo.transmissao.video_id ? 'oculto' : preparo.ao_vivo.transmissao.modo);
+        // O src depende apenas do ID; ticks, votos e troca de modo não navegam o iframe.
+        const urlYoutube = computed(() => preparo.ao_vivo.transmissao.video_id
+            ? `https://www.youtube.com/embed/${preparo.ao_vivo.transmissao.video_id}?autoplay=1&mute=1&rel=0&playsinline=1` : '');
+        let observadorYoutube, frameYoutube;
+        function medirPlayer() {
+            cancelAnimationFrame(frameYoutube);
+            frameYoutube = requestAnimationFrame(() => {
+                const slot = modoPlayer.value === 'coluna_esq' ? slotYoutubeEsquerda.value : modoPlayer.value === 'ampliado' ? slotYoutubeAmpliado.value : null;
+                if (!slot) return;
+                const r = slot.getBoundingClientRect();
+                posicaoPlayer.value = { '--yt-x': r.left + 'px', '--yt-y': r.top + 'px', '--yt-w': r.width + 'px', '--yt-h': r.height + 'px' };
+            });
+        }
+        function observarReservasYoutube() {
+            observadorYoutube?.disconnect();
+            for (const el of [slotYoutubeEsquerda.value, slotYoutubeAmpliado.value, document.querySelector('.coluna-direita-mesa'), document.querySelector('.cabecalho'), document.querySelector('.tempo-mesa')]) if (el) observadorYoutube?.observe(el);
+            medirPlayer();
+        }
+        watch([slotYoutubeEsquerda, slotYoutubeAmpliado, modoPlayer], () => nextTick(observarReservasYoutube));
+        watch([() => preparo.ao_vivo.transmissao.video_id, () => preparo.ao_vivo.transmissao.modo, reuniaoSelecionadaId], () => { youtubeMinimizado.value = false; });
+        onMounted(() => {
+            if (typeof ResizeObserver !== 'undefined') observadorYoutube = new ResizeObserver(medirPlayer);
+            observarReservasYoutube();
+            window.addEventListener('resize', medirPlayer);
+            window.addEventListener('scroll', medirPlayer, true);
+        });
+        onBeforeUnmount(() => {
+            observadorYoutube?.disconnect(); cancelAnimationFrame(frameYoutube);
+            window.removeEventListener('resize', medirPlayer);
+            window.removeEventListener('scroll', medirPlayer, true);
+        });
+
         const erroCarregamento = ref('');
         const seletoresAbertos = ref(true), areaPauta = ref(null);
         const agora = ref(Date.now()), emTelaCheia = ref(false), erroTelaCheia = ref('');
@@ -421,6 +514,7 @@ createApp({
                 else { await document.documentElement.requestFullscreen(); seletoresAbertos.value = false; }
             } catch { erroTelaCheia.value = 'O navegador não permitiu tela cheia. Use o comando de tela cheia do navegador.'; }
         }
+        watch([seletoresAbertos, erroCarregamento, erroTelaCheia, () => preparo.ao_vivo.cronometro.status, () => pauta.metadados], () => nextTick(observarReservasYoutube), { deep: true });
         const horaAtual = computed(() => new Date(agora.value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
         const aoVivo = computed(() => preparo.ao_vivo);
         const sessaoVisor = computed(() => visorSessao(aoVivo.value.sessao_duracao, agora.value));
@@ -695,7 +789,7 @@ createApp({
             if (secao === 'encerramento') return [{ titulo: 'Próxima reunião', texto: pauta.assuntos_gerais.proxima_reuniao_custom || pauta.assuntos_gerais.proxima_reuniao || 'A confirmar' }, { titulo: 'Encerramento', texto: 'Agradecemos a presença de todos.' }];
             return [];
         });
-        return { comissoes, comissaoSelecionada, listaReunioes, reuniaoSelecionadaId, carregando, roteiroCarregado,
+        return { slotYoutubeEsquerda, slotYoutubeAmpliado, youtubeMinimizado, posicaoPlayer, modoPlayer, urlYoutube, comissoes, comissaoSelecionada, listaReunioes, reuniaoSelecionadaId, carregando, roteiroCarregado,
             pauta, preparo, snapshotMembros, erroCarregamento, seletoresAbertos, areaPauta, emTelaCheia, erroTelaCheia, telaCheia,
             horaAtual, aoVivo, visor, conexaoRealtime, statusRealtime, carregarReunioesDaComissao, carregarRoteiroEspecifico,
             nomeComissao, gruposMembros, foco, presentes, presentesAbertura, aberturaAtingida, odConcluida, alertaSala, sessaoVisor, nomeMembro, listaFoco, indiceFoco, itemFoco, historicoFoco, emendasFoco,
