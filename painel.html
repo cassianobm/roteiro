@@ -65,6 +65,7 @@ button:disabled { opacity: .5; cursor: default; }
 .dados-item b { color: #94a3b8; }
 .badges { display: flex; flex-wrap: wrap; gap: 7px; }
 .badge { display: inline-block; padding: 5px 9px; background: #0f172a; border: 1px solid #475569; border-radius: 6px; font-size: 14px; color: #bae6fd; }
+.badge.badge-conclusiva { background: #422006; border-color: #f59e0b; color: #fde68a; font-weight: bold; font-size: 15px; padding: 6px 12px; }
 .vista { font-size: clamp(22px, 2vw, 32px); line-height: 1.4; margin: 20px 0; font-weight: bold; }
 .designado { padding: 22px; border-left: 5px solid #38bdf8; background: #0f172a; border-radius: 6px; margin-top: 24px; }
 .designado strong { display: block; font-size: clamp(28px, 2.5vw, 44px); margin-top: 8px; }
@@ -222,13 +223,17 @@ button:disabled { opacity: .5; cursor: default; }
                     <p class="legenda">{{ foco.secao === 'ordem_do_dia' ? 'Ordem do Dia' : 'Matérias a Distribuir' }} — Item {{ indiceFoco + 1 }} de {{ listaFoco.length }}</p>
                     <h2>{{ tituloItem(itemFoco) }}</h2>
                     <div class="badges">
-                        <span v-if="ehFaseB(itemFoco)" class="badge">Votação Conclusiva · Fase B</span>
-                        <span v-else-if="itemFoco.votacao_conclusiva" class="badge">{{ itemFoco.texto_conclusiva || 'Tramitação Conclusiva' }}</span>
+                        <span v-if="ehFaseB(itemFoco)" class="badge badge-conclusiva">⚡ Votação Conclusiva · Fase B (Deliberação Final na Comissão)</span>
+                        <span v-else-if="itemFoco.votacao_conclusiva" class="badge badge-conclusiva">⚡ {{ itemFoco.texto_conclusiva || 'Tramitação Conclusiva' }}</span>
                         <span v-if="historicoFoco.is_relatorio_lido" class="badge">Relatório já lido {{ historicoFoco.relatorio_lido_data }}</span>
                         <span v-for="(vista, idx) in historicoFoco.vistas_detalhadas || []" :key="idx" class="badge">Vista anterior: {{ vista.bancada }} · {{ vista.deputado }}</span>
                     </div>
                     <div class="dados-item"><p><b>Proponente</b> {{ formatarAutorRelator(itemFoco.proponente_principal, itemFoco.proponente_cru) }}</p></div>
                     <p class="ementa">{{ itemFoco.ementa || 'Ementa não informada.' }}</p>
+                    <div v-if="itemFoco.tipo === 'RAP' && (itemFoco.local || (itemFoco.convidados && itemFoco.convidados.length))" class="dados-item">
+                        <p v-if="itemFoco.local"><b>Local</b> {{ itemFoco.local }}<span v-if="itemFoco.modalidade"> — Formato {{ itemFoco.modalidade }}</span></p>
+                        <p v-if="itemFoco.convidados && itemFoco.convidados.length"><b>Convidados</b> {{ itemFoco.convidados.join('; ') }}</p>
+                    </div>
                     <template v-if="foco.secao === 'distribuicao'">
                         <div class="dados-item"><p><b>Bancada impedida · Art. 61-A</b> {{ itemFoco.bancada_impedida || (itemFoco.proponente_principal?.is_deputado === false ? 'Autor externo — sem bancada impedida' : 'Não informada') }}</p></div>
                         <div class="designado"><p class="legenda">{{ aoVivo.relatores_escolhidos[itemFoco.id] ? 'Relator designado por acordo / interesse' : 'Relator indicado pela grade' }}</p><strong>{{ nomeMembro(aoVivo.relatores_escolhidos[itemFoco.id] || preparo.relatores_grade[itemFoco.id]) || 'Aguardando indicação' }}</strong></div>
@@ -236,7 +241,10 @@ button:disabled { opacity: .5; cursor: default; }
                     <template v-else>
                         <div class="dados-item">
                             <p v-if="ehFaseB(itemFoco)">{{ historicoFoco.resumo_pareceres_custom || gerarResumoPareceresFaseB(itemFoco) || 'Pareceres anteriores não informados.' }}</p>
-                            <template v-else><p><b>Relator</b> {{ formatarAutorRelator(itemFoco.relator, itemFoco.relator_cru) }}</p><p><b>Parecer</b> {{ formatarParecer(itemFoco.parecer) }}</p></template>
+                            <template v-else>
+                                <p v-if="itemFoco.relator?.nome || (itemFoco.relator_cru && String(itemFoco.relator_cru).trim())"><b>Relator</b> {{ formatarAutorRelator(itemFoco.relator, itemFoco.relator_cru) }}</p>
+                                <p v-if="itemFoco.parecer"><b>Parecer</b> {{ formatarParecer(itemFoco.parecer) }}</p>
+                            </template>
                         </div>
                         <div v-if="aoVivo.vista_em_sessao[itemFoco.id]" class="vista">✋ PEDIDO DE VISTA CONCEDIDO EM SESSÃO: {{ aoVivo.vista_em_sessao[itemFoco.id] }}<br>Matéria retirada de votação nesta reunião.</div>
                         <div v-if="aoVivo.ocorrencia_od[itemFoco.id]" class="vista">{{ aoVivo.ocorrencia_od[itemFoco.id].texto }}</div>
@@ -261,7 +269,7 @@ button:disabled { opacity: .5; cursor: default; }
                 <article v-else-if="cartaoFoco" class="item-foco-amplo" :class="{ 'texto-extenso': (cartaoFoco.texto || '').length > 700 }">
                     <p class="legenda">{{ descritorFoco.rotulo }}</p>
                     <h2>{{ cartaoFoco.titulo }}</h2>
-                    <p v-if="cartaoFoco.conclusiva" class="badge">{{ cartaoFoco.conclusiva }}</p>
+                    <p v-if="cartaoFoco.conclusiva" class="badge badge-conclusiva">⚡ {{ cartaoFoco.conclusiva }}</p>
                     <div class="dados-item">
                         <p v-if="cartaoFoco.detalhe">{{ cartaoFoco.detalhe }}</p>
                         <p v-if="cartaoFoco.proponente"><b>Proponente</b> {{ cartaoFoco.proponente }}</p>

@@ -632,9 +632,9 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                     <div v-if="item.votacao_conclusiva" style="text-align: center; font-weight: bold; margin: 10px 0; text-transform: uppercase;">
                         PROJETO COM TRAMITAÇÃO CONCLUSIVA NESTA COMISSÃO
                     </div>
-                    <div class="linha-item">
-                        <strong v-if="item.relator || item.relator_cru">Relator:</strong> {{ item.relator?.nome ? (item.relator.is_deputado === false ? '' : 'Deputado(a) ') + item.relator.nome : (item.relator_cru || '_________') }} &nbsp;&nbsp;&nbsp;&nbsp; 
-                        <strong v-if="item.parecer">Parecer:</strong> {{ formatarParecer(item.parecer) }}
+                    <div class="linha-item" v-if="exibirBlocoRelatorParecer(item)">
+                        <strong>Relator:</strong> {{ item.relator?.nome ? (item.relator.is_deputado === false ? '' : 'Deputado(a) ') + item.relator.nome : (item.relator_cru || '_________') }} &nbsp;&nbsp;&nbsp;&nbsp; 
+                        <strong>Parecer:</strong> {{ formatarParecer(item.parecer) }}
                     </div>
                 </template>
                 <template v-else>
@@ -658,7 +658,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 
                 <template v-if="!aoVivoExibido.vista_em_sessao[item.id] && !aoVivoExibido.ocorrencia_od[item.id]">
                 <!-- Frase de Leitura do Relatório -->
-                <div class="instrucao" v-if="!ehFaseB(item) && !['RAP','REQ','RDI','REQSUB','RELSUB'].includes(item.tipo) && !preparo.historico[item.id]?.is_relatorio_lido">
+                <div class="instrucao" v-if="!ehFaseB(item) && (temRelatorPreenchido(item) || !['RAP','REQ','RDI','REQSUB','RELSUB','MOC','IND'].includes(item.tipo)) && !preparo.historico[item.id]?.is_relatorio_lido">
                     PASSO A PALAVRA AO RELATOR PARA LEITURA DO RELATÓRIO.
                 </div>
 				
@@ -680,6 +680,9 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                 <template v-else-if="item.eleicao">
                     <div class="instrucao" style="margin-top: 12px;">
                         CONSULTO SE HÁ INDICAÇÕES PARA O CARGO...
+                    </div>
+                    <div v-if="preparo.historico[item.id]?.indicado_eleicao" style="text-align: center; font-weight: bold; margin: 6px 0 12px 0; font-size: 11pt;">
+                        Indicação: <span style="color: var(--text-instrucao);">{{ preparo.historico[item.id].indicado_eleicao }}</span>
                     </div>
                 </template>
                 <template v-else>
@@ -752,7 +755,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                     EM <span style="color: #C00000;">ENCAMINHAMENTO</span> O PROJETO DE LEI, ALGUM PARLAMENTAR QUER <span style="color: #C00000;">ENCAMINHAR</span>? <span style="font-weight: normal;">(regimental 5min)</span>
                 </div>
                 
-                <div class="instrucao" v-if="!item.eleicao">
+                <div class="instrucao">
                     <span v-if="ehFaseB(item)" style="color: #000;">
                         NÃO HAVENDO MAIS INSCRITOS PARA <span style="color: #C00000;">ENCAMINHAR</span>, PASSAMOS À <strong>VOTAÇÃO DO PROJETO DE LEI</strong>.<br>
                     </span>
@@ -762,7 +765,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                     COMO VOTA ... <span style="font-size: 10pt; color: #000; font-weight: normal;">(o presidente vota ao final)</span>
                 </div>
 
-                <table class="tabela-roteiro tabela-membros" v-if="!item.eleicao">
+                <table class="tabela-roteiro tabela-membros">
                     <thead>
                         <tr>
                             <th class="col-nome">MEMBROS TITULARES</th><th class="col-check">F</th><th class="col-check">C</th>
@@ -777,7 +780,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                     </tbody>
                 </table>
 
-                <div v-if="!item.eleicao" style="font-size: 11pt; font-weight: bold; margin-top: 8px;">
+                <div style="font-size: 11pt; font-weight: bold; margin-top: 8px;">
                     Com <span class="linha-vazia">{{ contarVotos(item.id, 'F') }}</span> votos favoráveis e <span class="linha-vazia">{{ contarVotos(item.id, 'C') }}</span> voto(s) contrário(s) (quórum/aprovação {{ quorumMinimoDeliberacao }} votos)
                 </div>
                                 
@@ -790,8 +793,16 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                 <!-- TEXTOS DE RESULTADO REGIMENTAL -->
                 <div style="margin-top: 10px; font-weight: bold; line-height: 1.5; text-align: justify;">
                     <template v-if="item.eleicao">
-                        (<span class="marcacao ok">{{ aoVivoExibido.eleitos[item.id] ? 'X' : '\u00a0' }}</span>) DECLARO ELEITO: {{ getNomeRelator(aoVivoExibido.eleitos[item.id]) || '____________________________________' }}
-                        <label v-if="podeInteragir" class="controle-vivo no-print">Deputado eleito:
+                        <div>
+                            <button type="button" class="marca-opcao" :disabled="!podeInteragir" :aria-pressed="!!(aoVivoExibido.resultado_votacao[item.id] === 'aprovado')" @click="marcarResultado(item, 'aprovado')">(<span class="marcacao ok">{{ aoVivoExibido.resultado_votacao[item.id] === 'aprovado' ? 'X' : '\u00a0' }}</span>) APROVADO</button> o requerimento.
+                        </div>
+                        <div style="margin-top: 6px; margin-bottom: 8px;">
+                            <button type="button" class="marca-opcao" :disabled="!podeInteragir" :aria-pressed="!!(aoVivoExibido.resultado_votacao[item.id] === 'rejeitado')" @click="marcarResultado(item, 'rejeitado')">(<span class="marcacao nao">{{ aoVivoExibido.resultado_votacao[item.id] === 'rejeitado' ? 'X' : '\u00a0' }}</span>) REJEITADO</button>/SEM VOTOS NECESSÁRIOS.
+                        </div>
+                        <div>
+                            (<span class="marcacao ok">{{ aoVivoExibido.eleitos[item.id] ? 'X' : '\u00a0' }}</span>) DECLARO ELEITO(A): {{ getNomeRelator(aoVivoExibido.eleitos[item.id]) || '____________________________________' }}
+                        </div>
+                        <label v-if="podeInteragir" class="controle-vivo no-print">Deputado(a) eleito(a):
                             <select :value="aoVivoExibido.eleitos[item.id] || ''" @change="definirCampo('eleitos', item.id, $event.target.value)">
                                 <option value="">— Deixar em branco —</option>
                                 <option v-for="dep in membrosConducao" :key="dep.id" :value="dep.id">{{ dep.nome }} ({{ dep.partido }})</option>
@@ -1585,6 +1596,15 @@ createApp({
         });
 
         function ehFaseB(it) { return !!it._fase_b || (it.votacao_conclusiva && !it.relator && !it.parecer); }
+        function temRelatorPreenchido(it) {
+            return Boolean(it && (it.relator?.nome || (it.relator_cru && String(it.relator_cru).trim())));
+        }
+        function exibirBlocoRelatorParecer(it) {
+            if (!it || ehFaseB(it)) return false;
+            if (temRelatorPreenchido(it) || Boolean(it.parecer)) return true;
+            return ['PL', 'PLC', 'PEC', 'PDL', 'PRES', 'RELSUB'].includes(it.tipo);
+        }
+
         function elegivelNovoRelator(tipo) { return ['PL', 'PLC', 'PEC', 'PDL', 'RDI'].includes(tipo); }
 
         function gerarResumoPareceresFaseB(it) {
@@ -1701,7 +1721,7 @@ createApp({
             pauta, preparo, nomeComissaoCompleto, tabelaMembros, formatarNomeMembro,
             atasEstruturadas, atasTextoLivre,
             titularesApenasOrdemAlfabetica, bancadasComissao, temConhecimento,
-            ehFaseB, elegivelNovoRelator, gerarResumoPareceresFaseB, bancadaJaPediuVista, getListaNomesImpedidos, getNomeRelator,
+            ehFaseB, temRelatorPreenchido, exibirBlocoRelatorParecer, elegivelNovoRelator, gerarResumoPareceresFaseB, bancadaJaPediuVista, getListaNomesImpedidos, getNomeRelator,
             formatarData, formatarDataMesExtensoCurto, formatarHoraRoteiro, formatarDataExtenso, formatarParecer, formatarStringEmenda,
             textoAberturaDinamico, listaCalendarios, imprimir
         };
