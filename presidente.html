@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roteiro da Presidência - ALRS</title>
 <!-- Vue.js 3 via CDN -->
-<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
 <!-- Supabase JS v2 via CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
 
 <style>
 :root { --bg-app: #cbd5e1; --doc-bg: #ffffff; --text-main: #000000; --text-instrucao: #C00000; --border-color: #000000; }
@@ -179,6 +179,14 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 .folha-a4.interativo [tabindex="0"]:focus-visible { outline: 2px solid #0284c7; outline-offset: -2px; }
 .placar-quorum { font-size: 9pt; color: #334155; text-align: center; margin: 6px 0; }
 .controle-vivo { padding: 8px; margin: 10px 0; background: #f0fdf4; border: 1px solid #86efac; font-size: 9pt; text-align: left; }
+.barra-votacao-rapida { display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 8px; margin-top: 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font: 12px Arial, sans-serif; text-align: left; }
+.barra-votacao-rapida .grupo-votacao { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.barra-votacao-rapida button { min-height: 36px; padding: 6px 9px; border: 1px solid #94a3b8; border-radius: 5px; background: #e2e8f0; color: #0f172a; font: inherit; text-transform: none; cursor: pointer; }
+.barra-votacao-rapida .voto-f { background: #dcfce7; color: #166534; border-color: #86efac; }
+.barra-votacao-rapida .voto-c, .barra-votacao-rapida .limpar-votos { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.barra-votacao-rapida .voto-lote { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+.barra-votacao-rapida button:disabled { opacity: .45; cursor: not-allowed; }
+.placar-rapido-aviso { font: 12px Arial, sans-serif; color: #92400e; background: #fef3c7; padding: 5px 8px; margin-top: 4px; }
 .controle-vivo label { display: block; margin: 4px 0; }
 .folha-a4 button.no-print { display: block; }
 @media screen {
@@ -444,7 +452,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                                 <thead><tr><th colspan="2">TITULARES (Ordem Alfabética)</th></tr></thead>
                                 <tbody>
                                     <tr v-for="dep in titularesApenasOrdemAlfabetica" :key="dep.id" 
-                                        :class="{'linha-destaque': preparo.relatores_grade[item.id] === dep.id, 'linha-impedida': item.bancada_impedida && dep.partido === item.bancada_impedida}">
+                                        :class="{'linha-destaque': String(preparo.relatores_grade[item.id]) === String(dep.id), 'linha-impedida': item.bancada_impedida && String(dep.partido || '').trim().toUpperCase() === String(item.bancada_impedida).trim().toUpperCase()}">
                                         <td>{{ dep.nome }}</td>
                                         <td style="text-align: center;">{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}</td>
                                     </tr>
@@ -738,6 +746,20 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                             </tbody>
                         </table>
                         
+                        <div v-if="podeInteragir" class="barra-votacao-rapida no-print" role="group" aria-label="Votação rápida">
+                            <div class="grupo-votacao"><strong>Placar rápido</strong>
+                                <button type="button" class="voto-f" @click="ajustarPlacar(item, 'F', 1, n)">+1 F</button>
+                                <button type="button" class="voto-f" @click="ajustarPlacar(item, 'F', -1, n)">−1 F</button>
+                                <button type="button" class="voto-c" @click="ajustarPlacar(item, 'C', 1, n)">+1 C</button>
+                                <button type="button" class="voto-c" @click="ajustarPlacar(item, 'C', -1, n)">−1 C</button>
+                            </div>
+                            <div class="grupo-votacao"><strong>Nominal em lote</strong>
+                                <button type="button" class="voto-lote" :disabled="!presentesVotacao.length" @click="preencherVotosPresentes(item, false, n)">Todos Presentes = F ({{ presentesVotacao.length }})</button>
+                                <button type="button" class="voto-lote" :disabled="!presentesVotacao.length" @click="preencherVotosPresentes(item, true, n)">Restantes = F ({{ presentesVotacao.length }})</button>
+                                <button type="button" class="limpar-votos" @click="limparVotos(item, n)">Limpar Votos</button>
+                            </div>
+                        </div>
+                        <div v-if="placarRapido(item.id, n)" class="placar-rapido-aviso no-print">Placar rápido ativo: os totais prevalecem sobre a tabela nominal. Um clique na tabela ou ação em lote retorna à contagem nominal.</div>
                         <div style="font-size: 11pt; font-weight: bold; margin-top: 8px;">
                             Com <span class="linha-vazia">{{ contarVotos(item.id, 'F', n) }}</span> votos favoráveis e <span class="linha-vazia">{{ contarVotos(item.id, 'C', n) }}</span> voto(s) contrário(s) (quórum/aprovação {{ quorumMinimoDeliberacao }} votos)
                         </div>
@@ -780,7 +802,21 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
                     </tbody>
                 </table>
 
-                <div style="font-size: 11pt; font-weight: bold; margin-top: 8px;">
+                <div v-if="podeInteragir" class="barra-votacao-rapida no-print" role="group" aria-label="Votação rápida">
+                            <div class="grupo-votacao"><strong>Placar rápido</strong>
+                                <button type="button" class="voto-f" @click="ajustarPlacar(item, 'F', 1)">+1 F</button>
+                                <button type="button" class="voto-f" @click="ajustarPlacar(item, 'F', -1)">−1 F</button>
+                                <button type="button" class="voto-c" @click="ajustarPlacar(item, 'C', 1)">+1 C</button>
+                                <button type="button" class="voto-c" @click="ajustarPlacar(item, 'C', -1)">−1 C</button>
+                            </div>
+                            <div class="grupo-votacao"><strong>Nominal em lote</strong>
+                                <button type="button" class="voto-lote" :disabled="!presentesVotacao.length" @click="preencherVotosPresentes(item, false)">Todos Presentes = F ({{ presentesVotacao.length }})</button>
+                                <button type="button" class="voto-lote" :disabled="!presentesVotacao.length" @click="preencherVotosPresentes(item, true)">Restantes = F ({{ presentesVotacao.length }})</button>
+                                <button type="button" class="limpar-votos" @click="limparVotos(item)">Limpar Votos</button>
+                            </div>
+                        </div>
+                        <div v-if="placarRapido(item.id)" class="placar-rapido-aviso no-print">Placar rápido ativo: os totais prevalecem sobre a tabela nominal. Um clique na tabela ou ação em lote retorna à contagem nominal.</div>
+                        <div style="font-size: 11pt; font-weight: bold; margin-top: 8px;">
                     Com <span class="linha-vazia">{{ contarVotos(item.id, 'F') }}</span> votos favoráveis e <span class="linha-vazia">{{ contarVotos(item.id, 'C') }}</span> voto(s) contrário(s) (quórum/aprovação {{ quorumMinimoDeliberacao }} votos)
                 </div>
                                 
@@ -900,6 +936,7 @@ table.tabela-roteiro .col-nome { font-size: 9.5pt; white-space: nowrap; overflow
 <script>
 const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cfCVWR24Jq4NripFuSo4xA_GFixfQGk';
+const COLUNAS_REUNIAO_PUBLICA = 'id, comissao_sigla, data_reuniao, hora_inicio, tipo_reuniao, modalidade, local, status, snapshot_membros, pauta_json, preparo_json, updated_at';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 
 // Contrato compartilhado: manter idêntico nos três HTMLs.
@@ -934,7 +971,7 @@ function criarAoVivo(origem = {}) {
         pres_abertura: {}, pres_deliberacao: {}, pres_atual: {}, pres_atual_inicializada: false,
         trava_abertura: false, trava_deliberacao: false, ocorrencia_od: {}, sessao_duracao: {}, status_quorum: null,
         relatores_escolhidos: {}, res_info: {}, res_delib: {}, votos: {},
-        resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {},
+        resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {}, placar_votacao: {}, placar_emendas: {},
         eleitos: {}, novo_relator_art67: {}, vista_em_sessao: {}, foco_pauta: null, cronometro: {}
     };
     const resultado = v => ['aprovado', 'rejeitado'].includes(v);
@@ -965,6 +1002,12 @@ function criarAoVivo(origem = {}) {
     for (const [chave, valor] of Object.entries(mapa(dados.votos_emendas, v => objeto(v) === v))) {
         estado.votos_emendas[chave] = {};
         for (const [n, votos] of Object.entries(mapa(valor, v => objeto(v) === v))) estado.votos_emendas[chave][n] = mapa(votos, voto);
+    }
+    const placarValido = v => objeto(v) === v && ['F','C'].every(sentido => Object.hasOwn(v, sentido) && Number.isSafeInteger(v[sentido]) && v[sentido] >= 0);
+    for (const [chave, valor] of Object.entries(mapa(dados.placar_votacao, placarValido))) estado.placar_votacao[chave] = { F: valor.F, C: valor.C };
+    for (const [chave, valor] of Object.entries(mapa(dados.placar_emendas, v => objeto(v) === v))) {
+        const emendas = Object.entries(mapa(valor, placarValido)).filter(([n]) => /^[1-9]\d*$/.test(n) && Number.isSafeInteger(Number(n)));
+        if (emendas.length) estado.placar_emendas[chave] = Object.fromEntries(emendas.map(([n, p]) => [n, { F: p.F, C: p.C }]));
     }
     const transmissao = objeto(dados.transmissao);
     const videoId = typeof transmissao.video_id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(transmissao.video_id) ? transmissao.video_id : '';
@@ -1234,6 +1277,30 @@ function usarAlturaPainel(painel, uiLayout) {
     });
 }
 
+function usarTelaAtiva(ativo) {
+    let trava = null, solicitando = false, encerrado = false;
+    async function atualizar() {
+        if (encerrado || !ativo() || document.visibilityState !== 'visible') {
+            const anterior = trava; trava = null;
+            if (anterior) { try { await anterior.release(); } catch {} }
+            return;
+        }
+        if (trava || solicitando || !navigator.wakeLock) return;
+        solicitando = true;
+        try {
+            const obtida = await navigator.wakeLock.request('screen');
+            if (encerrado || !ativo() || document.visibilityState !== 'visible') await obtida.release();
+            else {
+                trava = obtida;
+                obtida.addEventListener('release', () => { if (trava === obtida) trava = null; }, { once: true });
+            }
+        } catch {} finally { solicitando = false; }
+    }
+    watch(ativo, atualizar);
+    onMounted(() => { document.addEventListener('visibilitychange', atualizar); atualizar(); });
+    onBeforeUnmount(() => { encerrado = true; document.removeEventListener('visibilitychange', atualizar); atualizar(); });
+}
+
 createApp({
     components: { WidgetCronometro, WidgetSessao },
     setup() {
@@ -1279,6 +1346,7 @@ createApp({
         const erroCarregamento = ref('');
         const podeInteragir = computed(() => modoPresidente.value === 'interativo' && roteiroCarregado.value && !carregando.value);
         const mostrarMarcacoes = computed(() => modoPresidente.value !== 'branco');
+        usarTelaAtiva(() => roteiroCarregado.value && modoPresidente.value !== 'branco');
         const permiteEditarGrade = false;
         const definirRelatorGrade = () => {};
         const quorumMinimoAbertura = 3;
@@ -1373,12 +1441,58 @@ createApp({
             if (!valor) delete aoVivoEdicao.value[campo][chave]; else aoVivoEdicao.value[campo][chave] = valor;
         }
         function votosDoItem(id, n = null) { return n === null ? aoVivoExibido.value.votos[id] || {} : aoVivoExibido.value.votos_emendas[id]?.[n] || {}; }
+        function placarRapido(id, n = null) {
+            const mapa = n === null ? aoVivoExibido.value.placar_votacao : aoVivoExibido.value.placar_emendas[id];
+            const chave = n === null ? id : n;
+            return mapa && Object.hasOwn(mapa, chave) ? mapa[chave] : null;
+        }
+        const presentesVotacao = computed(() => {
+            for (const campo of ['pres_atual','pres_deliberacao','pres_abertura']) {
+                const ids = Object.entries(aoVivoExibido.value[campo]).filter(([id, marcado]) => marcado === true && idsConducao.value.has(id)).map(([id]) => id);
+                if (ids.length) return ids;
+            }
+            return [];
+        });
+        function podeEditarVotacao(item, n = null) {
+            return podeInteragir.value && item?.id != null && !['__proto__','constructor','prototype'].includes(String(item.id))
+                && (n === null || (Number.isSafeInteger(n) && n > 0))
+                && !aoVivoEdicao.value.vista_em_sessao[item.id] && !aoVivoEdicao.value.ocorrencia_od[item.id];
+        }
+        function removerPlacarRapido(id, n = null) {
+            if (n === null) delete aoVivoEdicao.value.placar_votacao[id];
+            else if (aoVivoEdicao.value.placar_emendas[id]) delete aoVivoEdicao.value.placar_emendas[id][n];
+        }
+        function ajustarPlacar(item, sentido, delta, n = null) {
+            if (!podeEditarVotacao(item, n) || !['F','C'].includes(sentido) || ![1,-1].includes(delta)) return;
+            const atual = placarRapido(item.id, n) || { F: Number(contarVotos(item.id, 'F', n)), C: Number(contarVotos(item.id, 'C', n)) };
+            const placar = { F: atual.F, C: atual.C };
+            placar[sentido] = Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, placar[sentido] + delta));
+            const mapa = n === null ? aoVivoEdicao.value.placar_votacao : (aoVivoEdicao.value.placar_emendas[item.id] ||= {});
+            mapa[n === null ? item.id : n] = placar;
+        }
+        function preencherVotosPresentes(item, restantes = false, n = null) {
+            if (!podeEditarVotacao(item, n) || !presentesVotacao.value.length) return;
+            const votos = restantes ? { ...votosDoItem(item.id, n) } : {};
+            for (const id of presentesVotacao.value) if (!['F','C'].includes(votos[id])) votos[id] = 'F';
+            const mapa = n === null ? aoVivoEdicao.value.votos : (aoVivoEdicao.value.votos_emendas[item.id] ||= {});
+            mapa[n === null ? item.id : n] = votos;
+            removerPlacarRapido(item.id, n);
+        }
+        function limparVotos(item, n = null) {
+            if (!podeEditarVotacao(item, n)) return;
+            if (n === null) delete aoVivoEdicao.value.votos[item.id];
+            else if (aoVivoEdicao.value.votos_emendas[item.id]) delete aoVivoEdicao.value.votos_emendas[item.id][n];
+            removerPlacarRapido(item.id, n);
+        }
         function contarVotos(id, sentido, n = null) {
+            const placar = placarRapido(id, n);
+            if (placar) return placar[sentido];
             const votos = Object.entries(votosDoItem(id, n)).filter(([dep]) => idsConducao.value.has(dep));
             return votos.length ? votos.filter(([,v]) => v === sentido).length : '';
         }
         function alternarVoto(item, membro, sentido, n = null) {
-            if (!podeInteragir.value || !membro?.id || aoVivoEdicao.value.vista_em_sessao[item.id] || aoVivoEdicao.value.ocorrencia_od[item.id]) return;
+            if (!podeEditarVotacao(item, n) || !membro?.id || !idsConducao.value.has(String(membro.id)) || !['F','C'].includes(sentido)) return;
+            removerPlacarRapido(item.id, n);
             const vivo = aoVivoEdicao.value;
             const raiz = n === null ? vivo.votos : (vivo.votos_emendas[item.id] ||= {});
             const mapa = (raiz[n === null ? item.id : n] ||= {});
@@ -1413,7 +1527,38 @@ createApp({
         let ultimoUpdatedAt = '';
         let recuperacaoSnapshot = null;
         const pautaInicial = JSON.stringify(pauta);
+        let timerContingencia = null, consultaContingencia = null, leitorEncerrado = false;
+        function pararContingencia() {
+            clearTimeout(timerContingencia); timerContingencia = null;
+            consultaContingencia?.abort(); consultaContingencia = null;
+        }
+        function agendarContingencia() {
+            clearTimeout(timerContingencia);
+            if (!leitorEncerrado && reuniaoSelecionadaId.value && conexaoRealtime.value !== 'SUBSCRIBED')
+                timerContingencia = setTimeout(atualizarPorContingencia, 15000);
+        }
+        async function atualizarPorContingencia() {
+            if (leitorEncerrado || !reuniaoSelecionadaId.value || conexaoRealtime.value === 'SUBSCRIBED' || consultaContingencia) return;
+            const id = reuniaoSelecionadaId.value, geracao = geracaoCanal, versao = versaoRecebida;
+            const controller = new AbortController(); consultaContingencia = controller;
+            const limite = setTimeout(() => controller.abort(), 10000);
+            try {
+                const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).abortSignal(controller.signal).single();
+                if (!leitorEncerrado && id === reuniaoSelecionadaId.value && geracao === geracaoCanal && versao === versaoRecebida && !error && data)
+                    await aplicarRegistro(data, true);
+            } catch {} finally {
+                clearTimeout(limite);
+                if (consultaContingencia === controller) consultaContingencia = null;
+                if (!leitorEncerrado && id === reuniaoSelecionadaId.value && geracao === geracaoCanal && conexaoRealtime.value !== 'SUBSCRIBED') {
+                    assinarRealtime(id);
+                    agendarContingencia();
+                }
+            }
+        }
+        watch([reuniaoSelecionadaId, conexaoRealtime], agendarContingencia);
+        onBeforeUnmount(() => { leitorEncerrado = true; pararContingencia(); });
         function encerrarRealtime() {
+            pararContingencia();
             ++geracaoCanal;
             if (canalRealtime) { const canal = canalRealtime; canalRealtime = null; sb.removeChannel(canal); }
             conexaoRealtime.value = 'CLOSED';
@@ -1443,7 +1588,7 @@ createApp({
             const pedido = { id, geracao }, versao = versaoRecebida;
             recuperacaoSnapshot = pedido;
             try {
-                const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).single();
                 if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
                 if (error || !data || data.id !== id) throw error || new Error('Registro ausente');
                 if (versao === versaoRecebida) await aplicarRegistro(data, true);
@@ -1498,7 +1643,7 @@ createApp({
                     if (status === 'SUBSCRIBED') {
                         const versao = versaoRecebida;
                         try {
-                            const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                            const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).single();
                             if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value || versao !== versaoRecebida) return;
                             if (error) erroCarregamento.value = 'Não foi possível conferir a atualização. Use Atualizar.';
                             else if (data) { erroCarregamento.value = ''; aplicarRegistro(data, true); }
@@ -1537,7 +1682,7 @@ createApp({
             carregando.value = !roteiroCarregado.value;
             erroCarregamento.value = '';
             try {
-                const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).single();
                 if (pedido !== pedidoRoteiro || id !== reuniaoSelecionadaId.value) return;
                 if (error || !data) throw error || new Error('Reunião não encontrada');
                 if (versao === versaoRecebida) await aplicarRegistro(data, roteiroCarregado.value);
@@ -1557,8 +1702,8 @@ createApp({
             const viceId = snapshotMembros.vice_presidente_id;
             const marcados = tits.map(m => ({
                 ...m, id: m.id_assembleia || m.id,
-                isPresidente: (m.id_assembleia || m.id) === presId,
-                isVice: (m.id_assembleia || m.id) === viceId
+                isPresidente: presId != null && String(m.id_assembleia ?? m.id) === String(presId),
+                isVice: viceId != null && String(m.id_assembleia ?? m.id) === String(viceId)
             }));
             const presidente = marcados.find(t => t.isPresidente);
             const outros = marcados.filter(t => !t.isPresidente).sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -1625,12 +1770,12 @@ createApp({
         }
 
         function getTitularesElegiveis(bancadaImpedida) {
-            return titularesApenasOrdemAlfabetica.value.filter(d => !bancadaImpedida || (d.partido || '').toUpperCase() !== String(bancadaImpedida).toUpperCase());
+            return titularesApenasOrdemAlfabetica.value.filter(d => !bancadaImpedida || String(d.partido || '').trim().toUpperCase() !== String(bancadaImpedida).trim().toUpperCase());
         }
         function getListaNomesImpedidos(bancadaImpedida) {
             if (!bancadaImpedida) return '';
-            const imp = String(bancadaImpedida).toUpperCase();
-            const nomes = titularesApenasOrdemAlfabetica.value.filter(d => (d.partido || '').toUpperCase() === imp).map(d => d.nome);
+            const imp = String(bancadaImpedida).trim().toUpperCase();
+            const nomes = titularesApenasOrdemAlfabetica.value.filter(d => String(d.partido || '').trim().toUpperCase() === imp).map(d => d.nome);
             return nomes.length > 0 ? `(${nomes.join(', ')})` : '';
         }
 
@@ -1713,7 +1858,7 @@ createApp({
             focoAtivo, destacarFoco, avancarFoco, atualizarCronometro, idFocoItem,
             podeInteragir, mostrarMarcacoes, aoVivoExibido, membrosConducao, contarPresentes, alternarPresenca,
             OCORRENCIAS_OD, alternarTrava, definirOcorrencia, atualizarSessao,
-            puxarPresentesDaSala, copiarPresentesAbertura, alternarMarca, definirCampo, votosDoItem, contarVotos, alternarVoto, marcarResultado,
+            puxarPresentesDaSala, copiarPresentesAbertura, alternarMarca, definirCampo, votosDoItem, contarVotos, alternarVoto, marcarResultado, placarRapido, presentesVotacao, ajustarPlacar, preencherVotosPresentes, limparVotos,
             seguirFocoSecretario, modoPresidente, aoVivoLocal, erroLocal, erroCarregamento, statusRealtime, limparMarcacoesLocais,
             permiteEditarGrade, definirRelatorGrade, quorumMinimoAbertura, quorumMinimoDeliberacao, getTitularesElegiveis,
             comissoes, comissaoSelecionada, listaReunioes, reuniaoSelecionadaId, carregando, roteiroCarregado,

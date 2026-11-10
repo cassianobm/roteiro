@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
 <title>Painel da Comissão — ALRS</title>
-<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
 <style>
 :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; color: #f1f5f9; background: #0f172a; }
 * { box-sizing: border-box; }
@@ -18,15 +18,19 @@ button:hover { background: #334155; }
 button:focus-visible, select:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; }
 button:disabled { opacity: .5; cursor: default; }
 .mesa { min-height: 100vh; display: flex; flex-direction: column; padding: 20px; gap: 16px; }
-.cabecalho { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; border-bottom: 1px solid #334155; padding-bottom: 14px; }
-.identidade { flex: 1; min-width: 240px; }
-.assinatura { color: #7dd3fc; text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: bold; }
-.identidade h1 { font-size: clamp(22px, 2vw, 32px); line-height: 1.2; margin: 6px 0; }
+.cabecalho { display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid #334155; padding-bottom: 12px; flex-shrink: 0; }
+.barra-operacional, .faixa-identidade { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-width: 0; }
+.barra-operacional { flex-wrap: wrap; gap: 6px 12px; }
+.identidade { flex: 1; min-width: 0; }
+.assinatura { color: #7dd3fc; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; font-weight: bold; }
+.identidade h1 { font-size: clamp(20px, 1.65vw, 28px); line-height: 1.2; margin: 0 0 6px; }
 .subtitulo { color: #cbd5e1; font-size: 16px; margin: 0; }
-.ferramentas { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
-.conexao { color: #fde68a; background: #422006; border-radius: 30px; padding: 7px 12px; }
+.ferramentas { display: flex; align-items: center; justify-content: flex-end; gap: 5px; flex-wrap: wrap; font-size: 11px; margin-left: auto; }
+.ferramentas button { font-size: 11px; padding: 4px 8px; border-color: #334155; }
+.conexao { color: #fde68a; background: #422006; border-radius: 30px; padding: 4px 8px; }
 .conexao.conectado { background: #064e3b; color: #a7f3d0; }
-.relogio { font-size: 30px; font-variant-numeric: tabular-nums; padding-left: 8px; }
+.tempos-cabecalho { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; gap: 8px; }
+.relogio { font-size: clamp(26px, 2vw, 30px); font-weight: bold; color: #f8fafc; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .seletores { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; font-size: 14px; }
 .seletores label { display: grid; gap: 5px; flex: 1; min-width: 220px; }
 .seletores select { width: 100%; min-width: 0; text-overflow: ellipsis; }
@@ -44,20 +48,22 @@ button:disabled { opacity: .5; cursor: default; }
 .cartao { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 22px; min-width: 0; }
 .presencas, .pauta-mesa { overflow-y: auto; scrollbar-color: #64748b #1e293b; }
 .legenda { color: #94a3b8; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; font-weight: bold; margin: 0 0 8px; }
-.total-presentes { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
-.total-presentes strong { font-size: 56px; line-height: 1; color: #f8fafc; font-variant-numeric: tabular-nums; }
+.presencas .legenda { margin-bottom: 5px; }
+.total-presentes { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.total-presentes strong { font-size: 44px; line-height: 1; color: #f8fafc; font-variant-numeric: tabular-nums; }
 .total-presentes span { font-size: 18px; color: #cbd5e1; }
-.quorum { border-bottom: 1px solid #475569; padding-bottom: 14px; display: grid; gap: 8px; font-size: 15px; }
+.quorum { border-bottom: 1px solid #475569; padding-bottom: 8px; display: grid; gap: 5px; font-size: 14px; }
 .atingido { color: #6ee7b7; }
 .aguardando { color: #fde68a; }
-.membros { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-.membros h3 { font-size: 14px; color: #cbd5e1; margin: 0 0 10px; }
+.membros { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.membros h3 { font-size: 14px; color: #cbd5e1; margin: 0 0 6px; }
 .membros ul { list-style: none; margin: 0; padding: 0; }
-.membros li { display: flex; align-items: start; gap: 7px; font-size: clamp(15px, 1vw, 18px); line-height: 1.15; padding: 3px 0; border-bottom: 1px solid #334155; opacity: .55; overflow-wrap: anywhere; }
+.membros li { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: clamp(16px, 1.2vw, 20px); line-height: 1.2; padding: 4px 0; border-bottom: 1px solid #334155; opacity: .5; white-space: nowrap; }
 .membros li.presente { opacity: 1; }
-.selo-presenca { flex: 0 0 20px; text-align: center; color: #94a3b8; }
+.selo-presenca { flex: 0 0 14px; text-align: center; color: #94a3b8; }
 .presente .selo-presenca { color: #6ee7b7; font-weight: bold; }
-.membros small { display: block; font-size: 10px; color: #cbd5e1; margin-top: 2px; }
+.nome-membro { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.membros small { flex: 0 1 auto; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(12px, .7vw, 13px); color: #cbd5e1; }
 .pauta-mesa h2 { font-size: clamp(30px, 3vw, 54px); line-height: 1.1; margin: 8px 0 20px; overflow-wrap: anywhere; }
 .ementa { font-size: clamp(23px, 2vw, 34px); line-height: 1.45; margin: 18px 0; white-space: pre-line; }
 .dados-item { display: grid; gap: 10px; font-size: clamp(18px, 1.35vw, 25px); line-height: 1.4; }
@@ -89,56 +95,54 @@ button:disabled { opacity: .5; cursor: default; }
 .vazio h2 { color: #f8fafc; font-size: 32px; }
 
 
-@media (max-width: 600px) { .mesa { padding: 10px; } .tempo-mesa { flex-direction: column; align-items: start; padding: 18px; } .cartao { padding: 16px; } .membros { gap: 16px; } .relogio { margin-left: auto; } }
+@media (max-width: 600px) { .mesa { padding: 10px; } .tempo-mesa { flex-direction: column; align-items: start; padding: 18px; } .cartao { padding: 16px; } .relogio { margin-left: auto; } }
 @media (prefers-reduced-motion: reduce) { .tempo-critico { animation: none; } }
-@media print { .ferramentas, .seletores { display: none; } .mesa { height: auto; overflow: visible; } .grade-mesa { display: block; } .cartao { margin-bottom: 20px; overflow: visible; break-inside: avoid; } }
+@media print { .ferramentas, .seletores { display: none; } .mesa { height: auto; overflow: visible; } .cartao { margin-bottom: 20px; overflow: visible; break-inside: avoid; } }
 
 .coluna-direita-mesa { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
 .coluna-direita-mesa > .pauta-mesa { flex: 1; min-height: 0; }
-.membros { display: flex; flex-direction: column; gap: 18px; }
-.membros section + section { border-top: 1px solid #475569; padding-top: 16px; }
+.membros section + section { border-top: 1px solid #475569; padding-top: 10px; }
 .membros ul { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 12px; }
-.membros li > div { min-width: 0; }
 .item-foco-amplo .ementa { font-size: clamp(24px, 2.1vw, 38px); line-height: 1.4; overflow-wrap: anywhere; }
 .item-foco-amplo.texto-extenso .ementa { font-size: clamp(20px, 1.5vw, 28px); }
-@media screen and (min-width: 1100px) {
+@media screen and (min-width: 1000px) {
     .mesa { display: grid; grid-template-columns: minmax(340px, 34fr) minmax(0, 66fr); height: 100vh; padding: 0; gap: 0; overflow: hidden; }
     .mesa.sem-reuniao { grid-template-columns: 1fr; }
     .presencas { height: 100%; border-radius: 0; padding: clamp(14px, 1.3vw, 24px); }
+    .presencas-lista { height: 100%; display: flex; flex-direction: column; }
+    .membros { flex: 1; min-height: 0; }
+    .membros section { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .membros ul { flex: 1; grid-auto-rows: minmax(28px, 1fr); }
     .coluna-direita-mesa { height: 100%; padding: 18px; }
     .cabecalho { gap: 8px; padding-bottom: 10px; }
-    .identidade h1 { font-size: clamp(20px, 1.5vw, 28px); }
     .tempo-mesa { padding: 12px 20px; }
     .tempo-mesa strong { font-size: clamp(58px, 6vw, 110px); }
     .tempo-mesa h2 { font-size: clamp(22px, 2vw, 34px); }
-    .membros li { font-size: clamp(15px, 1.1vw, 21px); }
 }
-@media screen and (min-width: 1100px) and (max-height: 850px) {
+@media screen and (min-width: 1000px) and (max-height: 850px) {
     .presencas { padding: 14px; }
     .total-presentes { margin-bottom: 8px; }
-    .total-presentes strong { font-size: 40px; }
     .quorum { font-size: 13px; gap: 5px; padding-bottom: 8px; }
     .membros { gap: 10px; margin-top: 10px; }
     .membros section + section { padding-top: 10px; }
     .membros h3 { margin-bottom: 6px; }
     .membros ul { gap: 4px 10px; }
-    .membros li { font-size: 15px; padding: 2px 0; }
+    .membros li { font-size: clamp(16px, 1.2vw, 17.5px); padding: 3px 0; }
     .coluna-direita-mesa { padding: 12px; gap: 10px; }
     .pauta-mesa { padding: 18px; }
     .pauta-mesa h2 { font-size: 28px; margin-bottom: 12px; }
     .item-foco-amplo .ementa { font-size: 25px; margin: 12px 0; }
     .item-foco-amplo.texto-extenso .ementa { font-size: 20px; }
 }
-@media screen and (max-width: 1099px) { .presencas { order: 2; } }
+@media screen and (max-width: 999px) { .presencas { order: 2; } .faixa-identidade { flex-wrap: wrap; } .identidade { flex-basis: 100%; } .tempos-cabecalho { max-width: none; margin-left: auto; } }
 @media print { .coluna-direita-mesa { display: block; height: auto; } }
 /* Indicadores de duração: sem alteração da geometria A4. */
-.sessao-normal { color: #16a34a; }
-.sessao-alerta { color: #d97706; }
-.sessao-limite { color: #dc2626; font-weight: bold; }
+.sessao-normal { color: #86efac; }
+.sessao-alerta { color: #fcd34d; }
+.sessao-limite { color: #fca5a5; font-weight: bold; }
 .widget-sessao { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 12px; }
 .widget-sessao button { padding: 4px 6px; font-size: 12px; }
-.sessao-badge { font-size: 13px; border: 1px solid currentColor; border-radius: 5px; padding: 5px; }
-.sessao-normal { color: #86efac; } .sessao-alerta { color: #fcd34d; } .sessao-limite { color: #fca5a5; }
+.sessao-badge { font-size: clamp(15px, 1vw, 17px); border: 1px solid currentColor; border-radius: 5px; padding: 6px 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .quorum [role="alert"] { background: #78350f; color: #fef3c7; border: 1px solid #fbbf24; font-weight: bold; }
 
 /* Um único player fixo é alinhado às reservas medidas, sem mudar de pai no DOM. */
@@ -179,9 +183,9 @@ button:disabled { opacity: .5; cursor: default; }
                 </div>
                 <div class="membros">
                     <section v-for="grupo in gruposMembros" :key="grupo.titulo"><h3>{{ grupo.titulo }}</h3>
-                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo.pres_atual[dep.id] }">
+                        <ul><li v-for="dep in grupo.membros" :key="dep.id" :class="{ presente: aoVivo.pres_atual[dep.id] }" :title="dep.nome + ' (' + dep.partido + ')' + (String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Presidente' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice-presidente' : '')">
                             <span class="selo-presenca">{{ aoVivo.pres_atual[dep.id] ? '✓' : '—' }}</span>
-                            <div>{{ dep.nome }}<small>{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}{{ String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Presidente' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice-presidente' : '' }}</small></div>
+                            <span class="nome-membro">{{ dep.nome }}</span><small>{{ dep.partido === 'REPUBLICANOS' ? 'REPUB' : dep.partido }}{{ String(dep.id) === String(snapshotMembros.presidente_id) ? ' · Pres.' : String(dep.id) === String(snapshotMembros.vice_presidente_id) ? ' · Vice' : '' }}</small>
                         </li></ul>
                     </section>
                 </div>
@@ -190,19 +194,25 @@ button:disabled { opacity: .5; cursor: default; }
             </aside>
     <div class="coluna-direita-mesa" :class="{ 'com-video-ampliado': modoPlayer === 'ampliado' }">
     <header class="cabecalho">
-        <div class="identidade">
+        <div class="barra-operacional">
             <div class="assinatura">ALRS / Painel da Comissão</div>
-            <h1>{{ comissaoSelecionada }} · {{ nomeComissao }}</h1>
-            <p class="subtitulo" v-if="roteiroCarregado">{{ formatarData(pauta.metadados.data) }} · {{ pauta.metadados.hora_inicio }} · Reunião {{ pauta.metadados.tipo_reuniao }}</p>
-        </div>
         <div class="ferramentas">
             <span class="conexao" :class="{ conectado: conexaoRealtime === 'SUBSCRIBED' }" role="status">{{ statusRealtime }}</span>
             <button type="button" :aria-expanded="seletoresAbertos" aria-controls="seletores" @click="seletoresAbertos = !seletoresAbertos">☰ Reunião</button>
             <button type="button" @click="reuniaoSelecionadaId ? carregarRoteiroEspecifico() : carregarReunioesDaComissao()" :disabled="carregando">↻ Atualizar</button>
             <button type="button" @click="telaCheia">⛶ {{ emTelaCheia ? 'Sair da tela cheia' : 'Tela Cheia' }}</button>
-            <span v-if="aoVivo.sessao_duracao.status !== 'parado'" class="sessao-badge" :class="sessaoVisor.classe">Sessão: {{ sessaoVisor.texto }}{{ aoVivo.sessao_duracao.status === 'pausado' ? ' (pausada)' : '' }}</span>
             <button v-if="youtubeMinimizado && aoVivo.transmissao.video_id && aoVivo.transmissao.modo !== 'oculto'" type="button" @click="youtubeMinimizado = false">▶ Mostrar transmissão</button>
+        </div>
+        </div>
+        <div class="faixa-identidade">
+        <div class="identidade">
+            <h1>{{ comissaoSelecionada }} · {{ nomeComissao }}</h1>
+            <p class="subtitulo" v-if="roteiroCarregado">{{ formatarData(pauta.metadados.data) }} · {{ pauta.metadados.hora_inicio }} · Reunião {{ pauta.metadados.tipo_reuniao }}</p>
+        </div>
+        <div class="tempos-cabecalho">
+            <span v-if="aoVivo.sessao_duracao.status !== 'parado'" class="sessao-badge" :class="sessaoVisor.classe">Sessão: {{ sessaoVisor.texto }}{{ aoVivo.sessao_duracao.status === 'pausado' ? ' (pausada)' : '' }}</span>
             <time class="relogio">{{ horaAtual }}</time>
+        </div>
         </div>
     </header>
     <div id="seletores" v-show="seletoresAbertos" class="seletores">
@@ -253,13 +263,16 @@ button:disabled { opacity: .5; cursor: default; }
                             <div class="placar"><div class="favoravel"><strong>{{ contarVotos(itemFoco.id, 'F') }}</strong>Favoráveis</div><div class="contrario"><strong>{{ contarVotos(itemFoco.id, 'C') }}</strong>Contrários</div></div>
                             <p class="resultado" :class="classeResultado(aoVivo.resultado_votacao[itemFoco.id])">{{ textoResultado(aoVivo.resultado_votacao[itemFoco.id]) }}</p>
                             <div class="nominais"><span v-for="voto in votosNominais(itemFoco.id)" :key="voto.id" :class="voto.sentido === 'F' ? 'favoravel' : 'contrario'">{{ voto.nome }}: <b>[{{ voto.sentido }}]</b></span></div>
-                            <p v-if="!votosNominais(itemFoco.id).length" class="subtitulo">Nenhum voto registrado.</p>
+                            <p v-if="placarRapido(itemFoco.id)" class="subtitulo">{{ votosNominais(itemFoco.id).length ? 'Placar rápido ativo: os totais prevalecem sobre os votos nominais preservados.' : 'Votação registrada por placar rápido, sem detalhamento nominal.' }}</p>
+                            <p v-else-if="!votosNominais(itemFoco.id).length" class="subtitulo">Nenhum voto registrado.</p>
                             <div v-if="itemFoco.eleicao && aoVivo.eleitos[itemFoco.id]" class="designado">Eleito<strong>{{ nomeMembro(aoVivo.eleitos[itemFoco.id]) }}</strong></div>
                             <p v-if="aoVivo.resultado_votacao[itemFoco.id] === 'rejeitado' && aoVivo.novo_relator_art67[itemFoco.id]" class="resultado">Novo relator · Art. 67: {{ nomeMembro(aoVivo.novo_relator_art67[itemFoco.id]) }}</p>
                             <div v-if="ehFaseB(itemFoco)" class="emendas">
                                 <article v-for="n in emendasFoco" :key="n" class="emenda">
                                     <h3>Emenda {{ n }} <span class="favoravel">· F: {{ contarVotos(itemFoco.id, 'F', n) }}</span> <span class="contrario">· C: {{ contarVotos(itemFoco.id, 'C', n) }}</span></h3>
                                     <p class="resultado" :class="classeResultado(aoVivo.resultado_emendas[itemFoco.id]?.[n])">{{ textoResultado(aoVivo.resultado_emendas[itemFoco.id]?.[n]) }}</p>
+                                    <p v-if="placarRapido(itemFoco.id, n)" class="subtitulo">{{ votosNominais(itemFoco.id, n).length ? 'Placar rápido ativo: os totais prevalecem sobre os votos nominais preservados.' : 'Votação registrada por placar rápido, sem detalhamento nominal.' }}</p>
+                                    <p v-else-if="!votosNominais(itemFoco.id, n).length" class="subtitulo">Nenhum voto registrado.</p>
                                     <div class="nominais"><span v-for="voto in votosNominais(itemFoco.id, n)" :key="voto.id" :class="voto.sentido === 'F' ? 'favoravel' : 'contrario'">{{ voto.nome }}: <b>[{{ voto.sentido }}]</b></span></div>
                                 </article>
                             </div>
@@ -298,6 +311,7 @@ button:disabled { opacity: .5; cursor: default; }
 <script>
 const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cfCVWR24Jq4NripFuSo4xA_GFixfQGk';
+const COLUNAS_REUNIAO_PUBLICA = 'id, comissao_sigla, data_reuniao, hora_inicio, tipo_reuniao, modalidade, local, status, snapshot_membros, pauta_json, preparo_json, updated_at';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 // Contrato compartilhado: manter idêntico nos três HTMLs.
 const OCORRENCIAS_OD = Object.freeze({
@@ -331,7 +345,7 @@ function criarAoVivo(origem = {}) {
         pres_abertura: {}, pres_deliberacao: {}, pres_atual: {}, pres_atual_inicializada: false,
         trava_abertura: false, trava_deliberacao: false, ocorrencia_od: {}, sessao_duracao: {}, status_quorum: null,
         relatores_escolhidos: {}, res_info: {}, res_delib: {}, votos: {},
-        resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {},
+        resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {}, placar_votacao: {}, placar_emendas: {},
         eleitos: {}, novo_relator_art67: {}, vista_em_sessao: {}, foco_pauta: null, cronometro: {}
     };
     const resultado = v => ['aprovado', 'rejeitado'].includes(v);
@@ -362,6 +376,12 @@ function criarAoVivo(origem = {}) {
     for (const [chave, valor] of Object.entries(mapa(dados.votos_emendas, v => objeto(v) === v))) {
         estado.votos_emendas[chave] = {};
         for (const [n, votos] of Object.entries(mapa(valor, v => objeto(v) === v))) estado.votos_emendas[chave][n] = mapa(votos, voto);
+    }
+    const placarValido = v => objeto(v) === v && ['F','C'].every(sentido => Object.hasOwn(v, sentido) && Number.isSafeInteger(v[sentido]) && v[sentido] >= 0);
+    for (const [chave, valor] of Object.entries(mapa(dados.placar_votacao, placarValido))) estado.placar_votacao[chave] = { F: valor.F, C: valor.C };
+    for (const [chave, valor] of Object.entries(mapa(dados.placar_emendas, v => objeto(v) === v))) {
+        const emendas = Object.entries(mapa(valor, placarValido)).filter(([n]) => /^[1-9]\d*$/.test(n) && Number.isSafeInteger(Number(n)));
+        if (emendas.length) estado.placar_emendas[chave] = Object.fromEntries(emendas.map(([n, p]) => [n, { F: p.F, C: p.C }]));
     }
     const transmissao = objeto(dados.transmissao);
     const videoId = typeof transmissao.video_id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(transmissao.video_id) ? transmissao.video_id : '';
@@ -449,6 +469,30 @@ function visorSessao(c, agora = Date.now()) {
 }
 
 const { createApp, ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
+function usarTelaAtiva(ativo) {
+    let trava = null, solicitando = false, encerrado = false;
+    async function atualizar() {
+        if (encerrado || !ativo() || document.visibilityState !== 'visible') {
+            const anterior = trava; trava = null;
+            if (anterior) { try { await anterior.release(); } catch {} }
+            return;
+        }
+        if (trava || solicitando || !navigator.wakeLock) return;
+        solicitando = true;
+        try {
+            const obtida = await navigator.wakeLock.request('screen');
+            if (encerrado || !ativo() || document.visibilityState !== 'visible') await obtida.release();
+            else {
+                trava = obtida;
+                obtida.addEventListener('release', () => { if (trava === obtida) trava = null; }, { once: true });
+            }
+        } catch {} finally { solicitando = false; }
+    }
+    watch(ativo, atualizar);
+    onMounted(() => { document.addEventListener('visibilitychange', atualizar); atualizar(); });
+    onBeforeUnmount(() => { encerrado = true; document.removeEventListener('visibilitychange', atualizar); atualizar(); });
+}
+
 createApp({
     setup() {
         const comissoes = ref([]);
@@ -457,6 +501,7 @@ createApp({
         const reuniaoSelecionadaId = ref(null);
         const carregando = ref(false);
         const roteiroCarregado = ref(false);
+        usarTelaAtiva(() => roteiroCarregado.value);
 
         const pauta = reactive({
             metadados: {}, aprovacao_atas: { atas: [] },
@@ -552,7 +597,38 @@ createApp({
         let ultimoUpdatedAt = '';
         let recuperacaoSnapshot = null;
         const pautaInicial = JSON.stringify(pauta);
+        let timerContingencia = null, consultaContingencia = null, leitorEncerrado = false;
+        function pararContingencia() {
+            clearTimeout(timerContingencia); timerContingencia = null;
+            consultaContingencia?.abort(); consultaContingencia = null;
+        }
+        function agendarContingencia() {
+            clearTimeout(timerContingencia);
+            if (!leitorEncerrado && reuniaoSelecionadaId.value && conexaoRealtime.value !== 'SUBSCRIBED')
+                timerContingencia = setTimeout(atualizarPorContingencia, 15000);
+        }
+        async function atualizarPorContingencia() {
+            if (leitorEncerrado || !reuniaoSelecionadaId.value || conexaoRealtime.value === 'SUBSCRIBED' || consultaContingencia) return;
+            const id = reuniaoSelecionadaId.value, geracao = geracaoCanal, versao = versaoRecebida;
+            const controller = new AbortController(); consultaContingencia = controller;
+            const limite = setTimeout(() => controller.abort(), 10000);
+            try {
+                const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).abortSignal(controller.signal).single();
+                if (!leitorEncerrado && id === reuniaoSelecionadaId.value && geracao === geracaoCanal && versao === versaoRecebida && !error && data)
+                    await aplicarRegistro(data, true);
+            } catch {} finally {
+                clearTimeout(limite);
+                if (consultaContingencia === controller) consultaContingencia = null;
+                if (!leitorEncerrado && id === reuniaoSelecionadaId.value && geracao === geracaoCanal && conexaoRealtime.value !== 'SUBSCRIBED') {
+                    assinarRealtime(id);
+                    agendarContingencia();
+                }
+            }
+        }
+        watch([reuniaoSelecionadaId, conexaoRealtime], agendarContingencia);
+        onBeforeUnmount(() => { leitorEncerrado = true; pararContingencia(); });
         function encerrarRealtime() {
+            pararContingencia();
             ++geracaoCanal;
             if (canalRealtime) { const canal = canalRealtime; canalRealtime = null; sb.removeChannel(canal); }
             conexaoRealtime.value = 'CLOSED';
@@ -581,7 +657,7 @@ createApp({
             const pedido = { id, geracao }, versao = versaoRecebida;
             recuperacaoSnapshot = pedido;
             try {
-                const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).single();
                 if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value) return;
                 if (error || !data || data.id !== id) throw error || new Error('Registro ausente');
                 if (versao === versaoRecebida) await aplicarRegistro(data, true);
@@ -632,7 +708,7 @@ createApp({
                     if (status === 'SUBSCRIBED') {
                         const versao = versaoRecebida;
                         try {
-                            const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                            const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).single();
                             if (geracao !== geracaoCanal || id !== reuniaoSelecionadaId.value || versao !== versaoRecebida) return;
                             if (error) erroCarregamento.value = 'Não foi possível conferir a atualização. Use Atualizar.';
                             else if (data) { erroCarregamento.value = ''; aplicarRegistro(data, true); }
@@ -671,7 +747,7 @@ createApp({
             carregando.value = !roteiroCarregado.value;
             erroCarregamento.value = '';
             try {
-                const { data, error } = await sb.from('reunioes').select('*').eq('id', id).single();
+                const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).single();
                 if (pedido !== pedidoRoteiro || id !== reuniaoSelecionadaId.value) return;
                 if (error || !data) throw error || new Error('Reunião não encontrada');
                 if (versao === versaoRecebida) await aplicarRegistro(data, roteiroCarregado.value);
@@ -751,7 +827,7 @@ createApp({
             const id = itemFoco.value?.id;
             const quantidade = Number(historicoFoco.value.num_emendas);
             const numeros = new Set(Number.isSafeInteger(quantidade) && quantidade > 0 ? Array.from({ length: Math.min(quantidade, 1000) }, (_,i) => i + 1) : []);
-            for (const n of [...Object.keys(aoVivo.value.votos_emendas[id] || {}), ...Object.keys(aoVivo.value.resultado_emendas[id] || {})]) {
+            for (const n of [...Object.keys(aoVivo.value.votos_emendas[id] || {}), ...Object.keys(aoVivo.value.resultado_emendas[id] || {}), ...Object.keys(aoVivo.value.placar_emendas[id] || {})]) {
                 if (Number.isSafeInteger(Number(n)) && Number(n) > 0) numeros.add(Number(n));
             }
             return [...numeros].sort((a,b) => a-b);
@@ -760,7 +836,12 @@ createApp({
             const votos = n === null ? aoVivo.value.votos[id] || {} : aoVivo.value.votos_emendas[id]?.[n] || {};
             return membros.value.filter(d => ['F','C'].includes(votos[d.id])).map(d => ({ ...d, sentido: votos[d.id] }));
         }
-        function contarVotos(id, sentido, n = null) { return votosNominais(id, n).filter(d => d.sentido === sentido).length; }
+        function placarRapido(id, n = null) {
+            const mapa = n === null ? aoVivo.value.placar_votacao : aoVivo.value.placar_emendas[id];
+            const chave = n === null ? id : n;
+            return mapa && Object.hasOwn(mapa, chave) ? mapa[chave] : null;
+        }
+        function contarVotos(id, sentido, n = null) { return placarRapido(id, n)?.[sentido] ?? votosNominais(id, n).filter(d => d.sentido === sentido).length; }
         const textoResultado = valor => valor === 'aprovado' ? '✅ APROVADO' : valor === 'rejeitado' ? '❌ REJEITADO' : 'EM VOTAÇÃO / DISCUSSÃO';
         const classeResultado = valor => valor === 'aprovado' ? 'favoravel' : valor === 'rejeitado' ? 'contrario' : '';
         const tituloItem = it => `${it.tipo_extenso || it.tipo || 'Proposição'} n.º ${it.numero || '—'}/${it.ano || '—'}`;
@@ -801,7 +882,7 @@ createApp({
             pauta, preparo, snapshotMembros, erroCarregamento, seletoresAbertos, areaPauta, emTelaCheia, erroTelaCheia, telaCheia,
             horaAtual, aoVivo, visor, conexaoRealtime, statusRealtime, carregarReunioesDaComissao, carregarRoteiroEspecifico,
             nomeComissao, gruposMembros, foco, presentes, presentesAbertura, aberturaAtingida, odConcluida, alertaSala, sessaoVisor, nomeMembro, listaFoco, indiceFoco, itemFoco, historicoFoco, emendasFoco,
-            votosNominais, contarVotos, textoResultado, classeResultado, tituloItem, tituloSecao, resumoSecoes, cartoesSecao,
+            votosNominais, contarVotos, placarRapido, textoResultado, classeResultado, tituloItem, tituloSecao, resumoSecoes, cartoesSecao,
             ehFaseB, gerarResumoPareceresFaseB, formatarData, formatarParecer, formatarAutorRelator, descritorFoco, cartaoFoco };
     }
 }).mount('#app');
