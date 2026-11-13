@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a"><title>Pocket · Roteiro Inteligente ALRS</title>
+<script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.js"></script>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#f8fafc;background:#0f172a;color-scheme:dark}*{box-sizing:border-box}body{margin:0}[v-cloak]{display:none}button,input,select{font:inherit;border:1px solid #475569;border-radius:10px;background:#1e293b;color:inherit;padding:10px;min-height:44px}input,select{font-size:16px;width:100%;min-width:0}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.4;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}button[aria-pressed=true],.selecionado{outline:2px solid #38bdf8;background:#164e63}h1,h2,h3,p{margin:0 0 12px}h1{font-size:24px}h2{font-size:20px}h3{font-size:16px}label{display:grid;gap:6px;margin:12px 0}small,.muted{color:#94a3b8;font-size:12px;line-height:1.4}fieldset{border:0;margin:0;padding:0;min-width:0}summary{padding:12px 0;cursor:pointer}details p{line-height:1.45;white-space:pre-line}#app{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;max-width:720px;margin:auto;padding-top:env(safe-area-inset-top)}.topo{padding:8px 12px;background:#0f172a;border-bottom:1px solid #334155;flex-shrink:0}.linha-topo{display:flex;align-items:center;gap:6px}.reuniao-atalho{flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.sync{font-size:11px;white-space:nowrap}.sync::before{content:'●';margin-right:4px}.sync.ok{color:#6ee7b7}.sync.pendente{color:#fcd34d}.sync.erro{color:#fca5a5}.sync.inativo{color:#94a3b8}.globais,.navegacao{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.globais{margin-top:6px}.globais button{padding:8px 3px;font-size:13px}.sessao{display:flex;align-items:center;gap:4px;margin-top:6px;min-height:44px;font-size:13px}.sessao button{min-width:44px;padding:6px}.sessao strong{margin-right:auto}.sessao-normal{color:#86efac}.sessao-alerta{color:#fcd34d}.sessao-limite{color:#fca5a5}.deck{flex:1;overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:12px}.card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:12px}.posicao{color:#7dd3fc;font-size:12px;line-height:1.5;margin-bottom:6px}.navegacao{padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#0f172a;border-top:1px solid #334155;flex-shrink:0}.navegacao button{font-size:14px;padding:10px 4px}.dupla{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pilhas{display:grid;gap:8px}.bom{background:#065f46;color:#ecfdf5;border-color:#10b981}.ruim{background:#7f1d1d;color:#fff1f2;border-color:#f87171}.aviso{background:#422006;color:#fde68a;border:1px solid #b45309;border-radius:10px;padding:10px;margin:10px 0;line-height:1.4}.badge{display:inline-block;background:#0f172a;color:#bae6fd;padding:5px 8px;border-radius:6px;font-size:12px;margin:2px}.placar{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;margin:12px 0}.placar strong{display:block;font-size:38px;font-variant-numeric:tabular-nums}.placar>div{border-radius:12px;padding:12px 4px;background:#0f172a}.favoravel{color:#6ee7b7}.contrario{color:#fca5a5}.incremento{display:grid;grid-template-columns:56px 1fr;gap:8px;margin:8px 0}.incremento button{min-height:52px;font-weight:bold}.alvos{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px}.alvos button{white-space:nowrap;flex-shrink:0}.suspenso{border:1px solid #f59e0b;background:#422006;padding:14px;border-radius:12px}.grade-presenca{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grade-presenca button{width:100%;font-size:13px;text-align:left;margin:3px 0;min-height:48px;overflow-wrap:anywhere}.grade-presenca button[aria-pressed=true],.presente{background:#064e3b;color:#d1fae5}.total{font-size:28px;font-weight:bold;margin:12px 0}.leitura{white-space:pre-line;line-height:1.5}.indice button{display:block;width:100%;text-align:left;margin:6px 0}.indice button small{display:block}.voto-linha{display:grid;grid-template-columns:minmax(0,1fr) 52px 52px;gap:8px;align-items:center;margin:8px 0}.voto-linha span{font-size:14px}.voto-linha small{display:block}
+dialog{color:inherit;background:#0f172a;border:1px solid #475569;border-radius:20px 20px 0 0;padding:0;width:min(100%,720px);max-width:100%;max-height:92dvh;margin:auto auto 0;box-shadow:0 -12px 48px #0008}dialog::backdrop{background:#0009}.sheet-topo{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;background:#0f172a;padding:12px;z-index:2;border-bottom:1px solid #334155}.sheet-topo h2{margin:0}.sheet-corpo{padding:14px 14px calc(16px + env(safe-area-inset-bottom));overflow-y:auto}.sheet-sala{margin:0 auto 0 0;height:100dvh;max-height:100dvh;width:min(92%,440px);border-radius:0 18px 18px 0}.sheet-quadro{height:100dvh;max-height:100dvh;border-radius:0}.sheet-quadro .sheet-topo{padding:6px 12px}.sheet-quadro .sheet-corpo{padding-top:8px}.quadro-cabecalho h3{font-size:14px;margin-bottom:5px}.quadro-cabecalho p{font-size:12px;margin-bottom:5px}.quadro-tabela{width:100%;border-collapse:collapse;font-size:12px}.quadro-tabela td{border-bottom:1px solid #334155;padding:3px 2px}.quadro-tabela button{min-height:32px;font-size:11px;padding:4px;white-space:nowrap}.quadro-tabela td:nth-child(2){width:100%}.quadro-tabela small{display:block;font-size:10px}.quadro-total{font-weight:bold;text-align:center;margin:10px 0}.tempo-visor{padding:16px 0;display:grid;gap:6px;text-align:center}.tempo-visor strong{font-size:52px;font-variant-numeric:tabular-nums}.tempo-modos{display:grid;grid-template-columns:1fr 1fr;gap:6px}.tempo-botoes{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.tempo-botoes button{flex:1}.tempo-normal{color:#67e8f9}.tempo-alerta{background:#422006!important;color:#fde68a!important}.tempo-critico{background:#7f1d1d!important;color:#fee2e2!important;animation:pulso 1s infinite}@keyframes pulso{50%{opacity:.65}}@media(prefers-reduced-motion:reduce){.tempo-critico{animation:none}}@media print{.no-screenshot{display:none}}
+</style></head><body>
+<div id="app" v-cloak>
+<header class="topo"><div class="linha-topo"><span class="sync" :class="classeAutoSync" role="status">{{ classeAutoSync }}</span><button v-if="erroAutoSync" @click="tentarSincronizar" aria-label="Tentar sincronizar novamente">↻</button><button class="reuniao-atalho" @click="abrirSheet('conta')">{{ reuniaoAtualUuid ? pauta.metadados.sigla + ' · ' + formatarData(pauta.metadados.data) + ' · ' + pauta.metadados.hora_inicio : 'ALRS · Entrar / escolher reunião' }} ▾</button></div>
+<div class="sessao"><template v-if="aoVivo.sessao_duracao.status === 'parado'"><button :disabled="!podeInteragir" @click="acaoSessao('iniciar')">▶ Iniciar 2h</button><small>Duração da sessão</small></template><template v-else><strong :class="sessaoVisor.classe">Sessão {{ sessaoVisor.texto }}</strong><button :disabled="!podeInteragir" @click="acaoSessao(aoVivo.sessao_duracao.status === 'rodando' ? 'pausar' : 'iniciar')" aria-label="Pausar ou retomar sessão">{{ aoVivo.sessao_duracao.status === 'rodando' ? '⏸' : '▶' }}</button><button :disabled="!podeInteragir" @click="acaoSessao('zerar')" aria-label="Zerar sessão">↺</button></template></div>
+<div class="globais"><button :disabled="!reuniaoAtualUuid" @click="abrirSheet('sala')">◉ Sala ({{ contarPresentes('pres_atual') }})</button><button :disabled="!reuniaoAtualUuid" :class="aoVivo.cronometro.status !== 'parado' ? visor.classe : ''" @click="abrirSheet('fala')">🎙 Fala {{ visor.texto }}</button><button :disabled="!reuniaoAtualUuid" @click="abrirSheet('quadro')">▦ Titulares P/F</button></div></header>
+<main class="deck" ref="deck"><p v-if="statusBanco" class="aviso" role="status">{{ statusBanco }}</p><div v-if="!reuniaoAtualUuid" class="card"><p class="posicao">ROTEIRO INTELIGENTE · POCKET</p><h1>Condução na palma da mão</h1><p>Entre com sua conta e escolha uma reunião já preparada.</p><button class="bom" @click="abrirSheet('conta')">Conta e reunião</button></div>
+<template v-else><label class="posicao">EM PAUTA<select :disabled="!podeInteragir" :value="chaveFoco" @change="selecionarFoco($event.target.value)"><option v-for="f in indice" :key="chave(f)" :value="chave(f)">{{ f.rotulo }}</option></select></label><p v-if="!usuarioLogado" class="aviso">Entre na conta para habilitar os controles.</p>
+<fieldset :disabled="!podeInteragir">
+<section v-if="secao === 'abertura' || secao === 'quorum'" class="card"><h2>{{ secao === 'abertura' ? 'Fotografia de Abertura' : 'Verificação de Quórum' }}</h2><div class="total">{{ contarPresentes(campoFoto) }} / {{ secao === 'abertura' ? 3 : 7 }}</div><p :class="contarPresentes(campoFoto) >= (secao === 'abertura' ? 3 : 7) ? 'favoravel' : 'contrario'">{{ contarPresentes(campoFoto) >= (secao === 'abertura' ? 3 : 7) ? 'ATINGIDO ✓' : 'AGUARDANDO' }}</p><div class="pilhas"><button :aria-pressed="fotografiaTravada(campoFoto)" @click="alternarTrava(secao === 'abertura' ? 'trava_abertura' : 'trava_deliberacao')">{{ fotografiaTravada(campoFoto) ? '🔒 Fotografia travada (Destravar)' : '🔓 Travar fotografia' }}</button><template v-if="!fotografiaTravada(campoFoto)"><button @click="puxarFoto">Puxar presentes da sala agora ({{ contarPresentes('pres_atual') }})</button><button v-if="secao === 'quorum'" @click="copiarPresentesAbertura">Copiar da Abertura ({{ contarPresentes('pres_abertura') }})</button></template></div>
+<template v-if="secao === 'quorum'"><div class="pilhas" style="margin-top:12px"><button class="bom" @click="decidirQuorum('sim')">✅ HAVENDO QUÓRUM → Ordem do Dia</button><button class="ruim" @click="decidirQuorum('nao')">❌ NÃO HAVENDO → Assuntos Gerais</button></div><details><summary>Ajustar nomes na fotografia</summary><grade-presenca :grupos="gruposSala" :marcas="aoVivo.pres_deliberacao" :bloqueado="!podeInteragir || aoVivo.trava_deliberacao" @marcar="alternarPresenca('pres_deliberacao', $event)"></grade-presenca></details></template><grade-presenca v-else :grupos="gruposSala" :marcas="aoVivo.pres_abertura" :bloqueado="!podeInteragir || aoVivo.trava_abertura" @marcar="alternarPresenca('pres_abertura', $event)"></grade-presenca></section>
+<section v-else-if="itemFoco && ['mad','od'].includes(descritor?.grupo)" class="card"><p class="posicao">{{ descritor.rotulo }}</p><h1>{{ tituloItem(itemFoco) }}</h1><span v-if="ehFaseB(itemFoco)" class="badge">⚡ Fase B · Conclusiva</span><span v-else-if="itemFoco.votacao_conclusiva" class="badge">⚡ {{ itemFoco.texto_conclusiva || 'Tramitação Conclusiva' }}</span><span v-if="historico.is_relatorio_lido" class="badge">Relatório já lido</span><span v-for="v in historico.vistas_detalhadas || []" class="badge">Vista anterior: {{ v.bancada }} · {{ v.deputado }}</span><p class="muted">Proponente: {{ autor(itemFoco.proponente_principal, itemFoco.proponente_cru) }}</p><p v-if="descritor.grupo === 'od' && exibirBlocoRelatorParecer(itemFoco)" class="muted">Relator: {{ autor(itemFoco.relator, itemFoco.relator_cru) }} · Parecer: {{ formatarParecer(itemFoco.parecer) }}</p><details><summary>Ementa / detalhes</summary><p>{{ itemFoco.ementa }}</p><p v-if="itemFoco.local">Local: {{ itemFoco.local }} {{ itemFoco.modalidade }}</p><p v-if="itemFoco.convidados?.length">Convidados: {{ itemFoco.convidados.join('; ') }}</p><p v-for="pa in itemFoco.pareceres_anteriores || []">{{ pa.comissao }} · {{ formatarParecer(pa.parecer) }} · {{ pa.relator }}</p></details>
+<template v-if="descritor.grupo === 'mad'"><p class="aviso">Bancada impedida (Art. 61-A): {{ itemFoco.bancada_impedida || 'Não informada / órgão externo' }}</p><label>Relator pela Grade<select :value="preparo.relatores_grade[itemFoco.id] || ''" @change="definirRelatorGrade(itemFoco.id,$event.target.value)"><option value="">— Sem designação —</option><option v-for="d in elegiveis" :value="d.id">{{ d.nome }} ({{ d.partido }})</option></select></label><label>Relator Efetivo / Acordo<select :value="aoVivo.relatores_escolhidos[itemFoco.id] || ''" @change="definirCampo('relatores_escolhidos',itemFoco.id,$event.target.value)"><option value="">— Usar grade —</option><option v-for="d in membrosConducao" :value="d.id">{{ d.nome }} ({{ d.partido }})</option></select></label><p class="favoravel">Designado: {{ getNomeRelator(aoVivo.relatores_escolhidos[itemFoco.id] || preparo.relatores_grade[itemFoco.id]) || 'Em aberto' }}</p></template>
+<template v-else><div v-if="suspenso" class="suspenso"><p>{{ aoVivo.vista_em_sessao[itemFoco.id] ? '✋ VISTA: ' + aoVivo.vista_em_sessao[itemFoco.id] : '' }}</p><p>{{ aoVivo.ocorrencia_od[itemFoco.id]?.texto }}</p><button v-if="aoVivo.vista_em_sessao[itemFoco.id]" @click="definirCampo('vista_em_sessao',itemFoco.id,'')">Remover vista</button><button v-if="aoVivo.ocorrencia_od[itemFoco.id]" @click="definirOcorrencia(itemFoco,'')">Remover ocorrência</button></div>
+<template v-else><div class="alvos" v-if="emendas.length"><button :aria-pressed="alvo === null" @click="alvo = null">Projeto Principal</button><button v-for="n in emendas" :aria-pressed="alvo === n" @click="alvo = n">Emenda {{ n }}</button></div><div class="placar"><div class="favoravel">Favoráveis<strong>{{ contarVotos(itemFoco.id,'F',alvo) || 0 }}</strong></div><div class="contrario">Contrários<strong>{{ contarVotos(itemFoco.id,'C',alvo) || 0 }}</strong></div></div><p class="muted">{{ placarRapido(itemFoco.id,alvo) ? 'Placar rápido · sobrepõe a contagem nominal' : 'Contagem nominal' }} · {{ alvo ? 'Emenda ' + alvo : 'Proposição principal' }}</p><div class="incremento"><button @click="ajustarPlacar(itemFoco,'F',-1,alvo)">−F</button><button class="bom" @click="ajustarPlacar(itemFoco,'F',1,alvo)">＋1 FAVORÁVEL (F)</button></div><div class="incremento"><button @click="ajustarPlacar(itemFoco,'C',-1,alvo)">−C</button><button class="ruim" @click="ajustarPlacar(itemFoco,'C',1,alvo)">＋1 CONTRÁRIO (C)</button></div><div class="pilhas"><button :disabled="!presentesVotacao.length" @click="preencherVotosPresentes(itemFoco,false,alvo)">✅ Todos Presentes = F ({{ presentesVotacao.length }})</button><button :disabled="!presentesVotacao.length" @click="preencherVotosPresentes(itemFoco,true,alvo)">✅ Restantes = F</button></div><div class="dupla" style="margin:8px 0"><button @click="abrirSheet('votos')">Votos nominais F/C</button><button @click="limparVotos(itemFoco,alvo)">Limpar votos</button></div><small>Resultado regimental · marcação manual</small><div class="dupla" style="margin:8px 0"><button class="bom" :aria-pressed="resultado === 'aprovado'" @click="marcarResultado(itemFoco,'aprovado',alvo)">✅ APROVADO</button><button class="ruim" :aria-pressed="resultado === 'rejeitado'" @click="marcarResultado(itemFoco,'rejeitado',alvo)">❌ REJEITADO</button></div><template v-if="alvo === null"><template v-if="itemFoco.eleicao"><p v-if="historico.indicado_eleicao" class="aviso">Indicação: {{ historico.indicado_eleicao }}</p><label>Deputado(a) eleito(a)<select :value="aoVivo.eleitos[itemFoco.id] || ''" @change="definirCampo('eleitos',itemFoco.id,$event.target.value)"><option value="">— Não declarado —</option><option v-for="d in membrosConducao" :value="d.id">{{ d.nome }}</option></select></label></template><label v-if="resultado === 'rejeitado' && !ehFaseB(itemFoco) && elegivelNovoRelator(itemFoco.tipo)">Novo relator (Art. 67)<select :value="aoVivo.novo_relator_art67[itemFoco.id] || ''" @change="definirCampo('novo_relator_art67',itemFoco.id,$event.target.value)"><option value="">— Não designado —</option><option v-for="d in membrosConducao" :value="d.id">{{ d.nome }} ({{ d.partido }})</option></select></label></template></template>
+<label v-if="itemFoco.permite_pedido_vista && !historico.vedado_mais_vistas">✋ Conceder vista em sessão<select :value="aoVivo.vista_em_sessao[itemFoco.id] || ''" @change="definirCampo('vista_em_sessao',itemFoco.id,$event.target.value)"><option value="">— Sem vista —</option><option v-for="d in membrosConducao" :disabled="(historico.vistas_detalhadas || []).some(v => v.bancada === d.partido)" :value="'BANCADA ' + d.partido + ' – DEP. ' + d.nome.toUpperCase()">{{ d.partido }} – {{ d.nome }}</option></select></label><label>⏸ Outra ocorrência<select :value="aoVivo.ocorrencia_od[itemFoco.id]?.tipo || ''" @change="definirOcorrencia(itemFoco,$event.target.value)"><option value="">— Votação normal —</option><option v-for="(o,k) in OCORRENCIAS_OD" :value="k">{{ o.rotulo }}</option></select></label></template></section>
+<section v-else class="card"><h2>{{ tituloSecao }}</h2><p v-if="aoVivo.foco_pauta?.item_id && !descritor" class="aviso">Item em foco não encontrado. Escolha outro item no índice.</p><article v-for="(c,i) in cartoes" :key="i" style="margin-bottom:16px"><h3>{{ c.titulo }}</h3><p class="leitura">{{ c.texto }}</p></article><button v-if="descritor && (descritor.grupo === 'deladm' || descritor.grupo === 'inf' && descritor.item.requer_deliberacao)" class="bom" :aria-pressed="!!aoVivo[descritor.grupo === 'inf' ? 'res_info' : 'res_delib'][descritor.indice]" @click="alternarMarca(descritor.grupo === 'inf' ? 'res_info' : 'res_delib',descritor.indice)">✅ ({{ aoVivo[descritor.grupo === 'inf' ? 'res_info' : 'res_delib'][descritor.indice] ? 'X' : ' ' }}) APROVADO PELOS PARLAMENTARES</button></section>
+</fieldset></template></main>
+<nav class="navegacao" aria-label="Navegação da pauta"><button :disabled="!podeInteragir" @click="avancarFoco(-1)">⬅ Anterior</button><button :disabled="!reuniaoAtualUuid" @click="abrirSheet('indice')">☷ Ir para...</button><button :disabled="!podeInteragir" @click="avancarFoco(1)">Próximo ➡</button></nav>
+<dialog ref="dialog" :class="'sheet-' + sheet" @close="!dialog?.open && (sheet = '')" @click="fecharFundo"><div class="sheet-topo no-screenshot"><h2>{{ nomesSheets[sheet] }}</h2><button @click="fecharSheet" aria-label="Fechar gaveta">✕</button></div><div class="sheet-corpo">
+<template v-if="sheet === 'conta'"><p class="posicao">ALRS · CONSOLE DE BOLSO</p><form v-if="!usuarioLogado" @submit.prevent="entrar"><label>E-mail<input type="email" v-model="email" autocomplete="username" required></label><label>Senha<input type="password" v-model="senha" autocomplete="current-password" required></label><button class="bom" :disabled="authOcupado">Entrar</button></form><template v-else><p>{{ usuarioLogado.email }}</p><button @click="sair" :disabled="authOcupado || carregando">Sair da conta</button></template><p class="aviso" v-if="erroAuth">{{ erroAuth }}</p><label>Comissão<select v-model="comissao" @change="listarReunioes"><option value="">Todas</option><option v-for="c in comissoes" :value="c.sigla">{{ c.sigla }} — {{ c.nome }}</option></select></label><label>Reunião salva<select v-model="escolhida"><option value="">Escolha uma reunião</option><option v-for="r in reunioes" :value="r.id">{{ r.comissao_sigla }} · {{ formatarData(r.data_reuniao) }} · {{ r.hora_inicio }}</option></select></label><button class="bom" :disabled="!escolhida || carregando" @click="carregarReuniao">{{ carregando ? 'Carregando...' : 'Abrir reunião' }}</button><button @click="listarReunioes">↻ Atualizar lista</button><p class="aviso" v-if="statusBanco">{{ statusBanco }}</p><hr><div class="pilhas"><button :disabled="!reuniaoAtualUuid" @click="copiarResumoReuniao">Copiar resumo</button><button :disabled="!reuniaoAtualUuid" @click="abrirSheet('youtube')">Transmissão YouTube</button><button class="ruim" :disabled="!podeInteragir" @click="zerarAoVivo">Zerar Ao Vivo</button></div><p class="muted" style="margin-top:12px">{{ recepcao.conexao.value }} · Use uma estação por vez para alterar a mesma votação. Alterações simultâneas não são mescladas.</p></template>
+<template v-else-if="sheet === 'sala'"><p class="total">Na sala agora: {{ contarPresentes('pres_atual') }}</p><p class="muted">Abertura (3): {{ contarPresentes('pres_atual') >= 3 ? '✓' : 'aguardando' }} · Deliberação (7): {{ contarPresentes('pres_atual') >= 7 ? '✓' : 'aguardando' }}</p><grade-presenca :grupos="gruposSala" :marcas="aoVivo.pres_atual" :bloqueado="!podeInteragir" @marcar="alternarPresenca('pres_atual',$event)"></grade-presenca><p class="muted">Esta grade altera somente a presença atual na sala.</p></template>
+<widget-cronometro v-else-if="sheet === 'fala'" :estado="aoVivo.cronometro" :permitido="podeInteragir" :membros="oradoresSala" :rapido="true" @alterar="atualizarCronometro"></widget-cronometro>
+<template v-else-if="sheet === 'quadro'"><div class="quadro-cabecalho"><h3>{{ pauta.metadados.sigla }} · {{ pauta.metadados.comissao }}</h3><p>{{ formatarData(pauta.metadados.data) }} · Reunião {{ pauta.metadados.tipo_reuniao }}</p><p class="muted">Ajustes P/F valem só neste quadro/print.</p></div><table class="quadro-tabela"><tbody><tr v-for="(d,i) in titularesAlfabeticos" :key="d.id"><td>{{ i+1 }}</td><td>{{ d.nome }}<small>{{ partido(d.partido) }}</small></td><td><button :class="quadroPresente(d) ? 'bom' : 'ruim'" @click="ajustesQuadro[d.id] = !quadroPresente(d)">{{ quadroPresente(d) ? 'P — Presente' : 'F — Falta' }}</button></td></tr></tbody></table><p class="quadro-total">Presentes: {{ totalQuadro }} | Faltas: {{ titularesAlfabeticos.length - totalQuadro }}</p><div class="dupla no-screenshot"><button @click="copiarQuadro">Copiar texto</button><button @click="fecharSheet">✕ Fechar</button></div></template>
+<div v-else-if="sheet === 'indice'" class="indice"><button v-for="f in indice" :key="chave(f)" :disabled="!podeInteragir" :aria-pressed="chave(f) === chaveFoco" @click="selecionarFoco(chave(f));fecharSheet()">{{ f.rotulo }}<small v-if="statusFoco(f)">{{ statusFoco(f) }}</small></button></div>
+<template v-else-if="sheet === 'votos' && itemFoco && !suspenso"><p>{{ tituloItem(itemFoco) }} · {{ alvo ? 'Emenda ' + alvo : 'Principal' }}</p><p class="muted">Presentes na sala primeiro. Um toque nominal retoma a contagem da tabela.</p><div v-for="d in oradoresSala" class="voto-linha"><span>{{ d.nome }}<small>{{ partido(d.partido) }} {{ aoVivo.pres_atual[d.id] ? '· na sala' : '' }}</small></span><button class="bom" :disabled="!podeInteragir" :aria-pressed="votosDoItem(itemFoco.id,alvo)[d.id] === 'F'" @click="alternarVoto(itemFoco,d,'F',alvo)">F</button><button class="ruim" :disabled="!podeInteragir" :aria-pressed="votosDoItem(itemFoco.id,alvo)[d.id] === 'C'" @click="alternarVoto(itemFoco,d,'C',alvo)">C</button></div></template>
+<template v-else-if="sheet === 'youtube'"><label>Link ou ID do YouTube<input type="text" :value="aoVivo.transmissao.url" :disabled="!podeInteragir" @input="atualizarYoutube($event.target.value)"></label><p :class="aoVivo.transmissao.video_id ? 'favoravel' : 'contrario'">{{ aoVivo.transmissao.video_id ? '✓ ID: ' + aoVivo.transmissao.video_id : 'Cole um link válido para habilitar a transmissão.' }}</p><div class="dupla"><button v-for="(nome,modo) in modosYoutube" :disabled="!podeInteragir || !aoVivo.transmissao.video_id" :aria-pressed="aoVivo.transmissao.modo === modo" @click="mudarYoutube(modo)">{{ nome }}</button></div></template>
+</div></dialog></div>
+<script>
+const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } = Vue;
+const SUPABASE_URL = 'https://stwdytpfdizwtaqtrarq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_cfCVWR24Jq4NripFuSo4xA_GFixfQGk';
+const COLUNAS_REUNIAO_PUBLICA = 'id, comissao_sigla, data_reuniao, hora_inicio, tipo_reuniao, modalidade, local, status, snapshot_membros, pauta_json, preparo_json, updated_at';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const OCORRENCIAS_OD = Object.freeze({
+    relator_ausente: { rotulo: '⏸️ Adiado — Relator Ausente (próxima reunião)', texto: '⏸️ MATÉRIA ADIADA NESTA SESSÃO: RELATOR AUSENTE — LEITURA/VOTAÇÃO FICA PARA A PRÓXIMA REUNIÃO.' },
+    reexame: { rotulo: '↩️ Retirado para Reexame pelo Relator', texto: '↩️ MATÉRIA RETIRADA PARA REEXAME PELO RELATOR NESTA SESSÃO.' },
+    retirada_pauta: { rotulo: 'Retirado de Pauta', texto: 'MATÉRIA RETIRADA DE PAUTA NESTA SESSÃO.' },
+    sobrestado: { rotulo: '⏳ Sobrestado / Apreciar posteriormente', texto: '⏳ MATÉRIA SOBRESTADA — APRECIAÇÃO POSTERIOR.' }
+});
+function criarAoVivo(origem = {}) {
+    const objeto = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+    const dados = objeto(origem);
+    const estado = {
+        pres_abertura: {}, pres_deliberacao: {}, pres_atual: {}, pres_atual_inicializada: false,
+        trava_abertura: false, trava_deliberacao: false, ocorrencia_od: {}, sessao_duracao: {}, status_quorum: null,
+        relatores_escolhidos: {}, res_info: {}, res_delib: {}, votos: {},
+        resultado_votacao: {}, votos_emendas: {}, resultado_emendas: {}, placar_votacao: {}, placar_emendas: {},
+        eleitos: {}, novo_relator_art67: {}, vista_em_sessao: {}, foco_pauta: null, cronometro: {}
+    };
+    const resultado = v => ['aprovado', 'rejeitado'].includes(v);
+    const voto = v => ['F', 'C'].includes(v);
+    const id = v => (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'string';
+    function mapa(valor, valido) {
+        return Object.fromEntries(Object.entries(objeto(valor)).filter(([k,v]) => !['__proto__','constructor','prototype'].includes(k) && valido(v)));
+    }
+    for (const campo of ['pres_abertura','pres_deliberacao','pres_atual','res_info','res_delib']) estado[campo] = mapa(dados[campo], v => v === true);
+    for (const campo of ['relatores_escolhidos','eleitos','novo_relator_art67']) estado[campo] = mapa(dados[campo], id);
+    // O marcador distingue sala vazia deliberadamente de dados legados sem presença atual.
+    estado.pres_atual_inicializada = dados.pres_atual_inicializada === true || Object.keys(estado.pres_atual).length > 0;
+    if (!estado.pres_atual_inicializada) {
+        const fotografia = Object.keys(estado.pres_deliberacao).length ? estado.pres_deliberacao : estado.pres_abertura;
+        estado.pres_atual = { ...fotografia };
+        estado.pres_atual_inicializada = Object.keys(fotografia).length > 0;
+    }
+    estado.trava_abertura = dados.trava_abertura === true;
+    estado.trava_deliberacao = dados.trava_deliberacao === true;
+    for (const [chave, valor] of Object.entries(mapa(dados.ocorrencia_od, v => objeto(v) === v && Object.hasOwn(OCORRENCIAS_OD, v.tipo)))) {
+        estado.ocorrencia_od[chave] = { tipo: valor.tipo, texto: typeof valor.texto === 'string' && valor.texto.trim() ? valor.texto : OCORRENCIAS_OD[valor.tipo].texto };
+    }
+    estado.status_quorum = ['sim','nao'].includes(dados.status_quorum) ? dados.status_quorum : null;
+    estado.vista_em_sessao = mapa(dados.vista_em_sessao, v => typeof v === 'string');
+    estado.resultado_votacao = mapa(dados.resultado_votacao, resultado);
+    for (const [chave, valor] of Object.entries(mapa(dados.votos, v => objeto(v) === v))) estado.votos[chave] = mapa(valor, voto);
+    for (const [chave, valor] of Object.entries(mapa(dados.resultado_emendas, v => objeto(v) === v))) estado.resultado_emendas[chave] = mapa(valor, resultado);
+    for (const [chave, valor] of Object.entries(mapa(dados.votos_emendas, v => objeto(v) === v))) {
+        estado.votos_emendas[chave] = {};
+        for (const [n, votos] of Object.entries(mapa(valor, v => objeto(v) === v))) estado.votos_emendas[chave][n] = mapa(votos, voto);
+    }
+    const placarValido = v => objeto(v) === v && ['F','C'].every(sentido => Object.hasOwn(v, sentido) && Number.isSafeInteger(v[sentido]) && v[sentido] >= 0);
+    for (const [chave, valor] of Object.entries(mapa(dados.placar_votacao, placarValido))) estado.placar_votacao[chave] = { F: valor.F, C: valor.C };
+    for (const [chave, valor] of Object.entries(mapa(dados.placar_emendas, v => objeto(v) === v))) {
+        const emendas = Object.entries(mapa(valor, placarValido)).filter(([n]) => /^[1-9]\d*$/.test(n) && Number.isSafeInteger(Number(n)));
+        if (emendas.length) estado.placar_emendas[chave] = Object.fromEntries(emendas.map(([n, p]) => [n, { F: p.F, C: p.C }]));
+    }
+    const transmissao = objeto(dados.transmissao);
+    const videoId = typeof transmissao.video_id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(transmissao.video_id) ? transmissao.video_id : '';
+    estado.transmissao = {
+        url: typeof transmissao.url === 'string' ? transmissao.url : '',
+        video_id: videoId,
+        modo: videoId && ['oculto', 'coluna_esq', 'flutuante', 'ampliado'].includes(transmissao.modo) ? transmissao.modo : 'oculto'
+    };
+    const foco = objeto(dados.foco_pauta);
+    if (['abertura','atas','expediente','distribuicao','conhecimento','quorum','ordem_do_dia','assuntos_gerais','encerramento'].includes(foco.secao)) {
+        estado.foco_pauta = { secao: foco.secao, rotulo: typeof foco.rotulo === 'string' ? foco.rotulo : '' };
+        if (typeof foco.item_id === 'string' && foco.item_id) estado.foco_pauta.item_id = foco.item_id;
+    }
+    const c = objeto(dados.cronometro);
+    const positivo = v => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+    estado.cronometro = {
+        modo: c.modo === 'progressivo' ? 'progressivo' : 'regressivo',
+        status: ['parado','rodando','pausado'].includes(c.status) ? c.status : 'parado',
+        duracao_seg: positivo(c.duracao_seg) && Number.isSafeInteger(c.duracao_seg) ? c.duracao_seg : 300,
+        acumulado_seg: positivo(c.acumulado_seg) ? c.acumulado_seg : 0,
+        iniciado_em_ms: positivo(c.iniciado_em_ms) && c.iniciado_em_ms > 0 ? c.iniciado_em_ms : null,
+        orador: typeof c.orador === 'string' ? c.orador : ''
+    };
+    // Um estado rodando sem instante válido não pode avançar de forma confiável.
+    if (estado.cronometro.status === 'rodando' && !estado.cronometro.iniciado_em_ms) estado.cronometro.status = 'pausado';
+    if (estado.cronometro.status !== 'rodando') estado.cronometro.iniciado_em_ms = null;
+    const sessao = objeto(dados.sessao_duracao);
+    estado.sessao_duracao = {
+        status: ['parado','rodando','pausado'].includes(sessao.status) ? sessao.status : 'parado',
+        acumulado_seg: positivo(sessao.acumulado_seg) ? sessao.acumulado_seg : 0,
+        iniciado_em_ms: positivo(sessao.iniciado_em_ms) && sessao.iniciado_em_ms > 0 ? sessao.iniciado_em_ms : null
+    };
+    if (estado.sessao_duracao.status === 'rodando' && !estado.sessao_duracao.iniciado_em_ms) estado.sessao_duracao.status = 'pausado';
+    if (estado.sessao_duracao.status !== 'rodando') estado.sessao_duracao.iniciado_em_ms = null;
+    return estado;
+}
+function itensFocoPauta(pauta) {
+    const e = pauta.leitura_expediente || {}, c = pauta.conhecimento_materias || {};
+    const grupos = [
+        ['expediente', 'corr', 'Leitura do Expediente', 'Correspondência', e.correspondencias_recebidas],
+        ['expediente', 'rec', 'Leitura do Expediente', 'Proposição recebida', e.proposicoes_recebidas],
+        ['expediente', 'dist', 'Leitura do Expediente', 'Proposição distribuída', e.proposicoes_distribuidas],
+        ['distribuicao', 'mad', 'Matérias a Distribuir', 'Item', e.materias_a_distribuir],
+        ['conhecimento', 'inf', 'Conhecimento de Matérias', 'Informativo', c.informativos],
+        ['conhecimento', 'deladm', 'Conhecimento de Matérias', 'Deliberação', c.deliberativos_administrativos],
+        ['conhecimento', 'aud', 'Conhecimento de Matérias', 'Audiência', c.audiencias_agendadas],
+        ['conhecimento', 'req', 'Conhecimento de Matérias', 'Requerimento', c.requerimentos_conhecimento],
+        ['ordem_do_dia', 'od', 'Ordem do Dia', 'Item', pauta.ordem_do_dia],
+        ['assuntos_gerais', 'ag', 'Assuntos Gerais', 'Item', pauta.assuntos_gerais?.itens]
+    ];
+    const itens = grupos.flatMap(([secao, grupo, titulo, especie, lista]) => (lista || []).map((item, indice) => ({
+        secao, grupo, item, indice, total: lista.length, ancora: `${grupo}-${indice}`,
+        item_id: ['rec','dist','mad','req','od'].includes(grupo) && item?.id ? String(item.id) : `${grupo}-${indice}`,
+        rotulo: `${titulo} — ${especie} ${indice + 1} de ${lista.length}` + (item?.tipo ? `: ${item.tipo} ${item.numero || ''}/${item.ano || ''}` : '')
+    })));
+    // Uma proposição pode aparecer em duas alíneas do mesmo Expediente.
+    // Nessa colisão, a âncora da alínea desambigua o foco sem alterar IDs legislativos.
+    const contagens = new Map();
+    for (const it of itens) { const chave = `${it.secao}:${it.item_id}`; contagens.set(chave, (contagens.get(chave) || 0) + 1); }
+    return itens.map(it => contagens.get(`${it.secao}:${it.item_id}`) > 1 ? { ...it, item_id: it.ancora } : it);
+}
+function extrairIdYoutube(input) {
+    if (typeof input !== 'string') return '';
+    const texto = input.trim(), valido = v => /^[A-Za-z0-9_-]{11}$/.test(v || '');
+    if (valido(texto)) return texto;
+    try {
+        const url = new URL(/^(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\//i.test(texto) ? 'https://' + texto : texto);
+        if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.port) return '';
+        const host = url.hostname.toLowerCase(), partes = url.pathname.split('/').filter(Boolean);
+        let id = '';
+        if (['youtu.be', 'www.youtu.be'].includes(host) && partes.length === 1) id = partes[0];
+        else if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host)) {
+            if (url.pathname === '/watch') id = url.searchParams.get('v');
+            else if (partes.length === 2 && ['live', 'embed', 'shorts'].includes(partes[0])) id = partes[1];
+        }
+        return valido(id) ? id : '';
+    } catch { return ''; }
+}
+function tempoDecorrido(c, agora = Date.now()) {
+    return c.acumulado_seg + (c.status === 'rodando' && c.iniciado_em_ms
+        ? Math.max(0, Math.floor((agora - c.iniciado_em_ms) / 1000)) : 0);
+}
+function visorCronometro(c, agora = Date.now()) {
+    const decorrido = tempoDecorrido(c, agora);
+    const valor = c.modo === 'progressivo' ? decorrido : c.duracao_seg - decorrido;
+    const absoluto = Math.floor(Math.abs(valor));
+    return {
+        texto: (valor < 0 ? '-' : '') + String(Math.floor(absoluto / 60)).padStart(2, '0') + ':' + String(absoluto % 60).padStart(2, '0'),
+        classe: c.modo === 'regressivo' && valor < 0 ? 'tempo-critico'
+            : c.modo === 'regressivo' && valor <= 30 && c.status === 'rodando' ? 'tempo-alerta' : 'tempo-normal'
+    };
+}
+function visorSessao(c, agora = Date.now()) {
+    const minutos = Math.floor(tempoDecorrido(c, agora) / 60);
+    return { texto: String(Math.floor(minutos / 60)).padStart(2, '0') + ':' + String(minutos % 60).padStart(2, '0'),
+        classe: minutos >= 120 ? 'sessao-limite' : minutos >= 105 ? 'sessao-alerta' : 'sessao-normal' };
+}
+function usarFocoPauta(pauta, exibido, edicao, permitido, mostrar) {
+    const titulos = { abertura: 'Abertura', atas: 'Aprovação de Atas', expediente: 'Expediente', distribuicao: 'Matérias a Distribuir',
+        conhecimento: 'Conhecimento de Matérias', quorum: 'Verificação de Quórum', ordem_do_dia: 'Ordem do Dia',
+        assuntos_gerais: 'Assuntos Gerais', encerramento: 'Encerramento' };
+    const itens = computed(() => itensFocoPauta(pauta));
+    const idDoFoco = item => typeof item === 'string' ? item : item?.id != null ? String(item.id) : '';
+    const focoIgual = (a, b) => !!a && !!b && a.secao === b.secao && (a.item_id || '') === (b.item_id || '');
+    function idFocoItem(grupo, idx) { return itens.value.find(it => it.grupo === grupo && it.indice === idx)?.item_id || `${grupo}-${idx}`; }
+    function focoAtivo(secao, item = null) { return mostrar.value && focoIgual(exibido.value.foco_pauta, { secao, item_id: idDoFoco(item) }); }
+    function criarFoco(secao, item = null, idx = 0) {
+        const id = idDoFoco(item), descritor = itens.value.find(it => it.secao === secao && it.item_id === id);
+        return { secao, ...(id ? { item_id: id } : {}),
+            rotulo: descritor?.rotulo || titulos[secao] + (id ? ` — Item ${idx + 1}` : '') };
+    }
+    function destacarFoco(secao, item = null, idx = 0) {
+        if (!permitido.value) return;
+        const foco = criarFoco(secao, item, idx);
+        edicao.value.foco_pauta = focoIgual(edicao.value.foco_pauta, foco) ? null : foco;
+    }
+    const sequenciaFoco = computed(() => ['abertura','atas','expediente','distribuicao','conhecimento','quorum','ordem_do_dia','assuntos_gerais','encerramento'].flatMap(secao => {
+        const daSecao = itens.value.filter(it => it.secao === secao).map(it => criarFoco(secao, it.item_id, it.indice));
+        // Distribuição e OD mantêm o avanço direto por matéria; títulos continuam selecionáveis.
+        return ['distribuicao','ordem_do_dia'].includes(secao) ? daSecao : [criarFoco(secao), ...daSecao];
+    }));
+    async function avancarFoco(delta) {
+        if (!permitido.value) return;
+        const lista = sequenciaFoco.value, atual = edicao.value.foco_pauta;
+        let idx = lista.findIndex(f => focoIgual(f, atual));
+        // Um título selecionado diretamente entra antes do primeiro item daquela seção.
+        if (idx < 0 && atual && !atual.item_id) {
+            const primeiro = lista.findIndex(f => f.secao === atual.secao);
+            if (primeiro >= 0) idx = delta > 0 ? primeiro - 1 : primeiro;
+        }
+        const foco = { ...lista[idx < 0 ? (delta > 0 ? 0 : lista.length - 1) : Math.max(0, Math.min(lista.length - 1, idx + delta))] };
+        edicao.value.foco_pauta = foco;
+        await nextTick();
+        if (permitido.value && focoIgual(edicao.value.foco_pauta, foco))
+            document.getElementById(ancoraFoco(foco))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function ancoraFoco(foco) {
+        if (!foco) return null;
+        if (foco.item_id) {
+            const item = itens.value.find(it => it.secao === foco.secao && it.item_id === foco.item_id);
+            if (item) return item.ancora;
+        }
+        return 'sec-' + foco.secao.replaceAll('_', '-');
+    }
+    function atualizarCronometro(c) {
+        if (permitido.value) edicao.value.cronometro = criarAoVivo({ cronometro: c }).cronometro;
+    }
+    return { focoAtivo, destacarFoco, avancarFoco, ancoraFoco, atualizarCronometro, idFocoItem };
+}
+function usarTelaAtiva(ativo) {
+    let trava = null, solicitando = false, encerrado = false;
+    async function atualizar() {
+        if (encerrado || !ativo() || document.visibilityState !== 'visible') {
+            const anterior = trava; trava = null;
+            if (anterior) { try { await anterior.release(); } catch {} }
+            return;
+        }
+        if (trava || solicitando || !navigator.wakeLock) return;
+        solicitando = true;
+        try {
+            const obtida = await navigator.wakeLock.request('screen');
+            if (encerrado || !ativo() || document.visibilityState !== 'visible') await obtida.release();
+            else {
+                trava = obtida;
+                obtida.addEventListener('release', () => { if (trava === obtida) trava = null; }, { once: true });
+            }
+        } catch {} finally { solicitando = false; }
+    }
+    watch(ativo, atualizar);
+    onMounted(() => { document.addEventListener('visibilitychange', atualizar); atualizar(); });
+    onBeforeUnmount(() => { encerrado = true; document.removeEventListener('visibilitychange', atualizar); atualizar(); });
+}
+function usarRecepcaoConducao(idAtual, ocupado, aplicar) {
+    const conexao = ref('CLOSED');
+    let canal, geracao = 0, ultimoUpdatedAt = '', timer, consulta, encerrado = false, versao = 0;
+    function confirmar(registro) {
+        if (registro?.id === idAtual.value && Date.parse(registro.updated_at) > (Date.parse(ultimoUpdatedAt) || 0)) ultimoUpdatedAt = registro.updated_at;
+    }
+    function receber(registro) {
+        if (!registro || registro.id !== idAtual.value || ocupado() ||
+            !(Date.parse(registro.updated_at) > (Date.parse(ultimoUpdatedAt) || 0))) return;
+        if (aplicar(registro) !== false) confirmar(registro);
+    }
+    async function conferir() {
+        if (encerrado || !idAtual.value || ocupado() || consulta) return;
+        const id = idAtual.value, g = geracao, v = versao, abort = new AbortController(); consulta = abort;
+        const limite = setTimeout(() => abort.abort(), 10000);
+        try {
+            const { data, error } = await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id', id).abortSignal(abort.signal).single();
+            if (!error && !encerrado && id === idAtual.value && g === geracao && v === versao) receber(data);
+        } catch {} finally { clearTimeout(limite); if (consulta === abort) consulta = null; }
+    }
+    function parar() {
+        ++geracao; clearTimeout(timer); consulta?.abort(); consulta = null;
+        if (canal) { const antigo = canal; canal = null; sb.removeChannel(antigo); }
+        conexao.value = 'CLOSED';
+    }
+    function contingencia() {
+        clearTimeout(timer);
+        if (!encerrado && idAtual.value && conexao.value !== 'SUBSCRIBED') timer = setTimeout(async () => {
+            const id = idAtual.value, g = geracao;
+            await conferir();
+            if (!encerrado && id === idAtual.value && g === geracao && conexao.value !== 'SUBSCRIBED') assinar();
+        }, 15000);
+    }
+    function assinar() {
+        parar();
+        if (encerrado || !idAtual.value) return;
+        const id = idAtual.value, g = geracao; conexao.value = 'CONNECTING';
+        canal = sb.channel(`conducao:${id}:${g}:${Math.random().toString(36).slice(2)}`)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reunioes', filter: `id=eq.${id}` }, ({ new: registro }) => {
+                if (id !== idAtual.value || g !== geracao) return;
+                ++versao; receber(registro);
+            }).subscribe(status => {
+                if (id !== idAtual.value || g !== geracao) return;
+                conexao.value = status;
+                if (status === 'SUBSCRIBED') { clearTimeout(timer); conferir(); } else contingencia();
+            });
+        contingencia();
+    }
+    watch(idAtual, () => { ultimoUpdatedAt = ''; ++versao; assinar(); }, { flush: 'sync' });
+    watch(ocupado, valor => { if (!valor) conferir(); });
+    const aoRetornar = () => { if (document.visibilityState === 'visible') { conferir(); if (conexao.value !== 'SUBSCRIBED') assinar(); } };
+    onMounted(() => document.addEventListener('visibilitychange', aoRetornar));
+    onBeforeUnmount(() => { encerrado = true; parar(); document.removeEventListener('visibilitychange', aoRetornar); });
+    return { conexao, conferir, confirmar };
+}
+function pautaVazia(){
+  return {
+    metadados:{ comissao:'', sigla:'CEDST', tipo_reuniao:'Ordinária', data:'', hora_inicio:'09:00', local:'', modalidade:'Híbrida'},
+    aprovacao_atas:{atas:[]},
+    leitura_expediente:{ correspondencias_recebidas:[], proposicoes_recebidas:[], proposicoes_distribuidas:[], materias_a_distribuir:[] },
+    conhecimento_materias:{ informativos:[], requerimentos_conhecimento:[], deliberativos_administrativos:[], audiencias_agendadas:[] },
+    ordem_do_dia:[],
+    assuntos_gerais:{proxima_reuniao:null, proxima_reuniao_custom:'', itens:[]}
+  };
+}
+const WidgetCronometro = {
+    props: ['estado', 'permitido', 'membros', 'rapido'],
+    emits: ['alterar'],
+    setup(props, { emit }) {
+        const aberto = ref(!!props.rapido), agora = ref(Date.now());
+        const oradorTexto = ref(props.estado.orador || '');
+        watch(() => props.estado.orador, v => { if (v !== oradorTexto.value) oradorTexto.value = v || ''; });
+        let intervalo;
+        onMounted(() => { intervalo = setInterval(() => { agora.value = Date.now(); }, 250); });
+        onBeforeUnmount(() => clearInterval(intervalo));
+        const visor = computed(() => visorCronometro(props.estado, agora.value));
+        function acao(tipo, valor) {
+            if (!props.permitido) return;
+            const c = { ...props.estado }, instante = Date.now();
+            if (tipo === 'iniciar') {
+                if (c.status === 'rodando') return;
+                c.status = 'rodando'; c.iniciado_em_ms = instante;
+            } else if (tipo === 'pausar') {
+                if (c.status !== 'rodando') return;
+                c.acumulado_seg = tempoDecorrido(c, instante); c.status = 'pausado'; c.iniciado_em_ms = null;
+            } else if (tipo === 'zerar' || tipo === 'modo' || tipo === 'definir') {
+                if (tipo === 'definir') {
+                    if (!Number.isSafeInteger(valor) || valor < 0) return;
+                    c.modo = 'regressivo'; c.duracao_seg = valor;
+                }
+                if (tipo === 'modo') c.modo = valor === 'progressivo' ? 'progressivo' : 'regressivo';
+                c.status = 'parado'; c.acumulado_seg = 0; c.iniciado_em_ms = null;
+            } else if (tipo === 'mais') {
+                const acrescimo = valor === 300 ? 300 : 60;
+                if (c.modo !== 'regressivo' || !Number.isSafeInteger(c.duracao_seg + acrescimo)) return;
+                c.duracao_seg += acrescimo;
+            } else if (tipo === 'orador') { oradorTexto.value = String(valor || ''); c.orador = oradorTexto.value; }
+            else return;
+            emit('alterar', c);
+        }
+        return { aberto, oradorTexto, visor, acao };
+    },
+    template: `<section class="widget-cronometro no-print" aria-label="Tempo de fala">
+        <button type="button" v-if="!rapido" class="tempo-toggle" :aria-expanded="aberto" @click="aberto = !aberto">🎙️ Tempo de Fala {{ aberto ? '▴' : '▾' }}</button>
+        <div v-if="estado.status !== 'parado' || aberto" class="tempo-visor" :class="visor.classe">
+            <strong>{{ visor.texto }}</strong><span>{{ estado.modo === 'progressivo' ? 'Progressivo ↑' : 'Regressivo' }} · {{ estado.status }}</span>
+            <span v-if="estado.orador" class="tempo-orador">{{ estado.orador }}</span>
+        </div>
+        <div v-if="aberto && permitido" class="tempo-controles">
+            <div class="tempo-modos" role="group" aria-label="Modo do cronômetro">
+                <button type="button" :aria-pressed="estado.modo === 'regressivo'" @click="acao('modo', 'regressivo')">⏳ Regressivo</button>
+                <button type="button" :aria-pressed="estado.modo === 'progressivo'" @click="acao('modo', 'progressivo')">⏱️ Crescente 00:00 ↑</button>
+            </div>
+            <div class="tempo-botoes"><button v-for="m in [1,3,5,10,15,20]" :key="m" type="button" @click="acao('definir', m * 60)" :title="'Carregar ' + m + ' minutos; use Iniciar'">{{ m }}m</button></div>
+            <div class="tempo-botoes">
+                <button type="button" :disabled="estado.status === 'rodando'" @click="acao('iniciar')">▶ Iniciar / Retomar</button>
+                <button type="button" :disabled="estado.status !== 'rodando'" @click="acao('pausar')">⏸ Pausar</button>
+                <button type="button" :disabled="estado.modo !== 'regressivo'" @click="acao('mais')">+1m</button>
+                <button type="button" :disabled="estado.modo !== 'regressivo'" @click="acao('mais', 300)">+5m</button>
+                <button type="button" @click="acao('zerar')">Zerar</button>
+            </div>
+            <label>Orador <select :value="estado.orador" @change="acao('orador', $event.target.value)">
+                <option value="">— Limpar —</option>
+                <option v-if="estado.orador && !membros.some(d => d.nome === estado.orador)" :value="estado.orador">{{ estado.orador }}</option>
+                <option v-for="d in membros" :key="d.id" :value="d.nome">{{ d.nome }} ({{ d.partido }})</option>
+            </select></label>
+            <label>Convidado / nome livre <input type="text" v-model="oradorTexto" @input="acao('orador', $event.target.value)" placeholder="Nome de quem está com a palavra"></label>
+        </div>
+        <p v-else-if="aberto" class="tempo-leitura">Controlado pelo Secretário · somente leitura</p>
+    </section>`
+};
+
+const GradePresenca={props:['grupos','marcas','bloqueado'],emits:['marcar'],template:`<div class="grade-presenca"><section v-for="g in grupos" :key="g.titulo"><h3>{{g.titulo}}</h3><button v-for="d in g.membros" :key="d.id" :disabled="bloqueado" :aria-pressed="!!marcas[d.id]" @click="$emit('marcar',d)">{{marcas[d.id]?'?':'?'}} {{d.nome}} <small>{{d.partido==='REPUBLICANOS'?'REPUB':d.partido}}</small></button></section></div>`};
+createApp({components:{WidgetCronometro,GradePresenca},setup(){
+    const usuarioLogado=ref(null),email=ref(''),senha=ref(''),erroAuth=ref(''),authOcupado=ref(false);
+    const comissoes=ref([]),comissao=ref(''),reunioes=ref([]),escolhida=ref(''),reuniaoAtualUuid=ref(null),carregando=ref(false),statusBanco=ref('');
+    const pauta=reactive(pautaVazia()),snapshotMembros=reactive({titulares:[],suplentes:[],presidente_id:null,vice_presidente_id:null});
+    const preparo=reactive({historico:{},relatores_grade:{},ao_vivo:criarAoVivo()});
+    const aoVivo=computed(()=>preparo.ao_vivo),aoVivoExibido=aoVivo,aoVivoEdicao=aoVivo;
+    const podeInteragir=computed(()=>!!usuarioLogado.value&&!!reuniaoAtualUuid.value&&!carregando.value);
+    const syncPendente=ref(false),sincronizando=ref(false),erroAutoSync=ref('');
+    let suspenderAutoSync=false,pendente=null,timerSync,fila=Promise.resolve(),revisao=0,backupAgendado=false,instante=0;
+    const revisoes=new Map(),chaveBackup=id=>`alrs:pocket:pending_sync:v1:${id}`;
+    const classeAutoSync=computed(()=>erroAutoSync.value?'erro':syncPendente.value||sincronizando.value?'pendente':usuarioLogado.value&&reuniaoAtualUuid.value?'ok':'inativo');
+    function proteger(t=pendente){
+        if(!t||revisoes.get(t.id)!==t.rev)return;
+        try{let anterior;try{anterior=JSON.parse(localStorage.getItem(chaveBackup(t.id)))}catch{}
+            if(Date.parse(anterior?.updated_at_local)>Date.parse(t.data))return;
+            t.backup=JSON.stringify({updated_at_local:t.data,preparo_json:t.payload||t.fonte});localStorage.setItem(chaveBackup(t.id),t.backup);
+        }catch{}
+    }
+    function agendarAutoSync(){
+        if(suspenderAutoSync||!reuniaoAtualUuid.value)return;
+        instante=Math.max(Date.now(),instante+1);
+        pendente={id:reuniaoAtualUuid.value,usuario:usuarioLogado.value?.id,rev:++revisao,data:new Date(instante).toISOString(),fonte:{...preparo}};
+        revisoes.set(pendente.id,pendente.rev);syncPendente.value=true;erroAutoSync.value='';clearTimeout(timerSync);
+        if(!backupAgendado){backupAgendado=true;queueMicrotask(()=>{backupAgendado=false;proteger()})}
+        if(usuarioLogado.value)timerSync=setTimeout(enviarAutoSync,400);
+    }
+    function enviarAutoSync(){
+        clearTimeout(timerSync);const t=pendente;
+        if(!t||!t.usuario){proteger();return fila}
+        proteger(t);t.payload=JSON.parse(JSON.stringify(t.payload||t.fonte));delete t.fonte;pendente=null;
+        const executar=async()=>{
+            sincronizando.value=true;
+            try{
+                if(usuarioLogado.value?.id!==t.usuario)throw Error('Entre novamente para sincronizar.');
+                const {data,error}=await sb.from('reunioes').update({preparo_json:t.payload,updated_at:new Date().toISOString()}).eq('id',t.id).select('id, updated_at').single();
+                if(error||!data)throw error||Error('Reunião não atualizada.');
+                recepcao.confirmar(data);
+                if(revisoes.get(t.id)===t.rev){try{if(localStorage.getItem(chaveBackup(t.id))===t.backup)localStorage.removeItem(chaveBackup(t.id))}catch{}}
+                if(reuniaoAtualUuid.value===t.id&&revisao===t.rev){syncPendente.value=false;erroAutoSync.value='';if(statusBanco.value.startsWith('Alterações pendentes')||statusBanco.value.startsWith('Pendências deste aparelho'))statusBanco.value=''}
+            }catch(e){if(reuniaoAtualUuid.value===t.id&&revisao===t.rev){pendente=t;syncPendente.value=true;erroAutoSync.value=e.message||'Sem conexão';statusBanco.value='Alterações pendentes neste aparelho. Use ↻ para tentar novamente.'}}
+            finally{sincronizando.value=false}
+        };
+        fila=fila.then(executar,executar);return fila;
+    }
+    function tentarSincronizar(){if(!usuarioLogado.value||!reuniaoAtualUuid.value)return;agendarAutoSync();return enviarAutoSync()}
+    const objeto=v=>v&&typeof v==='object'&&!Array.isArray(v);
+    function aplicarPreparo(p,parcial=false){
+        if(!objeto(p))return;
+        if(objeto(p.historico))preparo.historico=p.historico;
+        if(objeto(p.relatores_grade))preparo.relatores_grade=p.relatores_grade;
+        if(objeto(p.ao_vivo)||!parcial)preparo.ao_vivo=criarAoVivo(parcial?{...preparo.ao_vivo,...p.ao_vivo}:p.ao_vivo);
+    }
+    const recepcao=usarRecepcaoConducao(reuniaoAtualUuid,()=>syncPendente.value||sincronizando.value||carregando.value||suspenderAutoSync,registro=>{
+        if(!objeto(registro.preparo_json))return false;
+        suspenderAutoSync=true;
+        try{
+            if(objeto(registro.pauta_json)&&Object.keys(registro.pauta_json).length)Object.assign(pauta,pautaVazia(),registro.pauta_json);
+            if(registro.snapshot_membros?.titulares?.length)Object.assign(snapshotMembros,registro.snapshot_membros);
+            aplicarPreparo(registro.preparo_json,true);
+        }finally{suspenderAutoSync=false}
+    });
+    watch([()=>preparo.ao_vivo,()=>preparo.relatores_grade],agendarAutoSync,{deep:true,flush:'sync'});
+    watch(usuarioLogado,u=>{if(u&&syncPendente.value)tentarSincronizar()});
+    usarTelaAtiva(()=>!!reuniaoAtualUuid.value);
+    let pedidoLista=0,pedidoCarga=0,authSubscription;
+    async function listarReunioes(){
+        const n=++pedidoLista;try{let q=sb.from('reunioes').select('id, comissao_sigla, data_reuniao, hora_inicio, tipo_reuniao').order('data_reuniao',{ascending:false});if(comissao.value)q=q.eq('comissao_sigla',comissao.value);const {data,error}=await q;if(n!==pedidoLista)return;if(error)throw error;reunioes.value=data||[];if(!reunioes.value.some(r=>r.id===escolhida.value))escolhida.value=''}catch(e){statusBanco.value='Não foi possível listar reuniões: '+e.message}
+    }
+    async function carregarReuniao(){
+        if(carregando.value||!escolhida.value)return;
+        await enviarAutoSync();if(syncPendente.value||erroAutoSync.value){statusBanco.value='Sincronize as pendências antes de trocar de reunião.';return}
+        const id=escolhida.value,n=++pedidoCarga;carregando.value=true;
+        const abort=new AbortController(),limite=setTimeout(()=>abort.abort(),15000);
+        try{
+            const {data,error}=await sb.from('reunioes').select(COLUNAS_REUNIAO_PUBLICA).eq('id',id).abortSignal(abort.signal).single();
+            if(error||!data||!objeto(data.pauta_json))throw error||Error('Reunião indisponível.');
+            if(n!==pedidoCarga||escolhida.value!==id)return;
+            suspenderAutoSync=true;pendente=null;++revisao;reuniaoAtualUuid.value=id;
+            Object.assign(pauta,pautaVazia(),data.pauta_json);Object.assign(snapshotMembros,{titulares:[],suplentes:[],presidente_id:null,vice_presidente_id:null},data.snapshot_membros||{});
+            preparo.historico={};preparo.relatores_grade={};aplicarPreparo(data.preparo_json||{});recepcao.confirmar(data);
+            let local=null;try{local=JSON.parse(localStorage.getItem(chaveBackup(id)))}catch{}
+            const recuperar=objeto(local?.preparo_json)&&Date.parse(local.updated_at_local)>(Date.parse(data.updated_at)||0);
+            if(recuperar)aplicarPreparo(local.preparo_json);
+            suspenderAutoSync=false;syncPendente.value=false;erroAutoSync.value='';ajustesQuadro.value={};alvo.value=null;
+            statusBanco.value=recuperar?'Pendências deste aparelho recuperadas; aguardando sincronização.':'';
+            if(recuperar)agendarAutoSync();fecharSheet();
+        }catch(e){statusBanco.value='Não foi possível abrir a reunião: '+(e.message||'Conexão indisponível.')}
+        finally{clearTimeout(limite);suspenderAutoSync=false;carregando.value=false}
+    }
+    async function entrar(){if(authOcupado.value)return;authOcupado.value=true;erroAuth.value='';try{const {data,error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:senha.value});if(error)throw error;usuarioLogado.value=data.user;senha.value=''}catch(e){erroAuth.value=e.message}finally{authOcupado.value=false}}
+    async function sair(){await enviarAutoSync();if(syncPendente.value){erroAuth.value='Sincronize as pendências antes de sair.';return}authOcupado.value=true;try{const {error}=await sb.auth.signOut();if(error)throw error;usuarioLogado.value=null}catch(e){erroAuth.value=e.message}finally{authOcupado.value=false}}
+    onMounted(async()=>{
+        try{const {data}=await sb.auth.getSession();usuarioLogado.value=data.session?.user||null;authSubscription=sb.auth.onAuthStateChange((_e,s)=>usuarioLogado.value=s?.user||null).data.subscription;const r=await sb.from('comissoes').select('sigla, nome').order('sigla');comissoes.value=r.data||[];await listarReunioes()}catch(e){statusBanco.value='Conexão inicial indisponível: '+e.message}
+    });
+    const aoOcultar=()=>proteger(),aoSair=e=>{proteger();if(syncPendente.value||sincronizando.value){e.preventDefault();e.returnValue=''}};
+    onMounted(()=>{window.addEventListener('pagehide',aoOcultar);window.addEventListener('beforeunload',aoSair);document.addEventListener('visibilitychange',aoOcultar)});
+    onBeforeUnmount(()=>{++pedidoCarga;++pedidoLista;clearTimeout(timerSync);proteger();authSubscription?.unsubscribe();window.removeEventListener('pagehide',aoOcultar);window.removeEventListener('beforeunload',aoSair);document.removeEventListener('visibilitychange',aoOcultar)});
+    const gruposSala=computed(()=>['titulares','suplentes'].map(g=>({titulo:g.toUpperCase(),membros:(snapshotMembros[g]||[]).filter(Boolean).map(d=>({...d,id:d.id_assembleia??d.id})).filter(d=>d.id!=null).sort((a,b)=>g==='titulares'?(Number(String(b.id)===String(snapshotMembros.presidente_id))-Number(String(a.id)===String(snapshotMembros.presidente_id))||a.nome.localeCompare(b.nome,'pt-BR')):a.nome.localeCompare(b.nome,'pt-BR'))})));
+    const membrosConducao=computed(()=>Array.from(new Map(gruposSala.value.flatMap(g=>g.membros).map(d=>[String(d.id),d])).values()));
+    const idsConducao=computed(()=>new Set(membrosConducao.value.map(d=>String(d.id))));
+    const titularesAlfabeticos=computed(()=>[...gruposSala.value[0].membros].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')));
+    const oradoresSala=computed(()=>[...membrosConducao.value].sort((a,b)=>Number(!!aoVivo.value.pres_atual[b.id])-Number(!!aoVivo.value.pres_atual[a.id])||a.nome.localeCompare(b.nome,'pt-BR')));
+            function contarPresentes(campo) { return Object.keys(aoVivoExibido.value[campo]).filter(id => idsConducao.value.has(id) && aoVivoExibido.value[campo][id]).length; }
+        function fotografiaTravada(campo) {
+            return campo === 'pres_abertura' ? aoVivoEdicao.value.trava_abertura : campo === 'pres_deliberacao' && aoVivoEdicao.value.trava_deliberacao;
+        }
+        function alternarTrava(campo) {
+            if (!podeInteragir.value || !['trava_abertura','trava_deliberacao'].includes(campo)) return;
+            aoVivoEdicao.value[campo] = !aoVivoEdicao.value[campo];
+        }
+        function alternarPresenca(campo, membro) {
+            if (!podeInteragir.value || membro?.id == null || !idsConducao.value.has(String(membro.id)) ||
+                !['pres_abertura','pres_deliberacao','pres_atual'].includes(campo) || fotografiaTravada(campo)) return;
+            const vivo = aoVivoEdicao.value, mapa = vivo[campo], marcado = !mapa[membro.id];
+            if (marcado) mapa[membro.id] = true; else delete mapa[membro.id];
+            if (marcado) vivo.pres_atual[membro.id] = true;
+            else if (campo === 'pres_atual' || (!vivo.pres_abertura[membro.id] && !vivo.pres_deliberacao[membro.id])) delete vivo.pres_atual[membro.id];
+            vivo.pres_atual_inicializada = true;
+            agendarAutoSync();
+        }
+        function puxarPresentesDaSala() {
+            if (!podeInteragir.value || aoVivoEdicao.value.trava_deliberacao) return;
+            const vivo = aoVivoEdicao.value;
+            vivo.pres_deliberacao = Object.fromEntries(Object.entries(vivo.pres_atual).filter(([id, marcado]) => marcado && idsConducao.value.has(id)));
+            vivo.pres_atual_inicializada = true;
+            agendarAutoSync();
+        }
+        function copiarPresentesAbertura() {
+            if (!podeInteragir.value || aoVivoEdicao.value.trava_deliberacao) return;
+            const vivo = aoVivoEdicao.value;
+            vivo.pres_deliberacao = Object.fromEntries(Object.entries(vivo.pres_abertura).filter(([id, marcado]) => marcado && idsConducao.value.has(id)));
+            for (const [id, marcado] of Object.entries(vivo.pres_deliberacao)) {
+                if (marcado && idsConducao.value.has(id)) vivo.pres_atual[id] = true;
+            }
+            vivo.pres_atual_inicializada = true;
+            agendarAutoSync();
+        }
+        function definirOcorrencia(item, tipo) {
+            if (!podeInteragir.value) return;
+            if (!tipo) delete aoVivoEdicao.value.ocorrencia_od[item.id];
+            else if (Object.hasOwn(OCORRENCIAS_OD, tipo)) aoVivoEdicao.value.ocorrencia_od[item.id] = { tipo, texto: OCORRENCIAS_OD[tipo].texto };
+        }
+        function atualizarSessao(valor) {
+            if (podeInteragir.value) aoVivoEdicao.value.sessao_duracao = criarAoVivo({ sessao_duracao: valor }).sessao_duracao;
+        }
+        function alternarMarca(campo, chave, valor = true) {
+            if (!podeInteragir.value) return;
+            if (campo === 'status_quorum') {
+                aoVivoEdicao.value.status_quorum = aoVivoEdicao.value.status_quorum === valor ? null : valor;
+                if (aoVivoEdicao.value.status_quorum === 'sim') aoVivoEdicao.value.trava_deliberacao = true;
+            } else {
+                const mapa = aoVivoEdicao.value[campo];
+                if (mapa[chave] === valor) delete mapa[chave]; else mapa[chave] = valor;
+            }
+        }
+        function definirCampo(campo, chave, valor) {
+            if (!podeInteragir.value) return;
+            if (!valor) delete aoVivoEdicao.value[campo][chave]; else aoVivoEdicao.value[campo][chave] = valor;
+        }
+        function votosDoItem(id, n = null) { return n === null ? aoVivoExibido.value.votos[id] || {} : aoVivoExibido.value.votos_emendas[id]?.[n] || {}; }
+        function placarRapido(id, n = null) {
+            const mapa = n === null ? aoVivoExibido.value.placar_votacao : aoVivoExibido.value.placar_emendas[id];
+            const chave = n === null ? id : n;
+            return mapa && Object.hasOwn(mapa, chave) ? mapa[chave] : null;
+        }
+        const presentesVotacao = computed(() => {
+            for (const campo of ['pres_atual','pres_deliberacao','pres_abertura']) {
+                const ids = Object.entries(aoVivoExibido.value[campo]).filter(([id, marcado]) => marcado === true && idsConducao.value.has(id)).map(([id]) => id);
+                if (ids.length) return ids;
+            }
+            return [];
+        });
+        function podeEditarVotacao(item, n = null) {
+            return podeInteragir.value && item?.id != null && !['__proto__','constructor','prototype'].includes(String(item.id))
+                && (n === null || (Number.isSafeInteger(n) && n > 0))
+                && !aoVivoEdicao.value.vista_em_sessao[item.id] && !aoVivoEdicao.value.ocorrencia_od[item.id];
+        }
+        function removerPlacarRapido(id, n = null) {
+            if (n === null) delete aoVivoEdicao.value.placar_votacao[id];
+            else if (aoVivoEdicao.value.placar_emendas[id]) delete aoVivoEdicao.value.placar_emendas[id][n];
+        }
+        function ajustarPlacar(item, sentido, delta, n = null) {
+            if (!podeEditarVotacao(item, n) || !['F','C'].includes(sentido) || ![1,-1].includes(delta)) return;
+            const atual = placarRapido(item.id, n) || { F: Number(contarVotos(item.id, 'F', n)), C: Number(contarVotos(item.id, 'C', n)) };
+            const placar = { F: atual.F, C: atual.C };
+            placar[sentido] = Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, placar[sentido] + delta));
+            const mapa = n === null ? aoVivoEdicao.value.placar_votacao : (aoVivoEdicao.value.placar_emendas[item.id] ||= {});
+            mapa[n === null ? item.id : n] = placar;
+        }
+        function preencherVotosPresentes(item, restantes = false, n = null) {
+            if (!podeEditarVotacao(item, n) || !presentesVotacao.value.length) return;
+            const votos = restantes ? { ...votosDoItem(item.id, n) } : {};
+            for (const id of presentesVotacao.value) if (!['F','C'].includes(votos[id])) votos[id] = 'F';
+            const mapa = n === null ? aoVivoEdicao.value.votos : (aoVivoEdicao.value.votos_emendas[item.id] ||= {});
+            mapa[n === null ? item.id : n] = votos;
+            removerPlacarRapido(item.id, n);
+        }
+        function limparVotos(item, n = null) {
+            if (!podeEditarVotacao(item, n)) return;
+            if (n === null) delete aoVivoEdicao.value.votos[item.id];
+            else if (aoVivoEdicao.value.votos_emendas[item.id]) delete aoVivoEdicao.value.votos_emendas[item.id][n];
+            removerPlacarRapido(item.id, n);
+        }
+        function contarVotos(id, sentido, n = null) {
+            const placar = placarRapido(id, n);
+            if (placar) return placar[sentido];
+            const votos = Object.entries(votosDoItem(id, n)).filter(([dep]) => idsConducao.value.has(dep));
+            return votos.length ? votos.filter(([,v]) => v === sentido).length : '';
+        }
+        function alternarVoto(item, membro, sentido, n = null) {
+            if (!podeEditarVotacao(item, n) || !membro?.id || !idsConducao.value.has(String(membro.id)) || !['F','C'].includes(sentido)) return;
+            removerPlacarRapido(item.id, n);
+            const vivo = aoVivoEdicao.value;
+            const raiz = n === null ? vivo.votos : (vivo.votos_emendas[item.id] ||= {});
+            const mapa = (raiz[n === null ? item.id : n] ||= {});
+            if (mapa[membro.id] === sentido) delete mapa[membro.id]; else mapa[membro.id] = sentido;
+        }
+        function marcarResultado(item, valor, n = null) {
+            if (!podeInteragir.value || aoVivoEdicao.value.vista_em_sessao[item.id] || aoVivoEdicao.value.ocorrencia_od[item.id]) return;
+            const mapa = n === null ? aoVivoEdicao.value.resultado_votacao : (aoVivoEdicao.value.resultado_emendas[item.id] ||= {});
+            const chave = n === null ? item.id : n;
+            if (mapa[chave] === valor) delete mapa[chave]; else mapa[chave] = valor;
+        }
+
+
+    const focoControle=usarFocoPauta(pauta,aoVivo,aoVivoEdicao,podeInteragir,computed(()=>true));
+    const titulos={abertura:'Abertura',atas:'Aprovação de Atas',expediente:'Expediente',distribuicao:'Matérias a Distribuir',conhecimento:'Conhecimento de Matérias',quorum:'Verificação de Quórum',ordem_do_dia:'Ordem do Dia',assuntos_gerais:'Assuntos Gerais',encerramento:'Encerramento'};
+    const descritores=computed(()=>itensFocoPauta(pauta));
+    const indice=computed(()=>Object.entries(titulos).flatMap(([secao,rotulo])=>[{secao,rotulo},...descritores.value.filter(d=>d.secao===secao)]));
+    const chave=f=>f.secao+':'+(f.item_id||'');
+    const chaveFoco=computed(()=>chave(aoVivo.value.foco_pauta||{secao:'abertura'}));
+    const secao=computed(()=>aoVivo.value.foco_pauta?.secao||'abertura');
+    const tituloSecao=computed(()=>titulos[secao.value]);
+    const descritor=computed(()=>descritores.value.find(d=>chave(d)===chaveFoco.value));
+    const itemFoco=computed(()=>descritor.value?.item);
+    const historico=computed(()=>preparo.historico[itemFoco.value?.id]||{});
+    const campoFoto=computed(()=>secao.value==='quorum'?'pres_deliberacao':'pres_abertura');
+    const deck=ref(null),alvo=ref(null);
+    function selecionarFoco(k){if(!podeInteragir.value)return;const f=indice.value.find(d=>chave(d)===k);if(f)aoVivo.value.foco_pauta={secao:f.secao,...(f.item_id?{item_id:f.item_id}:{}),rotulo:f.rotulo}}
+    async function avancarFoco(delta){await focoControle.avancarFoco(delta);deck.value?.scrollTo({top:0,behavior:'smooth'})}
+    watch(chaveFoco,()=>{alvo.value=null;if(sheet.value==='votos')fecharSheet();nextTick(()=>deck.value?.scrollTo({top:0}))});
+    function statusFoco(f){if(f.grupo==='od')return aoVivo.value.resultado_votacao[f.item.id]||'';if(f.grupo==='inf')return aoVivo.value.res_info[f.indice]?'APROVADO':'';if(f.grupo==='deladm')return aoVivo.value.res_delib[f.indice]?'APROVADO':'';return ''}
+    function puxarFoto(){if(campoFoto.value==='pres_deliberacao')return puxarPresentesDaSala();if(!podeInteragir.value||aoVivo.value.trava_abertura)return;aoVivo.value.pres_abertura=Object.fromEntries(Object.entries(aoVivo.value.pres_atual).filter(([id,v])=>v&&idsConducao.value.has(id)));aoVivo.value.pres_atual_inicializada=true;agendarAutoSync()}
+    function decidirQuorum(valor){if(!podeInteragir.value)return;aoVivo.value.status_quorum=valor;if(valor==='sim')aoVivo.value.trava_deliberacao=true;const destino=valor==='sim'?'ordem_do_dia':'assuntos_gerais';const primeiro=descritores.value.find(d=>d.secao===destino);selecionarFoco(primeiro&&valor==='sim'?chave(primeiro):destino+':')}
+    function definirRelatorGrade(id,valor){if(!podeInteragir.value)return;if(valor)preparo.relatores_grade[id]=valor;else delete preparo.relatores_grade[id]}
+    const elegiveis=computed(()=>titularesAlfabeticos.value.filter(d=>!itemFoco.value?.bancada_impedida||String(d.partido).trim().toUpperCase()!==String(itemFoco.value.bancada_impedida).trim().toUpperCase()));
+    const emendas=computed(()=>{if(!itemFoco.value||!ehFaseB(itemFoco.value))return [];const n=Number(historico.value.num_emendas);return Number.isSafeInteger(n)&&n>0?Array.from({length:Math.min(n,1000)},(_,i)=>i+1):[]});
+    const suspenso=computed(()=>!!(aoVivo.value.vista_em_sessao[itemFoco.value?.id]||aoVivo.value.ocorrencia_od[itemFoco.value?.id]));
+    watch(suspenso,v=>{if(v&&sheet.value==='votos')fecharSheet()});
+    const resultado=computed(()=>alvo.value===null?aoVivo.value.resultado_votacao[itemFoco.value?.id]:aoVivo.value.resultado_emendas[itemFoco.value?.id]?.[alvo.value]);
+    const agora=ref(Date.now());let tick;onMounted(()=>tick=setInterval(()=>agora.value=Date.now(),250));onBeforeUnmount(()=>clearInterval(tick));
+    const visor=computed(()=>visorCronometro(aoVivo.value.cronometro,agora.value)),sessaoVisor=computed(()=>visorSessao(aoVivo.value.sessao_duracao,agora.value));
+    function atualizarCronometro(c){focoControle.atualizarCronometro(c)}
+    function acaoSessao(tipo){if(!podeInteragir.value)return;const c={...aoVivo.value.sessao_duracao};if(tipo==='iniciar'&&c.status!=='rodando'){c.status='rodando';c.iniciado_em_ms=Date.now()}else if(tipo==='pausar'&&c.status==='rodando'){c.acumulado_seg=tempoDecorrido(c,Date.now());c.status='pausado';c.iniciado_em_ms=null}else if(tipo==='zerar'){c.status='parado';c.acumulado_seg=0;c.iniciado_em_ms=null}else return;atualizarSessao(c)}
+    const dialog=ref(null),sheet=ref(''),ajustesQuadro=ref({});
+    const nomesSheets={conta:'Conta e reunião',sala:'Presenças na sala',fala:'Tempo de fala',quadro:'Quadro Titulares',indice:'Índice da pauta',votos:'Votos nominais',youtube:'Transmissão YouTube'};
+    async function abrirSheet(nome){if(sheet.value===nome&&nome==='fala'){fecharSheet();return}if(nome==='quadro')ajustesQuadro.value={};sheet.value=nome;await nextTick();if(!dialog.value.open)dialog.value.showModal()}
+    function fecharSheet(){dialog.value?.close();sheet.value=''}
+    function fecharFundo(e){if(e.target===dialog.value){const r=dialog.value.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)fecharSheet()}}
+    function quadroPresente(d){return Object.hasOwn(ajustesQuadro.value,d.id)?ajustesQuadro.value[d.id]:['pres_atual','pres_abertura','pres_deliberacao'].some(c=>aoVivo.value[c][d.id])}
+    const totalQuadro=computed(()=>titularesAlfabeticos.value.filter(quadroPresente).length);
+    async function copiar(texto){try{await navigator.clipboard.writeText(texto);statusBanco.value='✓ Texto copiado.'}catch{window.prompt('Copie o texto:',texto)}}
+    function copiarQuadro(){copiar([`${pauta.metadados.sigla} · ${pauta.metadados.comissao}`,`${formatarData(pauta.metadados.data)} · ${pauta.metadados.tipo_reuniao}`,...titularesAlfabeticos.value.map((d,i)=>`${i+1}. ${d.nome} (${partido(d.partido)}) — ${quadroPresente(d)?'P — Presente':'F — Falta'}`),`Presentes: ${totalQuadro.value} | Faltas: ${titularesAlfabeticos.value.length-totalQuadro.value}`].join('\n'))}
+    async function zerarAoVivo(){if(!podeInteragir.value||!confirm('Zerar todas as marcações ao vivo, presenças, votos, foco, cronômetros e transmissão? O preparo, histórico e relatores da grade serão preservados.'))return;preparo.ao_vivo=criarAoVivo();ajustesQuadro.value={};await tentarSincronizar();statusBanco.value=erroAutoSync.value?'Reset local; sincronização pendente.':'✓ Marcações ao vivo zeradas.'}
+    const modosYoutube={oculto:'◼ Oculto',coluna_esq:'▣ Coluna Esq.',flutuante:'↘ Canto (PIP)',ampliado:'▣ Ampliado'};
+    function atualizarYoutube(url){if(!podeInteragir.value)return;const video_id=extrairIdYoutube(url);aoVivo.value.transmissao={url,video_id,modo:video_id?aoVivo.value.transmissao.modo:'oculto'}}
+    function mudarYoutube(modo){if(podeInteragir.value&&aoVivo.value.transmissao.video_id&&Object.hasOwn(modosYoutube,modo))aoVivo.value.transmissao.modo=modo}
+    const partido=p=>p==='REPUBLICANOS'?'REPUB':p;
+    const formatarData=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?s.split('-').reverse().join('/'):s||'';
+    const getNomeRelator=id=>{const d=membrosConducao.value.find(d=>String(d.id)===String(id));return d?`${d.nome} (${partido(d.partido)})`:''};
+    const tituloItem=i=>`${i.tipo_extenso||i.tipo||'Proposição'} ${i.numero||''}/${i.ano||''}`;
+    const autor=(o,cru)=>o?.nome?`${o.is_deputado===false?'':'Deputado(a) '}${o.nome}${o.partido?' ('+partido(o.partido)+')':''}`:cru||'Não informado';
+    const formatarParecer=p=>({favoravel:'Favorável',favoravel_com_emendas:'Favorável com emendas',contrario:'Contrário'}[p]||'Não informado');
+            function ehFaseB(it) { return !!it._fase_b || (it.votacao_conclusiva && !it.relator && !it.parecer); }
+        function temRelatorPreenchido(it) {
+            return Boolean(it && (it.relator?.nome || (it.relator_cru && String(it.relator_cru).trim())));
+        }
+        function exibirBlocoRelatorParecer(it) {
+            if (!it || ehFaseB(it)) return false;
+            if (temRelatorPreenchido(it) || Boolean(it.parecer)) return true;
+            return ['PL', 'PLC', 'PEC', 'PDL', 'PRES', 'RELSUB'].includes(it.tipo);
+        }
+
+        function elegivelNovoRelator(tipo) { return ['PL', 'PLC', 'PEC', 'PDL', 'RDI'].includes(tipo); }
+
+    function cartao(d){const i=d.item;if(d.grupo==='corr')return{titulo:i.remetente||'Correspondência',texto:i.mensagem};if(['rec','dist','mad','od'].includes(d.grupo))return{titulo:tituloItem(i),texto:i.ementa};if(d.grupo==='aud')return{titulo:'Audiência pública',texto:[formatarData(i.data),i.hora,i.local,i.proponente?.nome||i.proponente_cru,i.pauta].filter(Boolean).join(' · ')};if(d.grupo==='req')return{titulo:tituloItem(i),texto:[i.texto,i.origem].filter(Boolean).join(' · ')};return{titulo:d.rotulo,texto:typeof i==='string'?i:i.texto}}
+    const cartoes=computed(()=>{if(descritor.value)return[cartao(descritor.value)];if(aoVivo.value.foco_pauta?.item_id)return[];if(secao.value==='atas')return pauta.aprovacao_atas.atas.map(a=>({titulo:a.texto_livre?'Ata':`Ata ${a.numero}`,texto:a.texto_livre||`${a.tipo_reuniao||'Reunião ordinária'} de ${formatarData(a.reuniao_referencia)}`}));const cards=descritores.value.filter(d=>d.secao===secao.value).map(cartao);if(['assuntos_gerais','encerramento'].includes(secao.value))cards.push({titulo:'Próxima reunião',texto:pauta.assuntos_gerais.proxima_reuniao_custom||formatarData(pauta.assuntos_gerais.proxima_reuniao)||'Na data e hora regimentais'});return cards});
+            async function copiarResumoReuniao() {
+            const vivo = preparo.ao_vivo;
+            const nomes = campo => membrosConducao.value.filter(d => vivo[campo][d.id]).map(d => getNomeRelator(d.id)).join(', ') || 'Não registrados';
+            const votos = (id, n = null) => {
+                const placar = n === null ? vivo.placar_votacao[id] : vivo.placar_emendas[id]?.[n];
+                if (placar) return `${placar.F} favoráveis; ${placar.C} contrários (placar rápido)`;
+                const mapa = n === null ? vivo.votos[id] || {} : vivo.votos_emendas[id]?.[n] || {};
+                const valores = Object.entries(mapa).filter(([dep]) => idsConducao.value.has(dep)).map(([,v]) => v);
+                return valores.length ? `${valores.filter(v => v === 'F').length} favoráveis; ${valores.filter(v => v === 'C').length} contrários` : 'Sem votos registrados';
+            };
+            const linhas = [`RESUMO DA REUNIÃO — ${pauta.metadados.sigla} — ${formatarData(pauta.metadados.data)}`,
+                `Abertura: ${nomes('pres_abertura')}`, `Deliberação: ${nomes('pres_deliberacao')}`,
+                `Quórum declarado: ${vivo.status_quorum === 'sim' ? 'Havendo quórum' : vivo.status_quorum === 'nao' ? 'Não havendo quórum' : 'Não marcado'}`];
+            for (const item of pauta.leitura_expediente.materias_a_distribuir) linhas.push(`${item.tipo} ${item.numero}/${item.ano}: Relator ${getNomeRelator(vivo.relatores_escolhidos[item.id] || preparo.relatores_grade[item.id]) || 'não designado'}${vivo.relatores_escolhidos[item.id] ? ' (acordo/interesse)' : ' (grade)'}`);
+            for (const [lista, campo] of [['informativos','res_info'], ['deliberativos_administrativos','res_delib']]) {
+                pauta.conhecimento_materias[lista].forEach((item, idx) => {
+                    if (item.requer_deliberacao || lista === 'deliberativos_administrativos') linhas.push(`${item.texto}: ${vivo[campo][idx] ? 'APROVADO' : 'Sem resultado marcado'}`);
+                });
+            }
+            for (const item of pauta.ordem_do_dia) {
+                linhas.push(`${item.tipo} ${item.numero}/${item.ano}:`);
+                if (vivo.vista_em_sessao[item.id]) linhas.push(`VISTA: ${vivo.vista_em_sessao[item.id]} — retirada de votação.`);
+                if (vivo.ocorrencia_od[item.id]) linhas.push(`OCORRÊNCIA: ${vivo.ocorrencia_od[item.id].texto}`);
+                if (vivo.vista_em_sessao[item.id] || vivo.ocorrencia_od[item.id]) continue;
+                if (item.eleicao) { linhas.push(`${votos(item.id)}; ${vivo.resultado_votacao[item.id] || 'Sem resultado marcado'}`, `Eleito(a): ${getNomeRelator(vivo.eleitos[item.id]) || 'Não marcado'}`); continue; }
+                if (ehFaseB(item)) for (let n = 1; n <= (preparo.historico[item.id]?.num_emendas || 0); n++) linhas.push(`Emenda ${n}: ${votos(item.id,n)}; ${vivo.resultado_emendas[item.id]?.[n] || 'Sem resultado marcado'}`);
+                linhas.push(`${votos(item.id)}; ${vivo.resultado_votacao[item.id] || 'Sem resultado marcado'}`);
+                if (vivo.resultado_votacao[item.id] === 'rejeitado' && !ehFaseB(item) && elegivelNovoRelator(item.tipo)) linhas.push(`Novo relator (Art. 67): ${getNomeRelator(vivo.novo_relator_art67[item.id]) || 'Não designado'}`);
+            }
+            try { await navigator.clipboard.writeText(linhas.join('\n')); statusBanco.value = '✓ Resumo copiado.'; }
+            catch { window.prompt('Copie o resumo da reunião:', linhas.join('\n')); }
+        }
+
+
+    return {usuarioLogado,email,senha,erroAuth,authOcupado,comissoes,comissao,reunioes,escolhida,reuniaoAtualUuid,carregando,statusBanco,pauta,snapshotMembros,preparo,aoVivo,podeInteragir,syncPendente,sincronizando,erroAutoSync,classeAutoSync,tentarSincronizar,recepcao,listarReunioes,carregarReuniao,entrar,sair,gruposSala,membrosConducao,oradoresSala,titularesAlfabeticos,contarPresentes,fotografiaTravada,alternarTrava,alternarPresenca,puxarPresentesDaSala,copiarPresentesAbertura,definirOcorrencia,alternarMarca,definirCampo,votosDoItem,placarRapido,presentesVotacao,ajustarPlacar,preencherVotosPresentes,limparVotos,contarVotos,alternarVoto,marcarResultado,indice,chave,chaveFoco,secao,tituloSecao,descritor,itemFoco,historico,campoFoto,deck,alvo,selecionarFoco,avancarFoco,statusFoco,puxarFoto,decidirQuorum,definirRelatorGrade,elegiveis,emendas,suspenso,resultado,visor,sessaoVisor,atualizarCronometro,acaoSessao,dialog,sheet,ajustesQuadro,nomesSheets,abrirSheet,fecharSheet,fecharFundo,quadroPresente,totalQuadro,copiarQuadro,zerarAoVivo,modosYoutube,atualizarYoutube,mudarYoutube,partido,formatarData,getNomeRelator,tituloItem,autor,formatarParecer,ehFaseB,exibirBlocoRelatorParecer,elegivelNovoRelator,cartoes,copiarResumoReuniao,OCORRENCIAS_OD};
+}}).mount('#app');
+
+</script></body></html>
