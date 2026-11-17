@@ -848,17 +848,54 @@ createApp({
         const titulos = { abertura: 'Abertura', atas: 'Aprovação de Atas', expediente: 'Leitura do Expediente', distribuicao: 'Matérias a Distribuir',
             conhecimento: 'Conhecimento de Matérias', quorum: 'Verificação de Quórum', ordem_do_dia: 'Ordem do Dia', assuntos_gerais: 'Assuntos Gerais', encerramento: 'Encerramento' };
         const tituloSecao = computed(() => titulos[foco.value?.secao] || 'Visão geral da reunião');
-        const resumoSecoes = computed(() => [
-            `${pauta.aprovacao_atas.atas.length} ata(s)`,
-            `${pauta.leitura_expediente.correspondencias_recebidas.length} correspondência(s)`,
-            `${pauta.leitura_expediente.materias_a_distribuir.length} matéria(s) a distribuir`,
-            `${pauta.ordem_do_dia.length} item(ns) na Ordem do Dia`
-        ]);
+        const resumoSecoes = computed(() => {
+            const exp = pauta.leitura_expediente || {}, con = pauta.conhecimento_materias || {};
+            const quantidadeOD = pauta.ordem_do_dia?.length || 0;
+            const secoes = [
+                [pauta.aprovacao_atas?.atas?.length || 0, 'ata(s)'],
+                [exp.correspondencias_recebidas?.length || 0, 'correspondência(s)'],
+                [exp.proposicoes_recebidas?.length || 0, 'proposição(ões) recebida(s)'],
+                [exp.proposicoes_distribuidas?.length || 0, 'proposição(ões) distribuída(s)'],
+                [exp.materias_a_distribuir?.length || 0, 'matéria(s) a distribuir'],
+                [(con.informativos?.length || 0) + (con.deliberativos_administrativos?.length || 0) + (con.audiencias_agendadas?.length || 0) + (con.requerimentos_conhecimento?.length || 0), 'item(ns) em Conhecimento'],
+                [quantidadeOD, 'item(ns) na Ordem do Dia'],
+                [pauta.assuntos_gerais?.itens?.length || 0, 'assunto(s) geral(is)']
+            ];
+            const badges = secoes.filter(([quantidade]) => quantidade > 0).map(([quantidade, rotulo]) => `${quantidade} ${rotulo}`);
+            if (!quantidadeOD) badges.push('Sem matérias na Ordem do Dia');
+            return badges;
+        });
         const cartoesSecao = computed(() => {
             if (foco.value?.item_id) return []; // Nunca exibir outra matéria no lugar de um foco removido.
             const secao = foco.value?.secao, exp = pauta.leitura_expediente, con = pauta.conhecimento_materias;
             const proposicoes = lista => lista.map((it, idx) => ({ titulo: `${idx + 1}. ${tituloItem(it)}`, texto: it.ementa || 'Ementa não informada.' }));
-            if (!secao || secao === 'ordem_do_dia') return proposicoes(pauta.ordem_do_dia);
+            if (!secao) {
+                // Somente a visão geral combina seções; focos explícitos mantêm seu conteúdo.
+                const proposicoesResumo = (lista, origem = '', incluirRelator = false, incluirConclusiva = false) => (lista || []).map((it, idx) => ({
+                    titulo: `${origem ? origem + ' · ' : ''}${idx + 1}. ${tituloItem(it)}`,
+                    texto: [
+                        it.proponente_principal?.nome || it.proponente_cru?.trim() ? `Proponente: ${formatarAutorRelator(it.proponente_principal, it.proponente_cru)}` : '',
+                        incluirRelator && (it.relator?.nome || it.relator_cru?.trim()) ? `Relator: ${formatarAutorRelator(it.relator, it.relator_cru)}` : '',
+                        it.ementa || 'Ementa não informada.',
+                        incluirConclusiva && it.votacao_conclusiva ? `(${it.texto_conclusiva || 'Tramitação Conclusiva'})` : ''
+                    ].filter(Boolean).join('\n')
+                }));
+                if (pauta.ordem_do_dia?.length) return proposicoesResumo(pauta.ordem_do_dia);
+                const cartoes = [
+                    ...proposicoesResumo(exp?.materias_a_distribuir, 'Matéria a distribuir', false, true),
+                    ...proposicoesResumo(exp?.proposicoes_recebidas, 'Proposição recebida'),
+                    ...proposicoesResumo(exp?.proposicoes_distribuidas, 'Proposição distribuída', true),
+                    ...(con?.informativos || []).map((c,i) => ({ titulo: 'Conhecimento · Comunicado' + (aoVivo.value.res_info[i] ? ' · APROVADO' : ''), texto: c.texto })),
+                    ...(con?.deliberativos_administrativos || []).map((c,i) => ({ titulo: 'Conhecimento · Deliberação administrativa' + (aoVivo.value.res_delib[i] ? ' · APROVADO' : ''), texto: c.texto })),
+                    ...(con?.audiencias_agendadas || []).map(c => ({ titulo: `Conhecimento · Audiência pública · ${formatarData(c.data)} ${c.hora || ''}`, texto: [c.pauta, c.local, c.proponente?.nome || c.proponente_cru].filter(Boolean).join('\n') })),
+                    ...(con?.requerimentos_conhecimento || []).map(c => ({ titulo: `Conhecimento · ${tituloItem(c)}`, texto: (c.texto || '') + (c.origem ? ` (${c.origem})` : '') })),
+                    ...(exp?.correspondencias_recebidas || []).map(c => ({ titulo: `Correspondência · ${c.remetente || 'Recebida'}`, texto: c.mensagem })),
+                    ...(pauta.assuntos_gerais?.itens || []).map((c, idx) => ({ titulo: `Assunto geral · ${idx + 1}`, texto: typeof c === 'string' ? c : c.texto }))
+                ];
+                if (cartoes.length) return cartoes;
+                return (pauta.aprovacao_atas?.atas || []).map(a => ({ titulo: a.texto_livre ? 'Registro em ata' : `Ata ${a.numero}`, texto: a.texto_livre || `${a.tipo_reuniao || 'Reunião ordinária'} de ${formatarData(a.reuniao_referencia)}` }));
+            }
+            if (secao === 'ordem_do_dia') return proposicoes(pauta.ordem_do_dia);
             if (secao === 'distribuicao') return proposicoes(exp.materias_a_distribuir);
             if (secao === 'abertura') return [{ titulo: 'Registro de presenças', texto: 'Abertura da reunião com presença mínima de 3 deputados.' }, { titulo: 'Local', texto: [pauta.metadados.local, pauta.metadados.modalidade].filter(Boolean).join(' · ') }];
             if (secao === 'quorum') return [{ titulo: 'Ordem do Dia', texto: 'Verificação da presença mínima de 7 parlamentares para deliberação.' }];
